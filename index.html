@@ -134,7 +134,29 @@
   .add-form #title { flex: 1 1 180px; min-width: 0; }
   .add-form .min-wrap { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
   .add-form #minutes { width: 80px; }
+  .add-form #presenter { flex: 1 1 140px; min-width: 0; }
   .add-form button { flex: 0 0 auto; }
+
+  /* Bulk import */
+  .bulk { margin-bottom: 14px; border: 1px dashed var(--line); border-radius: 10px; }
+  .bulk > summary {
+    cursor: pointer; padding: 12px 14px; font-weight: 600; color: var(--accent-dark);
+    min-height: 44px; list-style-position: inside;
+  }
+  .bulk-body { padding: 0 14px 14px; }
+  .bulk-body .note { margin: 0 0 8px; }
+  .bulk textarea {
+    width: 100%; font: inherit; font-size: .95rem; padding: 10px 12px;
+    border: 1px solid var(--line); border-radius: 10px; resize: vertical; color: var(--text); background: #fff;
+  }
+  .bulk textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .bulk-preview { font-size: .85rem; color: var(--muted); margin: 6px 0 10px; }
+  .bulk-preview ol { margin: 4px 0 0; padding-left: 1.6em; }
+  .bulk-preview .who { color: var(--accent); }
+  .bulk-actions, .agenda-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .agenda-actions { margin-top: 12px; }
+  .agenda .who { display: block; font-size: .8rem; color: var(--muted); font-weight: 400; }
+  .timer .presenter { font-size: clamp(1rem, 2.5vw, 1.3rem); color: var(--muted); margin-bottom: 4px; }
 
   /* Agenda list */
   .agenda { list-style: none; margin: 0; padding: 0; }
@@ -162,6 +184,7 @@
   .agenda .name { flex: 1 1 auto; min-width: 0; word-break: break-word; }
   .agenda .mins { flex: 0 0 auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .agenda .ops { flex: 0 0 auto; display: flex; gap: 4px; }
+  .agenda .br { display: none; }
   .empty { color: var(--muted); text-align: center; padding: 20px 0; }
 
   .summary {
@@ -178,6 +201,7 @@
   th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
   th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
   td:nth-child(2) { white-space: normal; word-break: break-word; min-width: 120px; }
+  th:nth-child(3), td:nth-child(3) { text-align: left; }
   th { color: var(--muted); font-weight: 600; font-size: .9rem; }
   tfoot td { font-weight: 700; border-bottom: none; }
   .plus { color: var(--over); }
@@ -190,7 +214,9 @@
   @media (max-width: 520px) {
     .card { padding: 16px; }
     .agenda li { flex-wrap: wrap; }
-    .agenda .name { flex-basis: calc(100% - 120px); }
+    .agenda .name { flex-basis: 0; }
+    .agenda .br { display: block; flex-basis: 100%; height: 0; }
+    .agenda .mins { padding-left: 4px; }
     .agenda .ops { margin-left: auto; }
     .controls button { flex-basis: calc(50% - 10px); font-size: 1rem; padding: 10px 12px; }
     .add-form button { flex: 1 1 auto; }
@@ -207,6 +233,7 @@
     <div id="timer" class="timer">
       <div class="label" id="timerLabel">待機中</div>
       <div class="topic" id="timerTopic">アジェンダを登録して「開始」</div>
+      <div class="presenter" id="timerPresenter"></div>
       <div class="time" id="timerTime">--:--</div>
       <div class="sub" id="timerSub">&nbsp;</div>
       <div id="pausedBadge" class="paused-badge hidden">一時停止中</div>
@@ -237,12 +264,33 @@
         <input id="minutes" type="number" min="1" max="600" step="1" value="10" required aria-label="持ち時間（分）">
         <span>分</span>
       </span>
+      <input id="presenter" type="text" placeholder="担当者（任意）" maxlength="40">
       <button type="submit">追加</button>
     </form>
+
+    <details id="bulk" class="bulk">
+      <summary>📥 まとめて貼り付けて追加</summary>
+      <div class="bulk-body">
+        <p class="note">1行に1議題。「議題名 / 分 / 担当者」の形式で貼り付けてください。<br>
+          区切りは「/」・タブ（Excelからのコピー）・空白のどれでもOK。分を省略すると <b>10分</b>、担当者は省略できます。</p>
+        <textarea id="bulkText" rows="6" placeholder="新機能のリリース日程 / 15 / 佐藤&#10;問い合わせ対応の振り返り / 10 / 鈴木&#10;来期の目標 / 20"></textarea>
+        <div id="bulkPreview" class="bulk-preview"></div>
+        <div class="bulk-actions">
+          <button type="button" id="btnBulkAppend">末尾に追加</button>
+          <button type="button" id="btnBulkReplace" class="secondary">今の一覧と置き換え</button>
+        </div>
+      </div>
+    </details>
+
     <ul id="agenda" class="agenda"></ul>
     <div class="summary">
       <span>合計 <b id="totalTime">0分</b></span>
       <span>予定終了 <b id="endTime">--:--</b></span>
+    </div>
+    <div class="agenda-actions">
+      <button type="button" id="btnCopyAgenda" class="secondary">📋 アジェンダをコピー（共有用）</button>
+      <button type="button" id="btnClearAgenda" class="danger">すべて削除</button>
+      <span id="agendaMsg" class="copied hidden"></span>
     </div>
     <div id="lockNote" class="note hidden">※ 進行中は議題の編集ができません（リセットすると編集できます）</div>
   </section>
@@ -253,7 +301,7 @@
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>#</th><th>議題</th><th>予定</th><th>実際</th><th>差分</th></tr>
+          <tr><th>#</th><th>議題</th><th>担当</th><th>予定</th><th>実際</th><th>差分</th></tr>
         </thead>
         <tbody id="resultBody"></tbody>
         <tfoot id="resultFoot"></tfoot>
@@ -296,6 +344,10 @@
     start: $('btnStart'), pause: $('btnPause'), next: $('btnNext'), reset: $('btnReset'),
     progressBar: $('progressBar'), progressText: $('progressText'),
     form: $('addForm'), title: $('title'), minutes: $('minutes'),
+    presenter: $('presenter'), timerPresenter: $('timerPresenter'),
+    bulk: $('bulk'), bulkText: $('bulkText'), bulkPreview: $('bulkPreview'),
+    bulkAppend: $('btnBulkAppend'), bulkReplace: $('btnBulkReplace'),
+    copyAgenda: $('btnCopyAgenda'), clearAgenda: $('btnClearAgenda'), agendaMsg: $('agendaMsg'),
     agenda: $('agenda'), total: $('totalTime'), end: $('endTime'), lockNote: $('lockNote'),
     resultCard: $('resultCard'), resultBody: $('resultBody'), resultFoot: $('resultFoot'),
     copy: $('btnCopy'), copied: $('copied'),
@@ -415,9 +467,127 @@
   }
 
   // アジェンダ編集
-  function addItem(title, minutes) {
-    state.items.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), title, minutes });
+  const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  function addItem(title, minutes, presenter) {
+    state.items.push({ id: newId(), title, minutes, presenter: presenter || '' });
     save(); render();
+  }
+
+  // ---------- 一括読み込み ----------
+  const DEFAULT_MINUTES = 10;
+  // 「15」「15分」「15min」「15m」を分として解釈（全角数字も可）
+  function parseMinutes(tok) {
+    const t = toHalfWidth(tok).trim();
+    const m = t.match(/^(\d{1,3})\s*(分|min|mins|m)?$/i);
+    return m ? Number(m[1]) : null;
+  }
+  function toHalfWidth(s) {
+    return s.replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
+  }
+  function parseLine(raw) {
+    let line = raw.trim();
+    if (!line) return null;
+    // 見出し・合計行・入力例の見出しはスキップ
+    if (/^【.*】/.test(line) || /^合計/.test(line) || /^議題名?\s*[\/／\t]/.test(line)) return null;
+    // 先頭の番号や箇条書き記号を除去（「1.」「1)」「①」「・」「-」など）
+    line = line.replace(/^(\d{1,3}\s*[.．)）:：、]|[①-⑳]|[・\-*●○■□◆◇])\s*/, '');
+    // 「例）」などの接頭辞
+    line = line.replace(/^例[)）]\s*/, '');
+    if (!line) return null;
+
+    let fields;
+    if (line.includes('\t')) fields = line.split('\t');
+    else if (/[\/／|｜]/.test(line)) fields = line.split(/[\/／|｜]/);
+    else {
+      // 空白区切り：最後に現れる「分」トークンを境に、前を議題名・後ろを担当者とする
+      const toks = line.split(/\s+/);
+      let k = -1;
+      for (let i = toks.length - 1; i > 0; i--) if (parseMinutes(toks[i]) !== null) { k = i; break; }
+      if (k === -1) return { title: line, minutes: DEFAULT_MINUTES, presenter: '' };
+      return {
+        title: toks.slice(0, k).join(' '),
+        minutes: clampMin(parseMinutes(toks[k])),
+        presenter: toks.slice(k + 1).join(' ').replace(/^[(（]|[)）]$/g, ''),
+      };
+    }
+    fields = fields.map(f => f.trim()).filter(f => f !== '');
+    if (!fields.length) return null;
+    let minutes = null; const texts = [];
+    for (const f of fields) {
+      const m = minutes === null ? parseMinutes(f) : null;
+      if (m !== null) minutes = m; else texts.push(f);
+    }
+    if (!texts.length) return null;
+    return {
+      title: texts[0],
+      minutes: clampMin(minutes === null ? DEFAULT_MINUTES : minutes),
+      presenter: texts.slice(1).join(' ').replace(/^[(（]|[)）]$/g, ''),
+    };
+  }
+  const clampMin = m => Math.min(600, Math.max(1, m || DEFAULT_MINUTES));
+  function parseBulk(text) {
+    return text.split(/\r?\n/).map(parseLine).filter(Boolean)
+      .map(x => ({ ...x, title: x.title.slice(0, 100), presenter: x.presenter.slice(0, 40) }));
+  }
+  function renderBulkPreview() {
+    const list = parseBulk(el.bulkText.value);
+    el.bulkAppend.disabled = el.bulkReplace.disabled = isLocked() || !list.length;
+    if (!list.length) { el.bulkPreview.innerHTML = ''; return; }
+    const total = list.reduce((a, x) => a + x.minutes, 0);
+    el.bulkPreview.innerHTML = `読み込み内容：${list.length}件・合計${formatMinutes(total)}<ol>` +
+      list.map(x => `<li>${escapeHtml(x.title)}（${x.minutes}分）${x.presenter ? ` <span class="who">${escapeHtml(x.presenter)}</span>` : ''}</li>`).join('') +
+      '</ol>';
+  }
+  function importBulk(replace) {
+    if (isLocked()) return;
+    const list = parseBulk(el.bulkText.value);
+    if (!list.length) return;
+    if (replace && state.items.length && !confirm(`今の${state.items.length}件を消して、${list.length}件に置き換えますか？`)) return;
+    if (state.run && state.run.status === 'done') state.run = null;
+    const items = list.map(x => ({ id: newId(), ...x }));
+    state.items = replace ? items : state.items.concat(items);
+    save();
+    el.bulkText.value = '';
+    renderBulkPreview();
+    render();
+    flash(el.agendaMsg, `${items.length}件を${replace ? '読み込みました' : '追加しました'}`);
+  }
+
+  // ---------- 共有用テキスト ----------
+  function agendaText() {
+    const lines = [`【アジェンダ】全${state.items.length}件・合計${formatMinutes(totalMinutes())}`];
+    state.items.forEach((x, i) => {
+      lines.push(`${i + 1}. ${x.title} / ${x.minutes}分` + (x.presenter ? ` / ${x.presenter}` : ''));
+    });
+    return lines.join('\n');
+  }
+
+  function flash(node, msg) {
+    node.textContent = msg;
+    node.classList.remove('hidden');
+    clearTimeout(node._t);
+    node._t = setTimeout(() => node.classList.add('hidden'), 2500);
+  }
+
+  async function copyText(text) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (e) { /* fallback */ }
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    if (!ok) prompt('以下のテキストをコピーしてください', text);
+    return ok;
   }
   function removeItem(i) {
     state.items.splice(i, 1);
@@ -451,6 +621,10 @@
     const locked = isLocked();
     el.lockNote.classList.toggle('hidden', !locked);
     el.form.querySelectorAll('input,button').forEach(x => x.disabled = locked);
+    el.bulkText.disabled = locked;
+    el.clearAgenda.disabled = locked || !state.items.length;
+    el.copyAgenda.disabled = !state.items.length;
+    renderBulkPreview();
 
     if (!state.items.length) {
       el.agenda.innerHTML = '<li class="empty" style="border:none;justify-content:center">議題がまだありません</li>';
@@ -462,7 +636,8 @@
         return `<li class="${st}" data-i="${i}">
           <span class="status">${labels[st]}</span>
           <span class="num">${i + 1}.</span>
-          <span class="name">${escapeHtml(item.title)}</span>
+          <span class="name">${escapeHtml(item.title)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}</span>
+          <span class="br"></span>
           <span class="mins">${item.minutes}分</span>
           <span class="ops">
             <button class="secondary icon" data-act="up" ${dis || (i === 0 ? 'disabled' : '')} aria-label="上へ" title="上へ">▲</button>
@@ -508,10 +683,12 @@
     el.paused.classList.toggle('hidden', !r || r.status !== 'paused');
 
     el.timer.classList.remove('warn', 'over');
+    el.timerPresenter.textContent = '';
 
     if (!r) {
       el.label.textContent = '待機中';
       el.topic.textContent = hasItems ? state.items[0].title : 'アジェンダを登録して「開始」';
+      el.timerPresenter.textContent = hasItems && state.items[0].presenter ? `担当：${state.items[0].presenter}` : '';
       el.time.textContent = hasItems ? fmt(planMs(state.items[0])) : '--:--';
       el.sub.textContent = hasItems ? `全${state.items.length}議題・合計${formatMinutes(totalMinutes())}` : ' ';
       setProgress(0);
@@ -539,6 +716,7 @@
 
     el.label.textContent = `議題 ${r.idx + 1} / ${state.items.length}`;
     el.topic.textContent = item.title;
+    el.timerPresenter.textContent = item.presenter ? `担当：${item.presenter}` : '';
     if (remain >= 0) {
       // 切り上げで表示（残り0.4秒→00:01）
       el.time.textContent = fmt(Math.ceil(remain / 1000) * 1000);
@@ -583,14 +761,14 @@
     el.resultBody.innerHTML = state.items.map((item, i) => {
       const p = planMs(item), a = r.elapsed[i] || 0;
       tp += p; ta += a;
-      return row(i + 1, escapeHtml(item.title), p, a);
+      return row(i + 1, escapeHtml(item.title), escapeHtml(item.presenter || ''), p, a);
     }).join('');
-    el.resultFoot.innerHTML = row('', '合計', tp, ta);
+    el.resultFoot.innerHTML = row('', '合計', '', tp, ta);
 
-    function row(n, title, p, a) {
+    function row(n, title, who, p, a) {
       const diff = a - p;
       const cls = Math.round(diff / 1000) > 0 ? 'plus' : (Math.round(diff / 1000) < 0 ? 'minus' : '');
-      return `<tr><td>${n}</td><td>${title}</td><td>${fmt(p)}</td><td>${fmt(a)}</td><td class="${cls}">${fmtSigned(diff)}</td></tr>`;
+      return `<tr><td>${n}</td><td>${title}</td><td>${who}</td><td>${fmt(p)}</td><td>${fmt(a)}</td><td class="${cls}">${fmtSigned(diff)}</td></tr>`;
     }
   }
 
@@ -605,7 +783,7 @@
     state.items.forEach((item, i) => {
       const p = planMs(item), a = r.elapsed[i] || 0;
       tp += p; ta += a;
-      lines.push(`${i + 1}. ${item.title}`);
+      lines.push(`${i + 1}. ${item.title}` + (item.presenter ? `（担当：${item.presenter}）` : ''));
       lines.push(`   予定 ${fmt(p)} ／ 実際 ${fmt(a)}（${fmtSigned(a - p)}）`);
     });
     lines.push('');
@@ -614,34 +792,8 @@
   }
 
   async function copyResult() {
-    const text = resultText();
-    let ok = false;
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-        ok = true;
-      }
-    } catch (e) { /* fallback */ }
-    if (!ok) {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.setAttribute('readonly', '');
-      ta.style.position = 'fixed';
-      ta.style.top = '-1000px';
-      document.body.appendChild(ta);
-      ta.select();
-      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
-      document.body.removeChild(ta);
-    }
-    if (ok) {
-      el.copied.textContent = 'コピーしました';
-    } else {
-      el.copied.textContent = 'コピーできませんでした';
-      prompt('以下のテキストをコピーしてください', text);
-    }
-    el.copied.classList.remove('hidden');
-    clearTimeout(copyResult.t);
-    copyResult.t = setTimeout(() => el.copied.classList.add('hidden'), 2500);
+    const ok = await copyText(resultText());
+    flash(el.copied, ok ? 'コピーしました' : 'コピーできませんでした');
   }
 
   // ---------- イベント ----------
@@ -654,8 +806,9 @@
     if (!(minutes >= 1)) { el.minutes.focus(); return; }
     // 終了後に編集したら結果はリセット
     if (state.run && state.run.status === 'done') state.run = null;
-    addItem(title, Math.min(minutes, 600));
+    addItem(title, Math.min(minutes, 600), el.presenter.value.trim());
     el.title.value = '';
+    el.presenter.value = '';
     el.title.focus();
   });
 
@@ -674,6 +827,20 @@
   el.next.addEventListener('click', next);
   el.reset.addEventListener('click', reset);
   el.copy.addEventListener('click', copyResult);
+  el.bulkText.addEventListener('input', renderBulkPreview);
+  el.bulkAppend.addEventListener('click', () => importBulk(false));
+  el.bulkReplace.addEventListener('click', () => importBulk(true));
+  el.copyAgenda.addEventListener('click', async () => {
+    if (!state.items.length) return;
+    flash(el.agendaMsg, (await copyText(agendaText())) ? 'アジェンダをコピーしました' : 'コピーできませんでした');
+  });
+  el.clearAgenda.addEventListener('click', () => {
+    if (isLocked() || !state.items.length) return;
+    if (!confirm(`議題${state.items.length}件をすべて削除しますか？`)) return;
+    state.items = [];
+    state.run = null;
+    save(); render();
+  });
 
   // キーボード操作：Space=一時停止/再開、→ / N = 次へ（入力中は無効）
   document.addEventListener('keydown', e => {
