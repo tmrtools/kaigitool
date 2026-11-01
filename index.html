@@ -135,7 +135,7 @@
   .add-form .min-wrap { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
   .add-form #minutes { width: 80px; }
   .add-form #presenter { flex: 1 1 140px; min-width: 0; }
-  .add-form #goal { flex: 1 1 100%; min-width: 0; }
+  .add-form #goal { flex: 1 1 200px; min-width: 0; }
   .add-form button { flex: 0 0 auto; }
 
   /* Bulk import */
@@ -184,9 +184,18 @@
   .status-btns button:hover:not(:disabled) { background: #eef2f1; }
   .status-btns button.on[data-status="決定"] { background: var(--ok); border-color: var(--ok); color: #fff; }
   .status-btns button.on[data-status="保留"] { background: var(--warn); border-color: var(--warn); color: #fff; }
+  .status-btns button.on[data-status="報告済み"] { background: var(--accent); border-color: var(--accent); color: #fff; }
   .status-btns button.on[data-status="持ち越し"] { background: var(--over); border-color: var(--over); color: #fff; }
   .badge { display: inline-block; font-size: .72rem; padding: 1px 8px; border-radius: 999px; margin-left: 6px; color: #fff; vertical-align: 2px; font-weight: 600; }
   .badge.決定 { background: var(--ok); } .badge.保留 { background: var(--warn); } .badge.持ち越し { background: var(--over); }
+  .badge.報告済み { background: var(--accent); }
+  .goal.report { border-left-color: #8a7bb0; background: #f1eff7; }
+  .agenda .report-line { display: block; font-size: .8rem; color: #6c5f96; font-weight: 600; }
+  .add-form #kind {
+    font: inherit; font-size: 1rem; min-height: 48px; padding: 8px 10px;
+    border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--text); flex: 0 0 auto;
+  }
+  .summary .breakdown { color: var(--muted); }
   .agenda .goal-line { display: block; font-size: .8rem; color: var(--accent-dark); font-weight: 400; }
   .notes-title { font-size: 1rem; color: var(--accent-dark); margin: 24px 0 10px; }
   .timer .presenter { font-size: clamp(1rem, 2.5vw, 1.3rem); color: var(--muted); margin-bottom: 4px; }
@@ -301,6 +310,10 @@
         <span>分</span>
       </span>
       <input id="presenter" type="text" placeholder="担当者（任意）" maxlength="40">
+      <select id="kind" aria-label="議題の種類">
+        <option value="decide">🎯 決める</option>
+        <option value="report">📢 報告</option>
+      </select>
       <input id="goal" type="text" placeholder="決めること（任意）" maxlength="200">
       <button type="submit">追加</button>
     </form>
@@ -309,9 +322,10 @@
       <summary>📥 まとめて貼り付けて追加</summary>
       <div class="bulk-body">
         <p class="note">1行に1議題。「議題名 / 分 / 担当者 / 決めること」の形式で貼り付けてください。<br>
+          報告だけの議題は、決めることの欄に「<b>報告</b>」と書いてください（「報告のみ」「共有」「報告事項」も可）。<br>
           区切りは「/」・タブ（Excelからのコピー）がおすすめ（空白区切りは「議題名 分 担当者」まで）。分を省略すると <b>10分</b>、担当者・決めることは省略できます。<br>
           担当者なしで決めることを書く場合は「議題名 / 10 / / 決めること」と空欄にしてください。</p>
-        <textarea id="bulkText" rows="6" placeholder="新機能のリリース日程 / 15 / 佐藤 / 11月リリースか12月に延期か&#10;問い合わせ対応の振り返り / 10 / 鈴木&#10;来期の目標 / 20 / 高橋 / 重点テーマを3つに絞る"></textarea>
+        <textarea id="bulkText" rows="6" placeholder="新機能のリリース日程 / 15 / 佐藤 / 11月リリースか12月に延期か&#10;先週の売上報告 / 5 / 鈴木 / 報告&#10;来期の目標 / 20 / 高橋 / 重点テーマを3つに絞る"></textarea>
         <div id="bulkPreview" class="bulk-preview"></div>
         <div class="bulk-actions">
           <button type="button" id="btnBulkAppend">末尾に追加</button>
@@ -322,7 +336,7 @@
 
     <ul id="agenda" class="agenda"></ul>
     <div class="summary">
-      <span>合計 <b id="totalTime">0分</b></span>
+      <span>合計 <b id="totalTime">0分</b> <span id="breakdown" class="breakdown"></span></span>
       <span>予定終了 <b id="endTime">--:--</b></span>
     </div>
     <div class="agenda-actions">
@@ -362,10 +376,12 @@
   const STORAGE_KEY = 'meetingTimer.v1';
 
   // ---------- 状態 ----------
-  // items: [{id, title, minutes, presenter, goal}]   goal = 決めること
+  // items: [{id, title, minutes, presenter, goal, kind: 'decide'|'report'}]   goal = 決めること
   // run: null | {status: 'running'|'paused'|'done', idx, elapsed: [ms], startedAt: ms|null,
   //              meetingStart: ms, meetingEnd: ms|null,
-  //              notes: [{decision, status: ''|'決定'|'保留'|'持ち越し', todo}]}   決まった事
+  //              notes: [{decision, qa, status, todo}]}
+  //   決定の議題：decision=決まった事, status=''|'決定'|'保留'|'持ち越し'
+  //   報告の議題：decision=報告の要点, qa=質疑・補足, status=''|'報告済み'|'持ち越し'
   let state = load();
 
   function load() {
@@ -387,7 +403,8 @@
     start: $('btnStart'), pause: $('btnPause'), next: $('btnNext'), reset: $('btnReset'),
     progressBar: $('progressBar'), progressText: $('progressText'),
     form: $('addForm'), title: $('title'), minutes: $('minutes'),
-    presenter: $('presenter'), timerPresenter: $('timerPresenter'), goal: $('goal'),
+    presenter: $('presenter'), timerPresenter: $('timerPresenter'), goal: $('goal'), kind: $('kind'),
+    breakdown: $('breakdown'),
     notesPanel: $('notesPanel'), resultNotes: $('resultNotes'), copyCarry: $('btnCopyCarry'),
     bulk: $('bulk'), bulkText: $('bulkText'), bulkPreview: $('bulkPreview'),
     bulkAppend: $('btnBulkAppend'), bulkReplace: $('btnBulkReplace'),
@@ -417,6 +434,7 @@
     return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
   const planMs = item => item.minutes * 60000;
+  const isReport = item => item.kind === 'report';
   const totalMinutes = () => state.items.reduce((a, i) => a + i.minutes, 0);
 
   function currentElapsed() {
@@ -456,8 +474,8 @@
   }
 
   // ---------- 操作 ----------
-  const emptyNote = () => ({ decision: '', status: '', todo: '' });
-  const hasNotes = () => !!state.run && (state.run.notes || []).some(n => n.decision || n.status || n.todo);
+  const emptyNote = () => ({ decision: '', qa: '', status: '', todo: '' });
+  const hasNotes = () => !!state.run && (state.run.notes || []).some(n => n.decision || n.qa || n.status || n.todo);
   const LOSE_MSG = '会議結果（決まった事の記録）が消えます。\n必要なら先に「議事録をテキストでコピー」で保存してください。\n\n';
 
   function start() {
@@ -521,8 +539,9 @@
 
   // アジェンダ編集
   const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-  function addItem(title, minutes, presenter, goal) {
-    state.items.push({ id: newId(), title, minutes, presenter: presenter || '', goal: goal || '' });
+  function addItem(title, minutes, presenter, goal, kind) {
+    const report = kind === 'report';
+    state.items.push({ id: newId(), title, minutes, presenter: presenter || '', goal: report ? '' : (goal || ''), kind: report ? 'report' : 'decide' });
     save(); render();
   }
 
@@ -582,9 +601,17 @@
   }
   const stripParen = s => s.trim().replace(/^[(（]|[)）]$/g, '');
   const clampMin = m => Math.min(600, Math.max(1, m || DEFAULT_MINUTES));
+  // 決めることの欄がこれらの言葉なら「報告」の議題
+  const REPORT_WORDS = /^[(（【\[]?(報告|報告のみ|報告だけ|報告事項|共有|共有のみ|共有事項|報告・共有|報告\/共有)[)）】\]]?$/;
   function parseBulk(text) {
     return text.split(/\r?\n/).map(parseLine).filter(Boolean)
-      .map(x => ({ ...x, title: x.title.slice(0, 100), presenter: x.presenter.slice(0, 40), goal: x.goal.slice(0, 200) }));
+      .map(x => {
+        const report = REPORT_WORDS.test(x.goal.trim());
+        return {
+          ...x, title: x.title.slice(0, 100), presenter: x.presenter.slice(0, 40),
+          goal: report ? '' : x.goal.slice(0, 200), kind: report ? 'report' : 'decide',
+        };
+      });
   }
   function renderBulkPreview() {
     const list = parseBulk(el.bulkText.value);
@@ -592,7 +619,7 @@
     if (!list.length) { el.bulkPreview.innerHTML = ''; return; }
     const total = list.reduce((a, x) => a + x.minutes, 0);
     el.bulkPreview.innerHTML = `読み込み内容：${list.length}件・合計${formatMinutes(total)}<ol>` +
-      list.map(x => `<li>${escapeHtml(x.title)}（${x.minutes}分）${x.presenter ? ` <span class="who">${escapeHtml(x.presenter)}</span>` : ''}${x.goal ? `<br>　決めること：${escapeHtml(x.goal)}` : ''}</li>`).join('') +
+      list.map(x => `<li>${escapeHtml(x.title)}（${x.minutes}分）${x.presenter ? ` <span class="who">${escapeHtml(x.presenter)}</span>` : ''}${isReport(x) ? '<br>　📢 報告' : x.goal ? `<br>　🎯 ${escapeHtml(x.goal)}` : ''}</li>`).join('') +
       '</ol>';
   }
   function importBulk(replace) {
@@ -621,8 +648,9 @@
   // 「議題名 / 分 / 担当者 / 決めること」形式（貼り付け欄にそのまま戻せる）
   function itemLine(x) {
     let s = `${x.title} / ${x.minutes}分`;
-    if (x.presenter || x.goal) s += ` / ${x.presenter || ''}`;
-    if (x.goal) s += ` / ${x.goal}`;
+    const tail = isReport(x) ? '報告' : x.goal;
+    if (x.presenter || tail) s += ` / ${x.presenter || ''}`;
+    if (tail) s += ` / ${tail}`;
     return s;
   }
 
@@ -686,7 +714,7 @@
   function renderAgenda() {
     const locked = isLocked();
     el.lockNote.classList.toggle('hidden', !locked);
-    el.form.querySelectorAll('input,button').forEach(x => x.disabled = locked);
+    el.form.querySelectorAll('input,button,select').forEach(x => x.disabled = locked);
     el.bulkText.disabled = locked;
     el.clearAgenda.disabled = locked || !state.items.length;
     el.copyAgenda.disabled = !state.items.length;
@@ -702,7 +730,7 @@
         return `<li class="${st}" data-i="${i}">
           <span class="status">${labels[st]}</span>
           <span class="num">${i + 1}.</span>
-          <span class="name">${escapeHtml(item.title)}${statusBadge(i)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}${item.goal ? `<span class="goal-line">🎯 ${escapeHtml(item.goal)}</span>` : ''}</span>
+          <span class="name">${escapeHtml(item.title)}${statusBadge(i)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}${isReport(item) ? '<span class="report-line">📢 報告</span>' : item.goal ? `<span class="goal-line">🎯 ${escapeHtml(item.goal)}</span>` : ''}</span>
           <span class="br"></span>
           <span class="mins">${item.minutes}分</span>
           <span class="ops">
@@ -714,6 +742,8 @@
       }).join('');
     }
     el.total.textContent = formatMinutes(totalMinutes());
+    const rep = state.items.filter(isReport).reduce((a, x) => a + x.minutes, 0);
+    el.breakdown.textContent = state.items.length ? `（決定 ${formatMinutes(totalMinutes() - rep)}・報告 ${formatMinutes(rep)}）` : '';
     updateEndTime();
   }
 
@@ -724,9 +754,24 @@
 
   // ---------- 決まった事の入力欄 ----------
   const STATUSES = ['決定', '保留', '持ち越し'];
+  const REPORT_STATUSES = ['報告済み', '持ち越し'];
   function noteEditorHTML(i) {
     const item = state.items[i];
     const n = state.run.notes[i];
+    if (isReport(item)) return `<div class="note-card" data-i="${i}">
+      <h3>${i + 1}. ${escapeHtml(item.title)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}</h3>
+      <div class="goal report"><span class="k">📢 報告の議題</span>決めることはありません</div>
+      <label class="field-label" for="dec-${i}">📢 報告の要点</label>
+      <textarea id="dec-${i}" data-field="decision" rows="2" placeholder="例）10月の売上は前年比105%">${escapeHtml(n.decision)}</textarea>
+      <label class="field-label" for="qa-${i}">💬 質疑・補足（任意）</label>
+      <textarea id="qa-${i}" data-field="qa" rows="2" placeholder="例）Q. 新規顧客の内訳は？ → 次回資料で共有">${escapeHtml(n.qa || '')}</textarea>
+      <span class="field-label">状態</span>
+      <div class="status-btns">
+        ${REPORT_STATUSES.map(st => `<button type="button" data-status="${st}" class="${n.status === st ? 'on' : ''}" aria-pressed="${n.status === st}">${st}</button>`).join('')}
+      </div>
+      <label class="field-label" for="todo-${i}">📝 TODO（任意・1行に1件）</label>
+      <textarea id="todo-${i}" data-field="todo" rows="2" placeholder="例）鈴木 内訳資料の作成（11/12まで）">${escapeHtml(n.todo)}</textarea>
+    </div>`;
     return `<div class="note-card" data-i="${i}">
       <h3>${i + 1}. ${escapeHtml(item.title)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}</h3>
       <div class="goal ${item.goal ? '' : 'none'}"><span class="k">🎯 決めること</span>${item.goal ? escapeHtml(item.goal) : '（未登録）'}</div>
@@ -815,7 +860,7 @@
     if (!r) {
       el.label.textContent = '待機中';
       el.topic.textContent = hasItems ? state.items[0].title : 'アジェンダを登録して「開始」';
-      el.timerPresenter.textContent = hasItems && state.items[0].presenter ? `担当：${state.items[0].presenter}` : '';
+      el.timerPresenter.textContent = hasItems ? presenterLine(state.items[0]) : '';
       el.time.textContent = hasItems ? fmt(planMs(state.items[0])) : '--:--';
       el.sub.textContent = hasItems ? `全${state.items.length}議題・合計${formatMinutes(totalMinutes())}` : ' ';
       setProgress(0);
@@ -843,7 +888,7 @@
 
     el.label.textContent = `議題 ${r.idx + 1} / ${state.items.length}`;
     el.topic.textContent = item.title;
-    el.timerPresenter.textContent = item.presenter ? `担当：${item.presenter}` : '';
+    el.timerPresenter.textContent = presenterLine(item);
     if (remain >= 0) {
       // 切り上げで表示（残り0.4秒→00:01）
       el.time.textContent = fmt(Math.ceil(remain / 1000) * 1000);
@@ -871,6 +916,10 @@
     setProgress(total ? done / total : 0);
 
     updateEndTime();
+  }
+
+  function presenterLine(item) {
+    return [isReport(item) ? '📢 報告' : '', item.presenter ? `担当：${item.presenter}` : ''].filter(Boolean).join('・');
   }
 
   function setProgress(ratio) {
@@ -913,11 +962,18 @@
       const p = planMs(item), a = r.elapsed[i] || 0;
       const n = r.notes[i];
       tp += p; ta += a;
-      lines.push(`${i + 1}. ${item.title}` + (item.presenter ? `（担当：${item.presenter}）` : '') +
+      lines.push(`${i + 1}. ${isReport(item) ? '［報告］' : ''}${item.title}` + (item.presenter ? `（担当：${item.presenter}）` : '') +
         `　予定${fmt(p)}／実際${fmt(a)}（${fmtSigned(a - p)}）`);
-      if (item.goal) lines.push(`   ■決めること：${item.goal}`);
       const dec = n.decision.trim();
-      lines.push(`   ■決まった事：${dec ? indentLines(dec, '     ') : '（記録なし）'}${n.status ? `【${n.status}】` : ''}`);
+      const tag = n.status ? `【${n.status}】` : '';
+      if (isReport(item)) {
+        lines.push(`   ■報告：${dec ? indentLines(dec, '     ') : '（記録なし）'}${tag}`);
+        const qa = (n.qa || '').trim();
+        if (qa) lines.push(`   ■質疑・補足：${indentLines(qa, '     ')}`);
+      } else {
+        if (item.goal) lines.push(`   ■決めること：${item.goal}`);
+        lines.push(`   ■決まった事：${dec ? indentLines(dec, '     ') : '（記録なし）'}${tag}`);
+      }
       const todos = n.todo.split(/\r?\n/).map(t => t.trim()).filter(Boolean);
       if (todos.length) {
         lines.push('   ■TODO：');
@@ -926,6 +982,8 @@
       lines.push('');
     });
     lines.push(`合計：予定 ${fmt(tp)} ／ 実際 ${fmt(ta)}（${fmtSigned(ta - tp)}）`);
+    const sumBy = rep => state.items.reduce((a, x, i) => isReport(x) === rep ? a + (r.elapsed[i] || 0) : a, 0);
+    if (state.items.some(isReport)) lines.push(`　内訳（実際）：決定 ${fmt(sumBy(false))} ／ 報告 ${fmt(sumBy(true))}`);
     const carry = carryOverLines();
     if (carry.length) {
       lines.push('');
@@ -966,10 +1024,12 @@
     const minutes = Math.round(Number(el.minutes.value));
     if (!title) { el.title.focus(); return; }
     if (!(minutes >= 1)) { el.minutes.focus(); return; }
-    addItem(title, Math.min(minutes, 600), el.presenter.value.trim(), el.goal.value.trim());
+    addItem(title, Math.min(minutes, 600), el.presenter.value.trim(), el.goal.value.trim(), el.kind.value);
     el.title.value = '';
     el.presenter.value = '';
     el.goal.value = '';
+    el.kind.value = 'decide';
+    syncKind();
     el.title.focus();
   });
 
@@ -988,6 +1048,11 @@
   el.reset.addEventListener('click', reset);
   el.copy.addEventListener('click', copyResult);
   el.copyCarry.addEventListener('click', copyCarry);
+  function syncKind() {
+    const report = el.kind.value === 'report';
+    el.goal.classList.toggle('hidden', report);
+  }
+  el.kind.addEventListener('change', syncKind);
   [el.notesPanel, el.resultNotes].forEach(c => {
     c.addEventListener('input', onNoteInput);
     c.addEventListener('click', onNoteClick);
