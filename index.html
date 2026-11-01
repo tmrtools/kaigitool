@@ -115,6 +115,22 @@
   .controls button { flex: 1 1 140px; max-width: 220px; font-size: 1.1rem; }
 
   .progress-wrap { margin-top: 20px; }
+
+  /* 時間調整 */
+  .adjust { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .delay {
+    border-radius: 10px; padding: 10px 14px; font-size: 1rem; font-weight: 600;
+    background: #e8f1ea; color: var(--ok); text-align: center; font-variant-numeric: tabular-nums;
+  }
+  .delay.late { background: var(--over-bg); color: var(--over); }
+  .adjust-btns { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .adjust-btns button { min-height: 44px; padding: 8px 14px; font-size: .95rem; }
+  .agenda li.skipped { background: #f5f5f3; color: var(--muted); border-left-color: #b9b9b2; border-style: dashed; }
+  .agenda li.skipped .name { text-decoration: line-through; }
+  .agenda li.skipped .status { background: #ecebe6; color: #8b8a80; }
+  .agenda .mins small { display: block; font-size: .72rem; color: var(--muted); text-align: right; }
+  .agenda .ops button.text { width: auto; padding: 0 10px; font-size: .85rem; }
+  td small { display: block; font-size: .75rem; color: var(--muted); }
   .progress-meta { display: flex; justify-content: space-between; font-size: .9rem; color: var(--muted); margin-bottom: 6px; }
   .progress {
     height: 14px; background: #e3e7e4; border-radius: 999px; overflow: hidden;
@@ -288,6 +304,16 @@
       <button id="btnReset" class="danger" disabled>リセット</button>
     </div>
 
+    <!-- 時間調整（進行中のみ表示） -->
+    <div id="adjust" class="adjust hidden">
+      <div id="delay" class="delay"></div>
+      <div class="adjust-btns">
+        <button type="button" class="secondary" data-extend="1">今の議題 +1分</button>
+        <button type="button" class="secondary" data-extend="5">今の議題 +5分</button>
+        <button type="button" id="btnAutoAdjust">⚖ 残りを自動調整</button>
+      </div>
+    </div>
+
     <div class="progress-wrap">
       <div class="progress-meta">
         <span>全体の進捗</span>
@@ -404,7 +430,7 @@
     progressBar: $('progressBar'), progressText: $('progressText'),
     form: $('addForm'), title: $('title'), minutes: $('minutes'),
     presenter: $('presenter'), timerPresenter: $('timerPresenter'), goal: $('goal'), kind: $('kind'),
-    breakdown: $('breakdown'),
+    breakdown: $('breakdown'), adjust: $('adjust'), delay: $('delay'), autoAdjust: $('btnAutoAdjust'),
     notesPanel: $('notesPanel'), resultNotes: $('resultNotes'), copyCarry: $('btnCopyCarry'),
     bulk: $('bulk'), bulkText: $('bulkText'), bulkPreview: $('bulkPreview'),
     bulkAppend: $('btnBulkAppend'), bulkReplace: $('btnBulkReplace'),
@@ -433,9 +459,30 @@
   function escapeHtml(s) {
     return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
-  const planMs = item => item.minutes * 60000;
   const isReport = item => item.kind === 'report';
-  const totalMinutes = () => state.items.reduce((a, i) => a + i.minutes, 0);
+  // 実際に使う持ち時間（進行中は調整後の値、「次回へ」にした議題は0）
+  function effMin(i) {
+    const r = state.run;
+    if (!r) return state.items[i].minutes;
+    return r.skipped[i] ? 0 : r.plan[i];
+  }
+  const effMs = i => effMin(i) * 60000;
+  const totalMinutes = () => state.items.reduce((a, _, i) => a + effMin(i), 0);
+  const origMinutes = () => state.items.reduce((a, x) => a + x.minutes, 0);
+  const isChanged = i => !!state.run && !state.run.skipped[i] && state.run.plan[i] !== state.items[i].minutes;
+  // from 以降で「次回へ」になっていない最初の議題（なければ -1）
+  function nextActive(from) {
+    const r = state.run;
+    for (let i = from; i < state.items.length; i++) if (!r.skipped[i]) return i;
+    return -1;
+  }
+  // 今のペースで進めた場合の終了見込み時刻
+  function projectedEnd() {
+    const r = state.run;
+    let remain = Math.max(0, effMs(r.idx) - currentElapsed());
+    for (let i = r.idx + 1; i < state.items.length; i++) remain += effMs(i);
+    return Date.now() + remain;
+  }
 
   function currentElapsed() {
     const r = state.run;
@@ -488,6 +535,9 @@
       elapsed: state.items.map(() => 0),
       startedAt: now, meetingStart: now, meetingEnd: null,
       notes: state.items.map(emptyNote),
+      plan: state.items.map(x => x.minutes),        // 調整後の持ち時間（分）
+      skipped: state.items.map(() => false),         // 「次回へ」にした議題
+      plannedEnd: now + origMinutes() * 60000,       // 開始時点の予定終了時刻
     };
     beep();
     save(); render();
@@ -513,7 +563,8 @@
     ensureAudio();
     const now = Date.now();
     if (r.status === 'running') r.elapsed[r.idx] += now - r.startedAt;
-    r.idx++;
+    const ni = nextActive(r.idx + 1);
+    r.idx = ni === -1 ? state.items.length : ni;
     if (r.idx >= state.items.length) {
       r.status = 'done';
       r.startedAt = null;
@@ -527,6 +578,73 @@
     }
     save(); render();
   }
+  // ---------- 時間調整 ----------
+  const runActive = () => !!state.run && state.run.status !== 'done';
+  function extendCurrent(m) {
+    if (!runActive()) return;
+    const r = state.run;
+    r.plan[r.idx] = Math.min(600, r.plan[r.idx] + m);
+    save(); render();
+  }
+  function adjustPlan(i, delta) {
+    const r = state.run;
+    if (!runActive() || i <= r.idx || r.skipped[i]) return;
+    r.plan[i] = Math.min(600, Math.max(1, r.plan[i] + delta));
+    save(); render();
+  }
+  function setSkipped(i, on) {
+    const r = state.run;
+    if (!runActive() || i <= r.idx) return;
+    r.skipped[i] = on;
+    const n = r.notes[i];
+    if (on && !n.status) n.status = '持ち越し';
+    if (!on && n.status === '持ち越し') n.status = '';
+    save(); render();
+  }
+  // 合計 amount 分を、list の議題から（各議題は最低1分を残して）持ち時間の比率で削る
+  function distributeCut(list, amount, cut) {
+    const r = state.run;
+    const caps = list.map(i => r.plan[i] - 1);
+    const capTotal = caps.reduce((a, b) => a + b, 0);
+    if (amount <= 0 || capTotal <= 0) return amount;
+    if (capTotal <= amount) {
+      list.forEach((i, k) => { if (caps[k] > 0) cut[i] = caps[k]; });
+      return amount - capTotal;
+    }
+    const raw = caps.map(c => c * amount / capTotal);
+    const fl = raw.map(Math.floor);
+    let left = amount - fl.reduce((a, b) => a + b, 0);
+    raw.map((v, k) => ({ k, frac: v - fl[k] }))
+      .sort((a, b) => b.frac - a.frac)
+      .forEach(({ k }) => { if (left > 0 && fl[k] < caps[k]) { fl[k]++; left--; } });
+    list.forEach((i, k) => { if (fl[k] > 0) cut[i] = fl[k]; });
+    return 0;
+  }
+  function autoAdjust() {
+    if (!runActive()) return;
+    const r = state.run;
+    const over = projectedEnd() - r.plannedEnd;
+    if (over < 60000) { alert(`予定終了（${clock(r.plannedEnd)}）に収まっているため、調整は不要です。`); return; }
+    const need = Math.ceil(over / 60000);
+    const future = [];
+    for (let i = r.idx + 1; i < state.items.length; i++) if (!r.skipped[i]) future.push(i);
+    const cut = {};
+    // 報告の議題から先に削り、足りなければ決める議題を削る
+    let short = distributeCut(future.filter(i => isReport(state.items[i])), need, cut);
+    short = distributeCut(future.filter(i => !isReport(state.items[i])), short, cut);
+    const keys = Object.keys(cut).map(Number).sort((a, b) => a - b);
+    if (!keys.length) {
+      alert(`予定より約${need}分遅れていますが、残りの議題はこれ以上短くできません。\n「次回へ」で議題を減らすか、終了時刻の延長を検討してください。`);
+      return;
+    }
+    const lines = keys.map(i => `・${isReport(state.items[i]) ? '［報告］' : ''}${state.items[i].title}　${r.plan[i]}分 → ${r.plan[i] - cut[i]}分`);
+    let msg = `予定終了 ${clock(r.plannedEnd)} に合わせるため、残りの議題を合計${need - short}分短くします。\n\n${lines.join('\n')}`;
+    if (short > 0) msg += `\n\n※ それでも あと${short}分足りません。「次回へ」で議題を減らすことも検討してください。`;
+    if (!confirm(msg + '\n\nこの内容で調整しますか？')) return;
+    keys.forEach(i => { r.plan[i] -= cut[i]; });
+    save(); render();
+  }
+
   function reset() {
     if (!state.run) return;
     const msg = state.run.status === 'done'
@@ -638,7 +756,7 @@
 
   // ---------- 共有用テキスト ----------
   function agendaText() {
-    const lines = [`【アジェンダ】全${state.items.length}件・合計${formatMinutes(totalMinutes())}`];
+    const lines = [`【アジェンダ】全${state.items.length}件・合計${formatMinutes(origMinutes())}`];
     state.items.forEach((x, i) => {
       lines.push(`${i + 1}. ${itemLine(x)}`);
     });
@@ -706,6 +824,7 @@
   function itemState(i) {
     const r = state.run;
     if (!r) return 'todo';
+    if (r.skipped[i]) return 'skipped';
     if (r.status === 'done' || i < r.idx) return 'done';
     if (i === r.idx) return 'current';
     return 'todo';
@@ -723,7 +842,8 @@
     if (!state.items.length) {
       el.agenda.innerHTML = '<li class="empty" style="border:none;justify-content:center">議題がまだありません</li>';
     } else {
-      const labels = { done: '終了', current: '進行中', todo: '未着手' };
+      const labels = { done: '終了', current: '進行中', todo: '未着手', skipped: '次回へ' };
+      const active = runActive();
       el.agenda.innerHTML = state.items.map((item, i) => {
         const st = itemState(i);
         const dis = locked ? 'disabled' : '';
@@ -732,19 +852,31 @@
           <span class="num">${i + 1}.</span>
           <span class="name">${escapeHtml(item.title)}${statusBadge(i)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}${isReport(item) ? '<span class="report-line">📢 報告</span>' : item.goal ? `<span class="goal-line">🎯 ${escapeHtml(item.goal)}</span>` : ''}</span>
           <span class="br"></span>
-          <span class="mins">${item.minutes}分</span>
-          <span class="ops">
-            <button class="secondary icon" data-act="up" ${dis || (i === 0 ? 'disabled' : '')} aria-label="上へ" title="上へ">▲</button>
-            <button class="secondary icon" data-act="down" ${dis || (i === state.items.length - 1 ? 'disabled' : '')} aria-label="下へ" title="下へ">▼</button>
-            <button class="danger icon" data-act="del" ${dis} aria-label="削除" title="削除">✕</button>
-          </span>
+          <span class="mins">${st === 'skipped' ? '—' : effMin(i) + '分'}${isChanged(i) || st === 'skipped' ? `<small>当初${item.minutes}分</small>` : ''}</span>
+          <span class="ops">${opsHTML(i, st, active, dis)}</span>
         </li>`;
       }).join('');
     }
-    el.total.textContent = formatMinutes(totalMinutes());
-    const rep = state.items.filter(isReport).reduce((a, x) => a + x.minutes, 0);
+    el.total.textContent = formatMinutes(totalMinutes()) + (state.run && totalMinutes() !== origMinutes() ? `（当初${formatMinutes(origMinutes())}）` : '');
+    const rep = state.items.reduce((a, x, i) => isReport(x) ? a + effMin(i) : a, 0);
     el.breakdown.textContent = state.items.length ? `（決定 ${formatMinutes(totalMinutes() - rep)}・報告 ${formatMinutes(rep)}）` : '';
     updateEndTime();
+  }
+
+  function opsHTML(i, st, active, dis) {
+    if (!state.run) return `
+            <button class="secondary icon" data-act="up" ${i === 0 ? 'disabled' : ''} aria-label="上へ" title="上へ">▲</button>
+            <button class="secondary icon" data-act="down" ${i === state.items.length - 1 ? 'disabled' : ''} aria-label="下へ" title="下へ">▼</button>
+            <button class="danger icon" data-act="del" aria-label="削除" title="削除">✕</button>`;
+    if (!active) return '';
+    // 進行中：未着手の議題だけ時間調整・次回へ回すことができる
+    if (st === 'todo') return `
+            <button class="secondary icon" data-act="minus" ${state.run.plan[i] <= 1 ? 'disabled' : ''} aria-label="1分減らす" title="1分減らす">−</button>
+            <button class="secondary icon" data-act="plus" aria-label="1分増やす" title="1分増やす">＋</button>
+            <button class="secondary icon text" data-act="skip" title="話さずに次回へ回す">次回へ</button>`;
+    if (st === 'skipped') return `
+            <button class="secondary icon text" data-act="unskip" title="今回の議題に戻す">↩ 戻す</button>`;
+    return '';
   }
 
   function statusBadge(i) {
@@ -834,10 +966,7 @@
     if (!state.items.length) { el.end.textContent = '--:--'; return; }
     if (!r) { el.end.textContent = clock(Date.now() + totalMinutes() * 60000) + '（今から開始した場合）'; return; }
     if (r.status === 'done') { el.end.textContent = clock(r.meetingEnd) + '（終了）'; return; }
-    const cur = state.items[r.idx];
-    let remain = Math.max(0, planMs(cur) - currentElapsed());
-    for (let i = r.idx + 1; i < state.items.length; i++) remain += planMs(state.items[i]);
-    el.end.textContent = clock(Date.now() + remain) + '（見込み）';
+    el.end.textContent = clock(projectedEnd()) + '（見込み）';
   }
 
   function renderTimer() {
@@ -850,7 +979,8 @@
     el.pause.classList.toggle('hidden', !r || r.status === 'done');
     el.pause.textContent = r && r.status === 'paused' ? '▶ 再開' : '⏸ 一時停止';
     el.next.disabled = !r || r.status === 'done';
-    el.next.textContent = r && r.idx === state.items.length - 1 ? '⏹ 会議を終了' : '⏭ 次の議題へ';
+    el.next.textContent = r && r.status !== 'done' && nextActive(r.idx + 1) === -1 ? '⏹ 会議を終了' : '⏭ 次の議題へ';
+    el.adjust.classList.toggle('hidden', !runActive());
     el.reset.disabled = !r;
     el.paused.classList.toggle('hidden', !r || r.status !== 'paused');
 
@@ -861,7 +991,7 @@
       el.label.textContent = '待機中';
       el.topic.textContent = hasItems ? state.items[0].title : 'アジェンダを登録して「開始」';
       el.timerPresenter.textContent = hasItems ? presenterLine(state.items[0]) : '';
-      el.time.textContent = hasItems ? fmt(planMs(state.items[0])) : '--:--';
+      el.time.textContent = hasItems ? fmt(effMs(0)) : '--:--';
       el.sub.textContent = hasItems ? `全${state.items.length}議題・合計${formatMinutes(totalMinutes())}` : ' ';
       setProgress(0);
       return;
@@ -871,7 +1001,7 @@
       el.label.textContent = '会議終了';
       el.topic.textContent = 'おつかれさまでした';
       el.time.textContent = fmt(total);
-      el.sub.textContent = `予定 ${fmt(totalMinutes() * 60000)} ／ 実際 ${fmt(total)}`;
+      el.sub.textContent = `当初予定 ${fmt(origMinutes() * 60000)} ／ 実際 ${fmt(total)}`;
       setProgress(1);
       return;
     }
@@ -884,7 +1014,7 @@
     if (!r || r.status === 'done') return;
     const item = state.items[r.idx];
     const elapsed = currentElapsed();
-    const remain = planMs(item) - elapsed;
+    const remain = effMs(r.idx) - elapsed;
 
     el.label.textContent = `議題 ${r.idx + 1} / ${state.items.length}`;
     el.topic.textContent = item.title;
@@ -898,8 +1028,17 @@
     el.timer.classList.toggle('warn', remain >= 0 && remain <= 60000);
     el.timer.classList.toggle('over', remain < 0);
 
-    const nextItem = state.items[r.idx + 1];
-    el.sub.textContent = `持ち時間 ${item.minutes}分・経過 ${fmt(elapsed)}` + (nextItem ? `　次：${nextItem.title}` : '　（最後の議題）');
+    const nextItem = state.items[nextActive(r.idx + 1)];
+    el.sub.textContent = `持ち時間 ${effMin(r.idx)}分` + (isChanged(r.idx) ? `（当初${item.minutes}分）` : '') +
+      `・経過 ${fmt(elapsed)}` + (nextItem ? `　次：${nextItem.title}` : '　（最後の議題）');
+
+    // 予定終了との差
+    const delay = projectedEnd() - r.plannedEnd;
+    const dm = Math.round(delay / 60000);
+    el.delay.classList.toggle('late', dm > 0);
+    el.delay.textContent = dm > 0
+      ? `⚠ 予定より +${dm}分（予定終了 ${clock(r.plannedEnd)} → 見込み ${clock(projectedEnd())}）`
+      : `✓ 予定どおり（予定終了 ${clock(r.plannedEnd)}／見込み ${clock(projectedEnd())}${dm < 0 ? `・${-dm}分前` : ''}）`;
 
     // アジェンダ行の色も同期
     const li = el.agenda.querySelector(`li[data-i="${r.idx}"]`);
@@ -910,8 +1049,8 @@
 
     // 進捗（予定時間ベース）
     let done = 0;
-    for (let i = 0; i < r.idx; i++) done += planMs(state.items[i]);
-    done += Math.min(elapsed, planMs(item));
+    for (let i = 0; i < r.idx; i++) done += effMs(i);
+    done += Math.min(elapsed, effMs(r.idx));
     const total = totalMinutes() * 60000;
     setProgress(total ? done / total : 0);
 
@@ -935,18 +1074,24 @@
     if (!show) return;
     let tp = 0, ta = 0;
     el.resultBody.innerHTML = state.items.map((item, i) => {
-      const p = planMs(item), a = r.elapsed[i] || 0;
+      const orig = item.minutes * 60000;
+      if (r.skipped[i]) {
+        return `<tr><td>${i + 1}</td><td>${escapeHtml(item.title)}</td><td>${escapeHtml(item.presenter || '')}</td>` +
+          `<td>—<small>当初${fmt(orig)}</small></td><td>—</td><td>次回へ</td></tr>`;
+      }
+      const p = effMs(i), a = r.elapsed[i] || 0;
       tp += p; ta += a;
-      return row(i + 1, escapeHtml(item.title), escapeHtml(item.presenter || ''), p, a);
+      return row(i + 1, escapeHtml(item.title), escapeHtml(item.presenter || ''), p, a, isChanged(i) ? orig : null);
     }).join('');
-    el.resultFoot.innerHTML = row('', '合計', '', tp, ta);
+    const ot = origMinutes() * 60000;
+    el.resultFoot.innerHTML = row('', '合計', '', tp, ta, ot !== tp ? ot : null);
     // 入力中の欄を消さないよう、フォーカスが結果欄内にあるときは描き直さない
     if (!el.resultNotes.contains(document.activeElement)) renderResultNotes();
 
-    function row(n, title, who, p, a) {
+    function row(n, title, who, p, a, orig) {
       const diff = a - p;
       const cls = Math.round(diff / 1000) > 0 ? 'plus' : (Math.round(diff / 1000) < 0 ? 'minus' : '');
-      return `<tr><td>${n}</td><td>${title}</td><td>${who}</td><td>${fmt(p)}</td><td>${fmt(a)}</td><td class="${cls}">${fmtSigned(diff)}</td></tr>`;
+      return `<tr><td>${n}</td><td>${title}</td><td>${who}</td><td>${fmt(p)}${orig !== null ? `<small>当初${fmt(orig)}</small>` : ''}</td><td>${fmt(a)}</td><td class="${cls}">${fmtSigned(diff)}</td></tr>`;
     }
   }
 
@@ -956,14 +1101,20 @@
     const date = `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}`;
     const lines = [];
     lines.push(`【議事録】${date} ${clock(r.meetingStart)}〜${clock(r.meetingEnd)}`);
+    lines.push(`予定終了 ${clock(r.plannedEnd)} ／ 実際の終了 ${clock(r.meetingEnd)}（${fmtSigned(r.meetingEnd - r.plannedEnd)}）`);
     lines.push('');
     let tp = 0, ta = 0;
     state.items.forEach((item, i) => {
-      const p = planMs(item), a = r.elapsed[i] || 0;
+      const orig = item.minutes * 60000;
+      const p = effMs(i), a = r.elapsed[i] || 0;
       const n = r.notes[i];
       tp += p; ta += a;
-      lines.push(`${i + 1}. ${isReport(item) ? '［報告］' : ''}${item.title}` + (item.presenter ? `（担当：${item.presenter}）` : '') +
-        `　予定${fmt(p)}／実際${fmt(a)}（${fmtSigned(a - p)}）`);
+      const head = `${i + 1}. ${isReport(item) ? '［報告］' : ''}${item.title}` + (item.presenter ? `（担当：${item.presenter}）` : '');
+      if (r.skipped[i]) {
+        lines.push(`${head}　［次回へ］当初${fmt(orig)}・今回は実施せず`);
+      } else {
+        lines.push(`${head}　予定${fmt(p)}` + (isChanged(i) ? `（当初${fmt(orig)}）` : '') + `／実際${fmt(a)}（${fmtSigned(a - p)}）`);
+      }
       const dec = n.decision.trim();
       const tag = n.status ? `【${n.status}】` : '';
       if (isReport(item)) {
@@ -981,7 +1132,8 @@
       }
       lines.push('');
     });
-    lines.push(`合計：予定 ${fmt(tp)} ／ 実際 ${fmt(ta)}（${fmtSigned(ta - tp)}）`);
+    const ot = origMinutes() * 60000;
+    lines.push(`合計：当初予定 ${fmt(ot)}` + (ot !== tp ? ` ／ 調整後 ${fmt(tp)}` : '') + ` ／ 実際 ${fmt(ta)}（当初比 ${fmtSigned(ta - ot)}）`);
     const sumBy = rep => state.items.reduce((a, x, i) => isReport(x) === rep ? a + (r.elapsed[i] || 0) : a, 0);
     if (state.items.some(isReport)) lines.push(`　内訳（実際）：決定 ${fmt(sumBy(false))} ／ 報告 ${fmt(sumBy(true))}`);
     const carry = carryOverLines();
@@ -1035,8 +1187,14 @@
 
   el.agenda.addEventListener('click', e => {
     const btn = e.target.closest('button[data-act]');
-    if (!btn || isLocked()) return;
+    if (!btn) return;
     const i = Number(btn.closest('li').dataset.i);
+    const act = btn.dataset.act;
+    if (act === 'minus') return adjustPlan(i, -1);
+    if (act === 'plus') return adjustPlan(i, 1);
+    if (act === 'skip') return setSkipped(i, true);
+    if (act === 'unskip') return setSkipped(i, false);
+    if (isLocked()) return;
     if (btn.dataset.act === 'up') moveItem(i, -1);
     else if (btn.dataset.act === 'down') moveItem(i, 1);
     else if (btn.dataset.act === 'del') removeItem(i);
@@ -1048,6 +1206,11 @@
   el.reset.addEventListener('click', reset);
   el.copy.addEventListener('click', copyResult);
   el.copyCarry.addEventListener('click', copyCarry);
+  el.autoAdjust.addEventListener('click', autoAdjust);
+  el.adjust.addEventListener('click', e => {
+    const b = e.target.closest('button[data-extend]');
+    if (b) extendCurrent(Number(b.dataset.extend));
+  });
   function syncKind() {
     const report = el.kind.value === 'report';
     el.goal.classList.toggle('hidden', report);
@@ -1094,10 +1257,15 @@
     } else if (!Array.isArray(r.notes) || r.notes.length !== state.items.length) {
       r.notes = state.items.map(emptyNote); // 旧バージョンのデータ
     }
+    if (state.run && !Array.isArray(r.plan)) {      // 旧バージョンのデータ
+      r.plan = state.items.map(x => x.minutes);
+      r.skipped = state.items.map(() => false);
+      r.plannedEnd = r.meetingStart + origMinutes() * 60000;
+    }
   }
   render();
   setInterval(() => {
-    if (state.run && state.run.status === 'running') tick();
+    if (runActive()) tick(); // 一時停止中も「予定との差」は増えていくので更新
     else if (!state.run) updateEndTime();
   }, 250);
 })();
