@@ -207,7 +207,7 @@
   .badge.報告済み { background: var(--accent); }
   .goal.report { border-left-color: #8a7bb0; background: #f1eff7; }
   .agenda .report-line { display: block; font-size: .8rem; color: #6c5f96; font-weight: 600; }
-  .add-form #kind {
+  .add-form #kind, .add-form #addPos {
     font: inherit; font-size: 1rem; min-height: 48px; padding: 8px 10px;
     border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--text); flex: 0 0 auto;
   }
@@ -267,6 +267,53 @@
   .result-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; align-items: center; }
   .copied { color: var(--ok); font-size: .95rem; }
 
+  /* 共有ファイル */
+  .share-bar {
+    max-width: 1100px; margin: 12px auto 0; padding: 10px 16px;
+    display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center;
+  }
+  .share-status { flex: 1 1 260px; font-size: .92rem; }
+  .share-status b { color: var(--accent-dark); }
+  .share-status .ok { color: var(--ok); }
+  .share-status .err { color: var(--over); }
+  .share-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .share-btns button, .share-btns label.btn {
+    min-height: 40px; padding: 6px 12px; font-size: .88rem;
+  }
+  label.btn {
+    display: inline-flex; align-items: center; cursor: pointer; border-radius: 10px;
+    background: #e7ebe8; color: var(--text); font: inherit;
+  }
+  label.btn:hover { background: #d6dcd8; }
+  .share-wrap { padding: 0 16px; }
+  .share-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); max-width: 1100px; margin: 12px auto 0; }
+  .conflict {
+    max-width: 1100px; margin: 8px auto 0; padding: 12px 16px; border-radius: var(--radius);
+    background: var(--warn-bg); border: 1px solid var(--warn); display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  }
+  .conflict span { flex: 1 1 260px; }
+  .conflict button { min-height: 40px; padding: 6px 12px; font-size: .9rem; }
+
+  /* 履歴 */
+  .history-tools { display: flex; gap: 8px; margin-bottom: 12px; }
+  .history-tools input {
+    flex: 1; font: inherit; font-size: 1rem; padding: 10px 12px; min-height: 44px;
+    border: 1px solid var(--line); border-radius: 10px;
+  }
+  .history-item { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; background: #fff; }
+  .history-item > summary { cursor: pointer; padding: 12px 14px; min-height: 44px; }
+  .history-item > summary .meta { color: var(--muted); font-size: .85rem; margin-left: 6px; }
+  .history-body { padding: 0 14px 14px; }
+  .history-body pre {
+    white-space: pre-wrap; word-break: break-word; background: #f7f8f6; border: 1px solid var(--line);
+    border-radius: 8px; padding: 12px; font-size: .88rem; max-height: 420px; overflow: auto; margin: 0 0 10px;
+    font-family: inherit;
+  }
+  .history-body .hit { background: #fff1a8; }
+  .history-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .history-actions button { min-height: 40px; padding: 6px 12px; font-size: .9rem; }
+  .badge.追加 { background: #8a7bb0; }
+
   .hidden { display: none !important; }
 
   @media (max-width: 520px) {
@@ -285,6 +332,26 @@
 <body>
 <header><h1>会議タイマー＆アジェンダ進行表</h1></header>
 
+<div class="share-wrap">
+  <div class="share-card share-bar">
+    <div id="shareStatus" class="share-status"></div>
+    <div class="share-btns">
+      <button type="button" id="btnShareReconnect" class="hidden">🔗 前回の共有ファイルに接続</button>
+      <button type="button" id="btnShareOpen">📂 共有ファイルを開く</button>
+      <button type="button" id="btnShareNew" class="secondary">＋ 共有ファイルを新規作成</button>
+      <button type="button" id="btnShareDisconnect" class="secondary hidden">接続を解除</button>
+      <button type="button" id="btnExport" class="secondary">⬇ 書き出し</button>
+      <label class="btn" for="importFile">⬆ 読み込み</label>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
+    </div>
+  </div>
+  <div id="conflictBar" class="conflict hidden">
+    <span>⚠ 共有ファイルが他の端末で更新されました。この端末にも保存していない変更があります。どちらを残しますか？</span>
+    <button type="button" id="btnTakeRemote">共有ファイルの内容を読み込む（この端末の変更は破棄）</button>
+    <button type="button" id="btnKeepLocal" class="secondary">この端末の内容で上書き保存</button>
+  </div>
+</div>
+
 <main>
   <!-- タイマー -->
   <section class="card">
@@ -302,6 +369,7 @@
       <button id="btnPause" class="secondary hidden">⏸ 一時停止</button>
       <button id="btnNext" class="secondary" disabled>⏭ 次の議題へ</button>
       <button id="btnReset" class="danger" disabled>リセット</button>
+      <button id="btnMini" class="secondary" title="資料の上に小さく表示するタイマー">🗗 ミニタイマー</button>
     </div>
 
     <!-- 時間調整（進行中のみ表示） -->
@@ -341,6 +409,10 @@
         <option value="report">📢 報告</option>
       </select>
       <input id="goal" type="text" placeholder="決めること（任意）" maxlength="200">
+      <select id="addPos" class="hidden" aria-label="追加する位置">
+        <option value="next">今の議題の次に追加</option>
+        <option value="end">最後に追加</option>
+      </select>
       <button type="submit">追加</button>
     </form>
 
@@ -370,7 +442,7 @@
       <button type="button" id="btnClearAgenda" class="danger">すべて削除</button>
       <span id="agendaMsg" class="copied hidden"></span>
     </div>
-    <div id="lockNote" class="note hidden">※ 進行中・会議結果があるあいだは議題の編集ができません（リセットすると編集できます）</div>
+    <div id="lockNote" class="note hidden">※ 進行中は議題の<b>追加</b>と、未着手の議題の時間調整・「次回へ」ができます。並べ替え・削除はリセット後にできます。</div>
   </section>
 
   <!-- 結果 -->
@@ -393,6 +465,15 @@
       <span id="copied" class="copied hidden">コピーしました</span>
     </div>
   </section>
+  <!-- 会議履歴 -->
+  <section class="card full">
+    <h2>会議履歴 <span id="historyCount" class="note"></span></h2>
+    <div class="history-tools">
+      <input id="historySearch" type="search" placeholder="過去の議事録を検索（例：リリース、佐藤、持ち越し）">
+    </div>
+    <div id="historyList"></div>
+    <p class="note">会議が終わると自動で履歴に保存されます。終了後に「決まった事」を直した内容も反映されます。</p>
+  </section>
 </main>
 
 <script>
@@ -408,17 +489,52 @@
   //              notes: [{decision, qa, status, todo}]}
   //   決定の議題：decision=決まった事, status=''|'決定'|'保留'|'持ち越し'
   //   報告の議題：decision=報告の要点, qa=質疑・補足, status=''|'報告済み'|'持ち越し'
+  //   run.plan[]=調整後の持ち時間, run.skipped[]=次回へ, run.added[]=会議中に追加, run.plannedEnd=開始時の予定終了
+  // history: [{id, items, run}]  終了した会議のスナップショット（新しい順）
   let state = load();
 
+  function emptyNote() { return { decision: '', qa: '', status: '', todo: '' }; }
+  // 保存データを現在の形式にそろえる（古いデータ・共有ファイルの読み込み時）
+  function normalize(s) {
+    const st = {
+      items: s && Array.isArray(s.items) ? s.items : [],
+      run: (s && s.run) || null,
+      history: s && Array.isArray(s.history) ? s.history : [],
+    };
+    const r = st.run, n = st.items.length;
+    if (r) {
+      if (!Array.isArray(r.elapsed) || r.elapsed.length !== n || r.idx > n) st.run = null;
+      else {
+        if (!Array.isArray(r.notes) || r.notes.length !== n) r.notes = st.items.map(emptyNote);
+        if (!Array.isArray(r.plan) || r.plan.length !== n) {
+          r.plan = st.items.map(x => x.minutes);
+          r.skipped = st.items.map(() => false);
+          r.plannedEnd = r.meetingStart + st.items.reduce((a, x) => a + x.minutes, 0) * 60000;
+        }
+        if (!Array.isArray(r.added) || r.added.length !== n) r.added = st.items.map(() => false);
+      }
+    }
+    return st;
+  }
   function load() {
-    try {
-      const s = JSON.parse(localStorage.getItem(STORAGE_KEY));
-      if (s && Array.isArray(s.items)) return { items: s.items, run: s.run || null };
-    } catch (e) { /* ignore */ }
-    return { items: [], run: null };
+    try { return normalize(JSON.parse(localStorage.getItem(STORAGE_KEY))); } catch (e) { return normalize(null); }
+  }
+  function persistLocal() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
   }
   function save() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+    syncHistory();
+    persistLocal();
+    scheduleShared();
+  }
+  const clone = o => JSON.parse(JSON.stringify(o));
+  // 終了した会議を履歴に保存（終了後の修正も同じ履歴に反映）
+  function syncHistory() {
+    const r = state.run;
+    if (!r || r.status !== 'done' || r.historyDeleted) return;
+    const rec = { id: String(r.meetingStart), items: clone(state.items), run: clone(r) };
+    const k = state.history.findIndex(h => h.id === rec.id);
+    if (k >= 0) state.history[k] = rec; else state.history.unshift(rec);
   }
 
   // ---------- 要素 ----------
@@ -430,7 +546,12 @@
     progressBar: $('progressBar'), progressText: $('progressText'),
     form: $('addForm'), title: $('title'), minutes: $('minutes'),
     presenter: $('presenter'), timerPresenter: $('timerPresenter'), goal: $('goal'), kind: $('kind'),
-    breakdown: $('breakdown'), adjust: $('adjust'), delay: $('delay'), autoAdjust: $('btnAutoAdjust'),
+    breakdown: $('breakdown'), addPos: $('addPos'), mini: $('btnMini'),
+    historyList: $('historyList'), historySearch: $('historySearch'), historyCount: $('historyCount'),
+    shareStatus: $('shareStatus'), shareOpen: $('btnShareOpen'), shareNew: $('btnShareNew'),
+    shareReconnect: $('btnShareReconnect'), shareDisconnect: $('btnShareDisconnect'),
+    exportBtn: $('btnExport'), importFile: $('importFile'),
+    conflictBar: $('conflictBar'), takeRemote: $('btnTakeRemote'), keepLocal: $('btnKeepLocal'), adjust: $('adjust'), delay: $('delay'), autoAdjust: $('btnAutoAdjust'),
     notesPanel: $('notesPanel'), resultNotes: $('resultNotes'), copyCarry: $('btnCopyCarry'),
     bulk: $('bulk'), bulkText: $('bulkText'), bulkPreview: $('bulkPreview'),
     bulkAppend: $('btnBulkAppend'), bulkReplace: $('btnBulkReplace'),
@@ -468,8 +589,10 @@
   }
   const effMs = i => effMin(i) * 60000;
   const totalMinutes = () => state.items.reduce((a, _, i) => a + effMin(i), 0);
-  const origMinutes = () => state.items.reduce((a, x) => a + x.minutes, 0);
-  const isChanged = i => !!state.run && !state.run.skipped[i] && state.run.plan[i] !== state.items[i].minutes;
+  // 当初予定（会議中に追加した議題は含めない）
+  const isAdded = i => !!state.run && !!state.run.added[i];
+  const origMinutes = () => state.items.reduce((a, x, i) => isAdded(i) ? a : a + x.minutes, 0);
+  const isChanged = i => !!state.run && !state.run.skipped[i] && !isAdded(i) && state.run.plan[i] !== state.items[i].minutes;
   // from 以降で「次回へ」になっていない最初の議題（なければ -1）
   function nextActive(from) {
     const r = state.run;
@@ -521,7 +644,6 @@
   }
 
   // ---------- 操作 ----------
-  const emptyNote = () => ({ decision: '', qa: '', status: '', todo: '' });
   const hasNotes = () => !!state.run && (state.run.notes || []).some(n => n.decision || n.qa || n.status || n.todo);
   const LOSE_MSG = '会議結果（決まった事の記録）が消えます。\n必要なら先に「議事録をテキストでコピー」で保存してください。\n\n';
 
@@ -538,6 +660,7 @@
       plan: state.items.map(x => x.minutes),        // 調整後の持ち時間（分）
       skipped: state.items.map(() => false),         // 「次回へ」にした議題
       plannedEnd: now + origMinutes() * 60000,       // 開始時点の予定終了時刻
+      added: state.items.map(() => false),           // 会議中に追加した議題
     };
     beep();
     save(); render();
@@ -659,7 +782,35 @@
   const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   function addItem(title, minutes, presenter, goal, kind) {
     const report = kind === 'report';
-    state.items.push({ id: newId(), title, minutes, presenter: presenter || '', goal: report ? '' : (goal || ''), kind: report ? 'report' : 'decide' });
+    addItems([{ title, minutes, presenter: presenter || '', goal: report ? '' : (goal || ''), kind: report ? 'report' : 'decide' }]);
+  }
+  // 会議前は末尾に追加。進行中は「今の議題の次」または「最後」に追加し、進行データも合わせて広げる
+  function addItems(list) {
+    const items = list.map(x => ({ id: newId(), ...x }));
+    const r = state.run;
+    if (r && r.status !== 'done') {
+      let pos = el.addPos.value === 'next' ? r.idx + 1 : state.items.length;
+      items.forEach(item => {
+        state.items.splice(pos, 0, item);
+        r.elapsed.splice(pos, 0, 0);
+        r.notes.splice(pos, 0, emptyNote());
+        r.plan.splice(pos, 0, item.minutes);
+        r.skipped.splice(pos, 0, false);
+        r.added.splice(pos, 0, true);
+        pos++;
+      });
+    } else {
+      state.items.push(...items);
+    }
+    save(); render();
+    return items.length;
+  }
+  // 会議中に追加した未着手の議題を取り消す
+  function removeAdded(i) {
+    const r = state.run;
+    if (!runActive() || i <= r.idx || !r.added[i]) return;
+    if (!confirm(`「${state.items[i].title}」を取り消しますか？`)) return;
+    [state.items, r.elapsed, r.notes, r.plan, r.skipped, r.added].forEach(a => a.splice(i, 1));
     save(); render();
   }
 
@@ -733,7 +884,8 @@
   }
   function renderBulkPreview() {
     const list = parseBulk(el.bulkText.value);
-    el.bulkAppend.disabled = el.bulkReplace.disabled = isLocked() || !list.length;
+    el.bulkAppend.disabled = !canAdd() || !list.length;
+    el.bulkReplace.disabled = isLocked() || !list.length;
     if (!list.length) { el.bulkPreview.innerHTML = ''; return; }
     const total = list.reduce((a, x) => a + x.minutes, 0);
     el.bulkPreview.innerHTML = `読み込み内容：${list.length}件・合計${formatMinutes(total)}<ol>` +
@@ -741,17 +893,17 @@
       '</ol>';
   }
   function importBulk(replace) {
-    if (isLocked()) return;
+    if (replace ? isLocked() : !canAdd()) return;
     const list = parseBulk(el.bulkText.value);
     if (!list.length) return;
     if (replace && state.items.length && !confirm(`今の${state.items.length}件を消して、${list.length}件に置き換えますか？`)) return;
-    const items = list.map(x => ({ id: newId(), ...x }));
-    state.items = replace ? items : state.items.concat(items);
-    save();
+    let n;
+    if (replace) { state.items = list.map(x => ({ id: newId(), ...x })); n = list.length; save(); }
+    else n = addItems(list);
     el.bulkText.value = '';
     renderBulkPreview();
     render();
-    flash(el.agendaMsg, `${items.length}件を${replace ? '読み込みました' : '追加しました'}`);
+    flash(el.agendaMsg, `${n}件を${replace ? '読み込みました' : '追加しました'}`);
   }
 
   // ---------- 共有用テキスト ----------
@@ -812,6 +964,8 @@
 
   // 進行中も、終了後（議事録が残っている間）も議題の編集はロック
   const isLocked = () => !!state.run;
+  // 議題の追加は、会議前と進行中にできる（終了後の結果表示中は不可）
+  const canAdd = () => !state.run || state.run.status !== 'done';
 
   // ---------- 描画 ----------
   function render() {
@@ -819,6 +973,8 @@
     renderTimer();
     renderNotesPanel();
     renderResult();
+    renderHistory();
+    updateMini();
   }
 
   function itemState(i) {
@@ -833,8 +989,9 @@
   function renderAgenda() {
     const locked = isLocked();
     el.lockNote.classList.toggle('hidden', !locked);
-    el.form.querySelectorAll('input,button,select').forEach(x => x.disabled = locked);
-    el.bulkText.disabled = locked;
+    el.form.querySelectorAll('input,button,select').forEach(x => x.disabled = !canAdd());
+    el.addPos.classList.toggle('hidden', !runActive());
+    el.bulkText.disabled = !canAdd();
     el.clearAgenda.disabled = locked || !state.items.length;
     el.copyAgenda.disabled = !state.items.length;
     renderBulkPreview();
@@ -850,7 +1007,7 @@
         return `<li class="${st}" data-i="${i}">
           <span class="status">${labels[st]}</span>
           <span class="num">${i + 1}.</span>
-          <span class="name">${escapeHtml(item.title)}${statusBadge(i)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}${isReport(item) ? '<span class="report-line">📢 報告</span>' : item.goal ? `<span class="goal-line">🎯 ${escapeHtml(item.goal)}</span>` : ''}</span>
+          <span class="name">${escapeHtml(item.title)}${isAdded(i) ? '<span class="badge 追加">追加</span>' : ''}${statusBadge(i)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}${isReport(item) ? '<span class="report-line">📢 報告</span>' : item.goal ? `<span class="goal-line">🎯 ${escapeHtml(item.goal)}</span>` : ''}</span>
           <span class="br"></span>
           <span class="mins">${st === 'skipped' ? '—' : effMin(i) + '分'}${isChanged(i) || st === 'skipped' ? `<small>当初${item.minutes}分</small>` : ''}</span>
           <span class="ops">${opsHTML(i, st, active, dis)}</span>
@@ -870,7 +1027,8 @@
             <button class="danger icon" data-act="del" aria-label="削除" title="削除">✕</button>`;
     if (!active) return '';
     // 進行中：未着手の議題だけ時間調整・次回へ回すことができる
-    if (st === 'todo') return `
+    if (st === 'todo') return (state.run.added[i] ? `
+            <button class="danger icon" data-act="unadd" aria-label="追加を取り消す" title="追加を取り消す">✕</button>` : '') + `
             <button class="secondary icon" data-act="minus" ${state.run.plan[i] <= 1 ? 'disabled' : ''} aria-label="1分減らす" title="1分減らす">−</button>
             <button class="secondary icon" data-act="plus" aria-label="1分増やす" title="1分増やす">＋</button>
             <button class="secondary icon text" data-act="skip" title="話さずに次回へ回す">次回へ</button>`;
@@ -1065,6 +1223,7 @@
     const p = Math.max(0, Math.min(1, ratio)) * 100;
     el.progressBar.style.width = p + '%';
     el.progressText.textContent = Math.floor(p) + '%';
+    updateMini();
   }
 
   function renderResult() {
@@ -1081,7 +1240,7 @@
       }
       const p = effMs(i), a = r.elapsed[i] || 0;
       tp += p; ta += a;
-      return row(i + 1, escapeHtml(item.title), escapeHtml(item.presenter || ''), p, a, isChanged(i) ? orig : null);
+      return row(i + 1, escapeHtml(item.title) + (isAdded(i) ? '<small>会議中に追加</small>' : ''), escapeHtml(item.presenter || ''), p, a, isChanged(i) ? orig : null);
     }).join('');
     const ot = origMinutes() * 60000;
     el.resultFoot.innerHTML = row('', '合計', '', tp, ta, ot !== tp ? ot : null);
@@ -1109,7 +1268,7 @@
       const p = effMs(i), a = r.elapsed[i] || 0;
       const n = r.notes[i];
       tp += p; ta += a;
-      const head = `${i + 1}. ${isReport(item) ? '［報告］' : ''}${item.title}` + (item.presenter ? `（担当：${item.presenter}）` : '');
+      const head = `${i + 1}. ${isAdded(i) ? '［追加］' : ''}${isReport(item) ? '［報告］' : ''}${item.title}` + (item.presenter ? `（担当：${item.presenter}）` : '');
       if (r.skipped[i]) {
         lines.push(`${head}　［次回へ］当初${fmt(orig)}・今回は実施せず`);
       } else {
@@ -1168,10 +1327,365 @@
     flash(el.copied, ok ? 'コピーしました' : 'コピーできませんでした');
   }
 
+  // ---------- 会議履歴 ----------
+  // 履歴の1件を一時的に state に見立てて、議事録テキストなどを作る
+  function withSnapshot(rec, fn) {
+    const saved = state;
+    state = { items: rec.items, run: rec.run, history: [] };
+    try { return fn(); } finally { state = saved; }
+  }
+  const historyOpen = new Set();
+  let historyKey = '';
+  function renderHistory() {
+    const q = el.historySearch.value.trim();
+    const key = JSON.stringify(state.history.map(h => [h.id, h.run.meetingEnd, h.run.notes])) + '|' + q;
+    if (key === historyKey) return;  // 変化がなければ描き直さない（開いている項目を保つ）
+    historyKey = key;
+    el.historyCount.textContent = state.history.length ? `（${state.history.length}件）` : '';
+    if (!state.history.length) { el.historyList.innerHTML = '<p class="empty">まだ履歴はありません</p>'; return; }
+    const rows = state.history.map(rec => {
+      const text = withSnapshot(rec, resultText);
+      if (q && !text.toLowerCase().includes(q.toLowerCase())) return '';
+      const notes = rec.run.notes;
+      const cnt = st => notes.filter(n => n.status === st).length;
+      const d = new Date(rec.run.meetingStart);
+      const title = `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${clock(rec.run.meetingStart)}〜${clock(rec.run.meetingEnd)}`;
+      const meta = `${rec.items.length}議題・決定${cnt('決定')}件` + (cnt('持ち越し') + cnt('保留') ? `・持ち越し/保留${cnt('持ち越し') + cnt('保留')}件` : '');
+      let body = escapeHtml(text);
+      if (q) body = body.split(escapeHtml(q)).join(`<span class="hit">${escapeHtml(q)}</span>`);
+      return `<details class="history-item" data-id="${rec.id}" ${historyOpen.has(rec.id) || q ? 'open' : ''}>
+        <summary><b>${title}</b><span class="meta">${meta}</span></summary>
+        <div class="history-body">
+          <pre>${body}</pre>
+          <div class="history-actions">
+            <button type="button" data-h="copy">📋 議事録をコピー</button>
+            <button type="button" data-h="carry" class="secondary">↪ 持ち越し・保留を貼り付け欄へ</button>
+            <button type="button" data-h="del" class="danger">この履歴を削除</button>
+            <span class="copied hidden"></span>
+          </div>
+        </div>
+      </details>`;
+    }).join('');
+    el.historyList.innerHTML = rows || '<p class="empty">該当する履歴はありません</p>';
+  }
+  async function onHistoryClick(e) {
+    const btn = e.target.closest('button[data-h]');
+    if (!btn) return;
+    const box = btn.closest('.history-item');
+    const rec = state.history.find(h => h.id === box.dataset.id);
+    if (!rec) return;
+    const msg = box.querySelector('.copied');
+    if (btn.dataset.h === 'copy') {
+      flash(msg, (await copyText(withSnapshot(rec, resultText))) ? 'コピーしました' : 'コピーできませんでした');
+    } else if (btn.dataset.h === 'carry') {
+      const lines = withSnapshot(rec, carryOverLines);
+      if (!lines.length) { flash(msg, '「保留」「持ち越し」の議題はありません'); return; }
+      if (!canAdd()) { flash(msg, '会議結果の表示中は追加できません（リセットしてください）'); return; }
+      el.bulk.open = true;
+      el.bulkText.value = (el.bulkText.value.trim() ? el.bulkText.value.trim() + '\n' : '') + lines.join('\n');
+      renderBulkPreview();
+      el.bulk.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      flash(msg, `${lines.length}件を貼り付け欄に入れました。内容を確認して「末尾に追加」を押してください`);
+    } else if (btn.dataset.h === 'del') {
+      if (!confirm('この会議の履歴を削除しますか？（共有ファイルからも消えます）')) return;
+      state.history = state.history.filter(h => h !== rec);
+      if (state.run && String(state.run.meetingStart) === rec.id) state.run.historyDeleted = true;
+      historyKey = '';
+      persistLocal(); scheduleShared(); renderHistory();
+    }
+  }
+
+  // ---------- 共有ファイル（OneDrive などの同期フォルダ上の JSON） ----------
+  const FS_SUPPORTED = 'showOpenFilePicker' in window && 'showSaveFilePicker' in window;
+  const FILE_TYPES = [{ description: '会議データ (JSON)', accept: { 'application/json': ['.json'] } }];
+  const APP_ID = 'kaigi-timer';
+  const META_KEY = 'meetingTimer.share';
+  const share = {
+    handle: null, storedName: '', rev: null, seq: 0, savedSeq: 0,
+    saving: false, conflict: false, lastSaved: 0, error: '', timer: null,
+  };
+  try { Object.assign(share, JSON.parse(localStorage.getItem(META_KEY)) || {}); } catch (e) { /* ignore */ }
+  share.handle = null; share.saving = false; share.timer = null; share.conflict = false; share.error = '';
+  const isDirty = () => share.seq !== share.savedSeq;
+  function persistMeta() {
+    try {
+      localStorage.setItem(META_KEY, JSON.stringify({ storedName: share.storedName, rev: share.rev, seq: share.seq, savedSeq: share.savedSeq, lastSaved: share.lastSaved }));
+    } catch (e) { /* ignore */ }
+  }
+
+  // IndexedDB（ファイルの場所を覚えておくため）
+  function idb(mode, fn) {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open('kaigi-timer', 1);
+      req.onupgradeneeded = () => req.result.createObjectStore('kv');
+      req.onerror = () => reject(req.error);
+      req.onsuccess = () => {
+        let tx, r;
+        try { tx = req.result.transaction('kv', mode); r = fn(tx.objectStore('kv')); }
+        catch (e) { reject(e); return; }
+        tx.oncomplete = () => resolve(r && r.result);
+        tx.onerror = () => reject(tx.error);
+      };
+    });
+  }
+  const idbGet = k => idb('readonly', st => st.get(k)).catch(() => null);
+  const idbSet = (k, v) => idb('readwrite', st => st.put(v, k)).catch(() => null);
+  const idbDel = k => idb('readwrite', st => st.delete(k)).catch(() => null);
+
+  async function ensurePermission(h, ask) {
+    try {
+      if ((await h.queryPermission({ mode: 'readwrite' })) === 'granted') return true;
+      if (!ask) return false;
+      return (await h.requestPermission({ mode: 'readwrite' })) === 'granted';
+    } catch (e) { return false; }
+  }
+  async function readShared(h = share.handle) {
+    const f = await h.getFile();
+    const text = await f.text();
+    if (!text.trim()) return null;
+    return JSON.parse(text);
+  }
+  function serialize(rev) {
+    return JSON.stringify({ app: APP_ID, version: 2, rev, savedAt: Date.now(), items: state.items, run: state.run, history: state.history }, null, 1);
+  }
+  function scheduleShared() {
+    share.seq++;
+    persistMeta();
+    if (!share.handle) return;
+    clearTimeout(share.timer);
+    share.timer = setTimeout(() => writeShared(false), 800);
+    renderShare();
+  }
+  async function writeShared(force) {
+    if (!share.handle) return;
+    if (share.saving) { clearTimeout(share.timer); share.timer = setTimeout(() => writeShared(force), 500); return; }
+    if (share.conflict && !force) return;
+    share.saving = true; renderShare();
+    const seqAtStart = share.seq;
+    try {
+      if (!force) {
+        const remote = await readShared();
+        if (remote && remote.rev && remote.rev !== share.rev) { share.conflict = true; return; }
+      }
+      const rev = newId();
+      const w = await share.handle.createWritable();
+      await w.write(serialize(rev));
+      await w.close();
+      share.rev = rev;
+      share.savedSeq = seqAtStart;
+      share.lastSaved = Date.now();
+      share.error = '';
+      share.conflict = false;
+    } catch (e) {
+      share.error = '共有ファイルに保存できませんでした（' + (e.message || e.name) + '）。この PC には保存されています。';
+    } finally {
+      share.saving = false;
+      persistMeta();
+      renderShare();
+      if (isDirty() && !share.conflict && !share.error) { clearTimeout(share.timer); share.timer = setTimeout(() => writeShared(false), 800); }
+    }
+  }
+  function applyRemote(d) {
+    state = normalize(d);
+    share.rev = d.rev || null;
+    share.savedSeq = share.seq;
+    share.conflict = false;
+    persistLocal(); persistMeta();
+    notesPanelKey = ''; historyKey = '';
+    render();
+  }
+  async function pollShared() {
+    if (!share.handle || share.saving || share.conflict) return;
+    try {
+      const d = await readShared();
+      share.error = '';
+      if (!d || !d.rev || d.rev === share.rev) { renderShare(); return; }
+      if (isDirty()) { share.conflict = true; renderShare(); return; }
+      // 入力中の欄があるときは、手を離すまで待つ
+      if (document.activeElement && document.activeElement.matches('textarea, input[type=text], input[type=search]')) return;
+      applyRemote(d);
+      flash(el.agendaMsg, '他の端末の更新を読み込みました');
+    } catch (e) {
+      share.error = '共有ファイルを読み込めません（' + (e.message || e.name) + '）';
+      renderShare();
+    }
+  }
+  // 選んだファイルに接続する。中身があれば読み込み、空なら今の内容を書き込む
+  async function connect(h, { isNew = false, fromReconnect = false } = {}) {
+    if (!(await ensurePermission(h, true))) { alert('ファイルへのアクセスが許可されませんでした。'); return; }
+    let d = null;
+    if (!isNew) {
+      try { d = await readShared(h); } catch (e) { alert('ファイルを読み込めませんでした：' + (e.message || e.name)); return; }
+      if (d && d.app !== APP_ID) { alert('このファイルは会議データではありません。'); return; }
+    }
+    share.handle = h; share.storedName = h.name; share.error = ''; share.conflict = false;
+    await idbSet('handle', h);
+    if (d) {
+      if (fromReconnect && d.rev === share.rev && isDirty()) {
+        await writeShared(false);              // 接続していない間の変更を保存
+      } else if (fromReconnect && d.rev !== share.rev && isDirty()) {
+        share.conflict = true;                 // 両方で変更あり → 選んでもらう
+      } else if (!fromReconnect && hasLocalData() && !confirm('共有ファイルの内容を読み込みます。この PC の今の内容は置き換わります（必要なら先に「書き出し」で保存してください）。よろしいですか？')) {
+        share.handle = null; await idbDel('handle');
+      } else {
+        applyRemote(d);
+      }
+    } else {
+      share.rev = null;
+      await writeShared(true);                 // 新しいファイル（空）に今の内容を書き込む
+    }
+    renderShare();
+  }
+  const hasLocalData = () => state.items.length > 0 || state.history.length > 0;
+  async function shareOpen() {
+    try {
+      const [h] = await window.showOpenFilePicker({ types: FILE_TYPES, multiple: false });
+      await connect(h);
+    } catch (e) { if (e.name !== 'AbortError') alert('開けませんでした：' + (e.message || e.name)); }
+  }
+  async function shareNew() {
+    try {
+      const h = await window.showSaveFilePicker({ suggestedName: '会議データ.json', types: FILE_TYPES });
+      await connect(h, { isNew: true });
+    } catch (e) { if (e.name !== 'AbortError') alert('作成できませんでした：' + (e.message || e.name)); }
+  }
+  async function shareReconnect() {
+    const h = await idbGet('handle');
+    if (!h) { alert('前回のファイルが見つかりません。「共有ファイルを開く」から選んでください。'); share.storedName = ''; renderShare(); return; }
+    await connect(h, { fromReconnect: true });
+  }
+  async function shareDisconnect() {
+    if (!confirm('共有ファイルとの接続を解除しますか？（以後はこの PC にだけ保存されます）')) return;
+    share.handle = null; share.storedName = ''; share.conflict = false; share.error = '';
+    await idbDel('handle');
+    persistMeta(); renderShare();
+  }
+  function renderShare() {
+    let html;
+    const t = share.lastSaved ? new Date(share.lastSaved) : null;
+    const savedAt = t ? `${clock(share.lastSaved)}:${pad(t.getSeconds())}` : '';
+    if (share.handle) {
+      const st = share.error ? `<span class="err">⚠ ${escapeHtml(share.error)}</span>`
+        : share.saving ? '保存中…'
+        : share.conflict ? '<span class="err">⚠ 他の端末の更新と重なりました</span>'
+        : isDirty() ? '未保存の変更があります…'
+        : `<span class="ok">✓ 保存済み</span>${savedAt ? `（${savedAt}）` : ''}`;
+      html = `☁ 共有ファイル <b>${escapeHtml(share.handle.name)}</b> に接続中　${st}`;
+    } else if (!FS_SUPPORTED) {
+      html = '💻 この PC のブラウザにだけ保存しています。<br><span class="err">このブラウザは共有ファイルへの直接保存に対応していません（Edge か Chrome で開いてください）。</span>「書き出し／読み込み」は使えます。';
+    } else {
+      html = '💻 この PC のブラウザにだけ保存しています。チームで共有するには、OneDrive の共有フォルダの会議データを開いてください。';
+    }
+    el.shareStatus.innerHTML = html;
+    el.shareOpen.classList.toggle('hidden', !FS_SUPPORTED || !!share.handle);
+    el.shareNew.classList.toggle('hidden', !FS_SUPPORTED || !!share.handle);
+    el.shareReconnect.classList.toggle('hidden', !FS_SUPPORTED || !!share.handle || !share.storedName);
+    if (share.storedName) el.shareReconnect.textContent = `🔗 「${share.storedName}」に接続`;
+    el.shareDisconnect.classList.toggle('hidden', !share.handle);
+    el.conflictBar.classList.toggle('hidden', !share.conflict);
+  }
+  async function takeRemote() {
+    try { const d = await readShared(); if (d) applyRemote(d); renderShare(); }
+    catch (e) { alert('読み込めませんでした：' + (e.message || e.name)); }
+  }
+  async function keepLocal() {
+    if (!confirm('この端末の内容で共有ファイルを上書きします。他の端末で行われた変更は失われます。よろしいですか？')) return;
+    share.conflict = false;
+    await writeShared(true);
+  }
+
+  // 書き出し／読み込み（バックアップ・Edge/Chrome 以外のブラウザ用）
+  async function exportData() {
+    const d = new Date();
+    const ymd = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+    const text = serialize(share.rev || newId());
+    if (FS_SUPPORTED) {
+      // Edge / Chrome：保存先を選べるダイアログ
+      try {
+        const h = await window.showSaveFilePicker({ suggestedName: `会議データ_バックアップ_${ymd}.json`, types: FILE_TYPES });
+        const w = await h.createWritable(); await w.write(text); await w.close();
+        flash(el.agendaMsg, '書き出しました');
+      } catch (e) { if (e.name !== 'AbortError') alert('書き出せませんでした：' + (e.message || e.name)); }
+      return;
+    }
+    const blob = new Blob([text], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `kaigi-data_${ymd}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  async function importData(file) {
+    try {
+      const d = JSON.parse(await file.text());
+      if (!d || d.app !== APP_ID) { alert('このファイルは会議データではありません。'); return; }
+      if (!confirm('読み込んだ内容で、今のアジェンダ・会議・履歴を置き換えます。よろしいですか？')) return;
+      state = normalize(d);
+      notesPanelKey = ''; historyKey = '';
+      save(); render();
+      flash(el.agendaMsg, '読み込みました');
+    } catch (e) { alert('読み込めませんでした：' + (e.message || e.name)); }
+  }
+
+  // ---------- ミニタイマー（資料の上に重ねて表示） ----------
+  let mini = null;
+  const MINI_CSS = `
+    *{box-sizing:border-box} html,body{margin:0;height:100%}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif;
+      background:#eef2f1;color:#2b3236;display:flex;flex-direction:column;justify-content:center;align-items:center;
+      text-align:center;padding:6px 10px;overflow:hidden;transition:background .3s}
+    body.warn{background:#fdf4d9} body.over{background:#fbe5e3}
+    #mLabel{font-size:clamp(10px,4vw,16px);color:#6b757b}
+    #mTopic{font-size:clamp(12px,6vw,26px);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+    #mTime{font-size:clamp(28px,24vw,140px);font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums}
+    body.warn #mTime{color:#d9a520} body.over #mTime{color:#c0504d}
+    #mDelay{font-size:clamp(10px,3.6vw,15px);font-weight:600;color:#5b8a6b}
+    #mDelay.late{color:#c0504d}
+    .b{display:flex;gap:6px;margin-top:4px}
+    button{font:inherit;font-size:clamp(11px,3.6vw,15px);border:none;border-radius:8px;padding:6px 12px;cursor:pointer;background:#3d6b7d;color:#fff}
+    button.s{background:#d6dcd8;color:#2b3236} button:disabled{opacity:.4}`;
+  async function openMini() {
+    if (mini && !mini.closed) { try { mini.focus(); } catch (e) { /* ignore */ } return; }
+    let w = null;
+    try {
+      if (window.documentPictureInPicture) w = await window.documentPictureInPicture.requestWindow({ width: 360, height: 220 });
+    } catch (e) { w = null; }
+    if (!w) w = window.open('', 'kaigiMiniTimer', 'width=380,height=250');
+    if (!w) { alert('ミニタイマーを開けませんでした。ポップアップがブロックされていないか確認してください。'); return; }
+    const d = w.document;
+    d.title = 'ミニタイマー';
+    d.head.innerHTML = `<meta charset="UTF-8"><title>ミニタイマー</title><style>${MINI_CSS}</style>`;
+    d.body.innerHTML = `<div id="mLabel"></div><div id="mTopic"></div><div id="mTime"></div><div id="mDelay"></div>
+      <div class="b"><button id="mPause" class="s"></button><button id="mNext"></button></div>`;
+    d.getElementById('mPause').addEventListener('click', () => { if (state.run) togglePause(); else start(); });
+    d.getElementById('mNext').addEventListener('click', next);
+    mini = w;
+    w.addEventListener('pagehide', () => { if (mini === w) mini = null; });
+    updateMini();
+  }
+  function updateMini() {
+    if (!mini) return;
+    if (mini.closed) { mini = null; return; }
+    const d = mini.document, g = id => d.getElementById(id);
+    if (!g('mTime')) return;
+    g('mLabel').textContent = el.label.textContent;
+    g('mTopic').textContent = el.topic.textContent;
+    g('mTime').textContent = el.time.textContent;
+    d.body.className = el.timer.classList.contains('over') ? 'over' : el.timer.classList.contains('warn') ? 'warn' : '';
+    const active = runActive();
+    g('mDelay').textContent = active ? el.delay.textContent.replace(/（.*）/, '') : '';
+    g('mDelay').className = el.delay.classList.contains('late') ? 'late' : '';
+    const pauseBtn = g('mPause');
+    pauseBtn.textContent = active ? el.pause.textContent : '▶ 開始';
+    pauseBtn.disabled = !active && (el.start.disabled || !!state.run);
+    g('mNext').textContent = el.next.textContent;
+    g('mNext').disabled = el.next.disabled;
+  }
+
   // ---------- イベント ----------
   el.form.addEventListener('submit', e => {
     e.preventDefault();
-    if (isLocked()) return;
+    if (!canAdd()) return;
     const title = el.title.value.trim();
     const minutes = Math.round(Number(el.minutes.value));
     if (!title) { el.title.focus(); return; }
@@ -1194,6 +1708,7 @@
     if (act === 'plus') return adjustPlan(i, 1);
     if (act === 'skip') return setSkipped(i, true);
     if (act === 'unskip') return setSkipped(i, false);
+    if (act === 'unadd') return removeAdded(i);
     if (isLocked()) return;
     if (btn.dataset.act === 'up') moveItem(i, -1);
     else if (btn.dataset.act === 'down') moveItem(i, 1);
@@ -1207,6 +1722,25 @@
   el.copy.addEventListener('click', copyResult);
   el.copyCarry.addEventListener('click', copyCarry);
   el.autoAdjust.addEventListener('click', autoAdjust);
+  el.mini.addEventListener('click', openMini);
+  el.historyList.addEventListener('click', onHistoryClick);
+  el.historyList.addEventListener('toggle', e => {
+    const box = e.target.closest && e.target.closest('.history-item');
+    if (box) (box.open ? historyOpen.add(box.dataset.id) : historyOpen.delete(box.dataset.id));
+  }, true);
+  el.historySearch.addEventListener('input', renderHistory);
+  el.shareOpen.addEventListener('click', shareOpen);
+  el.shareNew.addEventListener('click', shareNew);
+  el.shareReconnect.addEventListener('click', shareReconnect);
+  el.shareDisconnect.addEventListener('click', shareDisconnect);
+  el.takeRemote.addEventListener('click', takeRemote);
+  el.keepLocal.addEventListener('click', keepLocal);
+  el.exportBtn.addEventListener('click', exportData);
+  el.importFile.addEventListener('change', () => {
+    const f = el.importFile.files[0];
+    el.importFile.value = '';
+    if (f) importData(f);
+  });
   el.adjust.addEventListener('click', e => {
     const b = e.target.closest('button[data-extend]');
     if (b) extendCurrent(Number(b.dataset.extend));
@@ -1245,25 +1779,21 @@
 
   // 他タブでの変更を反映
   window.addEventListener('storage', e => {
-    if (e.key === STORAGE_KEY) { state = load(); notesPanelKey = ''; render(); }
+    if (e.key === STORAGE_KEY) { state = load(); notesPanelKey = ''; historyKey = ''; render(); }
   });
 
   // ---------- 起動 ----------
-  // 保存データの整合性チェック
-  if (state.run) {
-    const r = state.run;
-    if (!Array.isArray(r.elapsed) || r.elapsed.length !== state.items.length || r.idx > state.items.length) {
-      state.run = null;
-    } else if (!Array.isArray(r.notes) || r.notes.length !== state.items.length) {
-      r.notes = state.items.map(emptyNote); // 旧バージョンのデータ
-    }
-    if (state.run && !Array.isArray(r.plan)) {      // 旧バージョンのデータ
-      r.plan = state.items.map(x => x.minutes);
-      r.skipped = state.items.map(() => false);
-      r.plannedEnd = r.meetingStart + origMinutes() * 60000;
-    }
-  }
   render();
+  renderShare();
+  // 前回の共有ファイルに、許可が残っていれば自動で接続（なければボタンを表示）
+  if (FS_SUPPORTED) {
+    idbGet('handle').then(async h => {
+      if (!h) { if (share.storedName) { share.storedName = ''; persistMeta(); } renderShare(); return; }
+      share.storedName = h.name; renderShare();
+      if (await ensurePermission(h, false)) await connect(h, { fromReconnect: true });
+    });
+  }
+  setInterval(pollShared, 5000);
   setInterval(() => {
     if (runActive()) tick(); // 一時停止中も「予定との差」は増えていくので更新
     else if (!state.run) updateEndTime();
