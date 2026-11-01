@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>会議タイマー＆アジェンダ進行表</title>
+<style>
+  :root {
+    --bg: #f4f5f2;
+    --card: #ffffff;
+    --text: #2b3236;
+    --muted: #6b757b;
+    --line: #dde1dc;
+    --accent: #3d6b7d;
+    --accent-dark: #2f5564;
+    --ok: #5b8a6b;
+    --warn: #d9a520;
+    --warn-bg: #fdf4d9;
+    --over: #c0504d;
+    --over-bg: #fbe5e3;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    background: var(--accent-dark);
+    color: #fff;
+    padding: 14px 20px;
+  }
+  header h1 { margin: 0; font-size: 1.2rem; font-weight: 600; letter-spacing: .03em; }
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px 16px 40px;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 860px) {
+    main { grid-template-columns: 1fr; }
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 20px;
+    min-width: 0;
+  }
+  .card h2 { margin: 0 0 14px; font-size: 1.05rem; color: var(--accent-dark); }
+  .full { grid-column: 1 / -1; }
+
+  /* Buttons */
+  button {
+    font: inherit;
+    font-size: 1rem;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    min-height: 48px;
+    cursor: pointer;
+    background: var(--accent);
+    color: #fff;
+    transition: background .15s, opacity .15s;
+  }
+  button:hover:not(:disabled) { background: var(--accent-dark); }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+  button.secondary { background: #e7ebe8; color: var(--text); }
+  button.secondary:hover:not(:disabled) { background: #d6dcd8; }
+  button.danger { background: #f1dedd; color: var(--over); }
+  button.danger:hover:not(:disabled) { background: #e8c9c7; }
+  button.icon { padding: 0; width: 44px; min-height: 44px; font-size: 1.1rem; }
+
+  /* Timer */
+  .timer {
+    text-align: center;
+    padding: 28px 16px;
+    border-radius: var(--radius);
+    background: #eef2f1;
+    transition: background .3s, color .3s;
+  }
+  .timer.warn { background: var(--warn-bg); }
+  .timer.over { background: var(--over-bg); }
+  .timer .label { color: var(--muted); font-size: .95rem; }
+  .timer .topic {
+    font-size: clamp(1.5rem, 4.5vw, 2.6rem);
+    font-weight: 700;
+    margin: 6px 0 4px;
+    word-break: break-word;
+  }
+  .timer .time {
+    font-size: clamp(4rem, 17vw, 9rem);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    letter-spacing: .02em;
+    color: var(--text);
+  }
+  .timer.warn .time { color: var(--warn); }
+  .timer.over .time { color: var(--over); }
+  .timer .sub { color: var(--muted); font-size: 1rem; margin-top: 4px; }
+  .timer .paused-badge {
+    display: inline-block; margin-top: 8px; padding: 2px 12px;
+    background: var(--muted); color: #fff; border-radius: 999px; font-size: .85rem;
+  }
+
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 18px;
+  }
+  .controls button { flex: 1 1 140px; max-width: 220px; font-size: 1.1rem; }
+
+  .progress-wrap { margin-top: 20px; }
+  .progress-meta { display: flex; justify-content: space-between; font-size: .9rem; color: var(--muted); margin-bottom: 6px; }
+  .progress {
+    height: 14px; background: #e3e7e4; border-radius: 999px; overflow: hidden;
+  }
+  .progress > div {
+    height: 100%; width: 0; background: var(--ok); border-radius: 999px; transition: width .4s;
+  }
+
+  /* Form */
+  .add-form { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .add-form input {
+    font: inherit; font-size: 1rem;
+    padding: 10px 12px; min-height: 48px;
+    border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--text);
+  }
+  .add-form input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .add-form #title { flex: 1 1 180px; min-width: 0; }
+  .add-form .min-wrap { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+  .add-form #minutes { width: 80px; }
+  .add-form button { flex: 0 0 auto; }
+
+  /* Agenda list */
+  .agenda { list-style: none; margin: 0; padding: 0; }
+  .agenda li {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-left: 5px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    background: #fff;
+  }
+  .agenda li.done { background: #f3f5f3; color: var(--muted); border-left-color: var(--ok); }
+  .agenda li.done .name { text-decoration: line-through; }
+  .agenda li.current { border-left-color: var(--accent); background: #eaf1f3; font-weight: 700; }
+  .agenda li.current.warn { border-left-color: var(--warn); background: var(--warn-bg); }
+  .agenda li.current.over { border-left-color: var(--over); background: var(--over-bg); }
+  .agenda .status {
+    flex: 0 0 auto; font-size: .75rem; padding: 2px 8px; border-radius: 999px;
+    background: #e7ebe8; color: var(--muted); font-weight: 600; white-space: nowrap;
+  }
+  .agenda li.done .status { background: #dfeee3; color: var(--ok); }
+  .agenda li.current .status { background: var(--accent); color: #fff; }
+  .agenda .num { flex: 0 0 auto; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .agenda .name { flex: 1 1 auto; min-width: 0; word-break: break-word; }
+  .agenda .mins { flex: 0 0 auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .agenda .ops { flex: 0 0 auto; display: flex; gap: 4px; }
+  .empty { color: var(--muted); text-align: center; padding: 20px 0; }
+
+  .summary {
+    display: flex; flex-wrap: wrap; gap: 8px 20px;
+    margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line);
+    font-size: .95rem;
+  }
+  .summary b { font-variant-numeric: tabular-nums; }
+  .note { font-size: .85rem; color: var(--muted); margin-top: 8px; }
+
+  /* Results */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+  td:nth-child(2) { white-space: normal; word-break: break-word; min-width: 120px; }
+  th { color: var(--muted); font-weight: 600; font-size: .9rem; }
+  tfoot td { font-weight: 700; border-bottom: none; }
+  .plus { color: var(--over); }
+  .minus { color: var(--ok); }
+  .result-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; align-items: center; }
+  .copied { color: var(--ok); font-size: .95rem; }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 520px) {
+    .card { padding: 16px; }
+    .agenda li { flex-wrap: wrap; }
+    .agenda .name { flex-basis: calc(100% - 120px); }
+    .agenda .ops { margin-left: auto; }
+    .controls button { flex-basis: calc(50% - 10px); font-size: 1rem; padding: 10px 12px; }
+    .add-form button { flex: 1 1 auto; }
+    th, td { padding: 8px 5px; font-size: .9rem; }
+  }
+</style>
+</head>
+<body>
+<header><h1>会議タイマー＆アジェンダ進行表</h1></header>
+
+<main>
+  <!-- タイマー -->
+  <section class="card">
+    <div id="timer" class="timer">
+      <div class="label" id="timerLabel">待機中</div>
+      <div class="topic" id="timerTopic">アジェンダを登録して「開始」</div>
+      <div class="time" id="timerTime">--:--</div>
+      <div class="sub" id="timerSub">&nbsp;</div>
+      <div id="pausedBadge" class="paused-badge hidden">一時停止中</div>
+    </div>
+
+    <div class="controls">
+      <button id="btnStart">▶ 開始</button>
+      <button id="btnPause" class="secondary hidden">⏸ 一時停止</button>
+      <button id="btnNext" class="secondary" disabled>⏭ 次の議題へ</button>
+      <button id="btnReset" class="danger" disabled>リセット</button>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span>全体の進捗</span>
+        <span id="progressText">0%</span>
+      </div>
+      <div class="progress"><div id="progressBar"></div></div>
+    </div>
+  </section>
+
+  <!-- アジェンダ -->
+  <section class="card">
+    <h2>アジェンダ</h2>
+    <form id="addForm" class="add-form" autocomplete="off">
+      <input id="title" type="text" placeholder="議題名" maxlength="100" required>
+      <span class="min-wrap">
+        <input id="minutes" type="number" min="1" max="600" step="1" value="10" required aria-label="持ち時間（分）">
+        <span>分</span>
+      </span>
+      <button type="submit">追加</button>
+    </form>
+    <ul id="agenda" class="agenda"></ul>
+    <div class="summary">
+      <span>合計 <b id="totalTime">0分</b></span>
+      <span>予定終了 <b id="endTime">--:--</b></span>
+    </div>
+    <div id="lockNote" class="note hidden">※ 進行中は議題の編集ができません（リセットすると編集できます）</div>
+  </section>
+
+  <!-- 結果 -->
+  <section id="resultCard" class="card full hidden">
+    <h2>会議結果</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>議題</th><th>予定</th><th>実際</th><th>差分</th></tr>
+        </thead>
+        <tbody id="resultBody"></tbody>
+        <tfoot id="resultFoot"></tfoot>
+      </table>
+    </div>
+    <div class="result-actions">
+      <button id="btnCopy">📋 結果をテキストでコピー</button>
+      <span id="copied" class="copied hidden">コピーしました</span>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  const STORAGE_KEY = 'meetingTimer.v1';
+
+  // ---------- 状態 ----------
+  // items: [{id, title, minutes}]
+  // run: null | {status: 'running'|'paused'|'done', idx, elapsed: [ms], startedAt: ms|null, meetingStart: ms, meetingEnd: ms|null}
+  let state = load();
+
+  function load() {
+    try {
+      const s = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (s && Array.isArray(s.items)) return { items: s.items, run: s.run || null };
+    } catch (e) { /* ignore */ }
+    return { items: [], run: null };
+  }
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+  }
+
+  // ---------- 要素 ----------
+  const $ = id => document.getElementById(id);
+  const el = {
+    timer: $('timer'), label: $('timerLabel'), topic: $('timerTopic'), time: $('timerTime'),
+    sub: $('timerSub'), paused: $('pausedBadge'),
+    start: $('btnStart'), pause: $('btnPause'), next: $('btnNext'), reset: $('btnReset'),
+    progressBar: $('progressBar'), progressText: $('progressText'),
+    form: $('addForm'), title: $('title'), minutes: $('minutes'),
+    agenda: $('agenda'), total: $('totalTime'), end: $('endTime'), lockNote: $('lockNote'),
+    resultCard: $('resultCard'), resultBody: $('resultBody'), resultFoot: $('resultFoot'),
+    copy: $('btnCopy'), copied: $('copied'),
+  };
+
+  // ---------- ユーティリティ ----------
+  const pad = n => String(n).padStart(2, '0');
+  function fmt(ms) { // 正の値を MM:SS（60分以上は H:MM:SS）
+    const total = Math.floor(Math.max(0, ms) / 1000);
+    const h = Math.floor(total / 3600), m = Math.floor((total % 3600) / 60), s = total % 60;
+    return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+  }
+  function fmtSigned(ms) {
+    const sec = Math.round(ms / 1000);
+    if (sec === 0) return '±00:00';
+    return (sec > 0 ? '+' : '-') + fmt(Math.abs(sec) * 1000);
+  }
+  function clock(ts) {
+    const d = new Date(ts);
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  const planMs = item => item.minutes * 60000;
+  const totalMinutes = () => state.items.reduce((a, i) => a + i.minutes, 0);
+
+  function currentElapsed() {
+    const r = state.run;
+    if (!r || r.status === 'done') return 0;
+    let e = r.elapsed[r.idx] || 0;
+    if (r.status === 'running' && r.startedAt) e += Date.now() - r.startedAt;
+    return e;
+  }
+
+  // ---------- 通知音 (Web Audio API) ----------
+  let audioCtx = null;
+  function ensureAudio() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch (e) { audioCtx = null; }
+  }
+  function beep(final = false) {
+    ensureAudio();
+    if (!audioCtx) return;
+    const notes = final ? [660, 880, 1100] : [880, 1320];
+    const t0 = audioCtx.currentTime + 0.02;
+    notes.forEach((freq, i) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const t = t0 + i * 0.16;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.3, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + 0.17);
+    });
+  }
+
+  // ---------- 操作 ----------
+  function start() {
+    if (!state.items.length) { el.title.focus(); return; }
+    ensureAudio();
+    const now = Date.now();
+    state.run = {
+      status: 'running', idx: 0,
+      elapsed: state.items.map(() => 0),
+      startedAt: now, meetingStart: now, meetingEnd: null,
+    };
+    beep();
+    save(); render();
+  }
+  function togglePause() {
+    const r = state.run;
+    if (!r || r.status === 'done') return;
+    ensureAudio();
+    const now = Date.now();
+    if (r.status === 'running') {
+      r.elapsed[r.idx] += now - r.startedAt;
+      r.startedAt = null;
+      r.status = 'paused';
+    } else {
+      r.startedAt = now;
+      r.status = 'running';
+    }
+    save(); render();
+  }
+  function next() {
+    const r = state.run;
+    if (!r || r.status === 'done') return;
+    ensureAudio();
+    const now = Date.now();
+    if (r.status === 'running') r.elapsed[r.idx] += now - r.startedAt;
+    r.idx++;
+    if (r.idx >= state.items.length) {
+      r.status = 'done';
+      r.startedAt = null;
+      r.meetingEnd = now;
+      beep(true);
+    } else {
+      // 一時停止中にスキップした場合も次の議題は動き始める
+      r.status = 'running';
+      r.startedAt = now;
+      beep();
+    }
+    save(); render();
+  }
+  function reset() {
+    if (!state.run) return;
+    if (state.run.status !== 'done' && !confirm('タイマーをリセットしますか？（進行状況は消えます）')) return;
+    state.run = null;
+    save(); render();
+  }
+
+  // アジェンダ編集
+  function addItem(title, minutes) {
+    state.items.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), title, minutes });
+    save(); render();
+  }
+  function removeItem(i) {
+    state.items.splice(i, 1);
+    save(); render();
+  }
+  function moveItem(i, dir) {
+    const j = i + dir;
+    if (j < 0 || j >= state.items.length) return;
+    [state.items[i], state.items[j]] = [state.items[j], state.items[i]];
+    save(); render();
+  }
+
+  const isLocked = () => !!state.run && state.run.status !== 'done';
+
+  // ---------- 描画 ----------
+  function render() {
+    renderAgenda();
+    renderTimer();
+    renderResult();
+  }
+
+  function itemState(i) {
+    const r = state.run;
+    if (!r) return 'todo';
+    if (r.status === 'done' || i < r.idx) return 'done';
+    if (i === r.idx) return 'current';
+    return 'todo';
+  }
+
+  function renderAgenda() {
+    const locked = isLocked();
+    el.lockNote.classList.toggle('hidden', !locked);
+    el.form.querySelectorAll('input,button').forEach(x => x.disabled = locked);
+
+    if (!state.items.length) {
+      el.agenda.innerHTML = '<li class="empty" style="border:none;justify-content:center">議題がまだありません</li>';
+    } else {
+      const labels = { done: '終了', current: '進行中', todo: '未着手' };
+      el.agenda.innerHTML = state.items.map((item, i) => {
+        const st = itemState(i);
+        const dis = locked ? 'disabled' : '';
+        return `<li class="${st}" data-i="${i}">
+          <span class="status">${labels[st]}</span>
+          <span class="num">${i + 1}.</span>
+          <span class="name">${escapeHtml(item.title)}</span>
+          <span class="mins">${item.minutes}分</span>
+          <span class="ops">
+            <button class="secondary icon" data-act="up" ${dis || (i === 0 ? 'disabled' : '')} aria-label="上へ" title="上へ">▲</button>
+            <button class="secondary icon" data-act="down" ${dis || (i === state.items.length - 1 ? 'disabled' : '')} aria-label="下へ" title="下へ">▼</button>
+            <button class="danger icon" data-act="del" ${dis} aria-label="削除" title="削除">✕</button>
+          </span>
+        </li>`;
+      }).join('');
+    }
+    el.total.textContent = formatMinutes(totalMinutes());
+    updateEndTime();
+  }
+
+  function formatMinutes(m) {
+    if (m < 60) return `${m}分`;
+    const h = Math.floor(m / 60), r = m % 60;
+    return r ? `${h}時間${r}分` : `${h}時間`;
+  }
+
+  function updateEndTime() {
+    const r = state.run;
+    if (!state.items.length) { el.end.textContent = '--:--'; return; }
+    if (!r) { el.end.textContent = clock(Date.now() + totalMinutes() * 60000) + '（今から開始した場合）'; return; }
+    if (r.status === 'done') { el.end.textContent = clock(r.meetingEnd) + '（終了）'; return; }
+    const cur = state.items[r.idx];
+    let remain = Math.max(0, planMs(cur) - currentElapsed());
+    for (let i = r.idx + 1; i < state.items.length; i++) remain += planMs(state.items[i]);
+    el.end.textContent = clock(Date.now() + remain) + '（見込み）';
+  }
+
+  function renderTimer() {
+    const r = state.run;
+    const hasItems = state.items.length > 0;
+
+    el.start.classList.toggle('hidden', !!r && r.status !== 'done');
+    el.start.disabled = !hasItems;
+    el.start.textContent = r && r.status === 'done' ? '▶ 再スタート' : '▶ 開始';
+    el.pause.classList.toggle('hidden', !r || r.status === 'done');
+    el.pause.textContent = r && r.status === 'paused' ? '▶ 再開' : '⏸ 一時停止';
+    el.next.disabled = !r || r.status === 'done';
+    el.next.textContent = r && r.idx === state.items.length - 1 ? '⏹ 会議を終了' : '⏭ 次の議題へ';
+    el.reset.disabled = !r;
+    el.paused.classList.toggle('hidden', !r || r.status !== 'paused');
+
+    el.timer.classList.remove('warn', 'over');
+
+    if (!r) {
+      el.label.textContent = '待機中';
+      el.topic.textContent = hasItems ? state.items[0].title : 'アジェンダを登録して「開始」';
+      el.time.textContent = hasItems ? fmt(planMs(state.items[0])) : '--:--';
+      el.sub.textContent = hasItems ? `全${state.items.length}議題・合計${formatMinutes(totalMinutes())}` : ' ';
+      setProgress(0);
+      return;
+    }
+    if (r.status === 'done') {
+      const total = r.elapsed.reduce((a, b) => a + b, 0);
+      el.label.textContent = '会議終了';
+      el.topic.textContent = 'おつかれさまでした';
+      el.time.textContent = fmt(total);
+      el.sub.textContent = `予定 ${fmt(totalMinutes() * 60000)} ／ 実際 ${fmt(total)}`;
+      setProgress(1);
+      return;
+    }
+    tick();
+  }
+
+  // 毎フレーム更新する部分
+  function tick() {
+    const r = state.run;
+    if (!r || r.status === 'done') return;
+    const item = state.items[r.idx];
+    const elapsed = currentElapsed();
+    const remain = planMs(item) - elapsed;
+
+    el.label.textContent = `議題 ${r.idx + 1} / ${state.items.length}`;
+    el.topic.textContent = item.title;
+    if (remain >= 0) {
+      // 切り上げで表示（残り0.4秒→00:01）
+      el.time.textContent = fmt(Math.ceil(remain / 1000) * 1000);
+    } else {
+      el.time.textContent = '+' + fmt(-remain);
+    }
+    el.timer.classList.toggle('warn', remain >= 0 && remain <= 60000);
+    el.timer.classList.toggle('over', remain < 0);
+
+    const nextItem = state.items[r.idx + 1];
+    el.sub.textContent = `持ち時間 ${item.minutes}分・経過 ${fmt(elapsed)}` + (nextItem ? `　次：${nextItem.title}` : '　（最後の議題）');
+
+    // アジェンダ行の色も同期
+    const li = el.agenda.querySelector(`li[data-i="${r.idx}"]`);
+    if (li) {
+      li.classList.toggle('warn', remain >= 0 && remain <= 60000);
+      li.classList.toggle('over', remain < 0);
+    }
+
+    // 進捗（予定時間ベース）
+    let done = 0;
+    for (let i = 0; i < r.idx; i++) done += planMs(state.items[i]);
+    done += Math.min(elapsed, planMs(item));
+    const total = totalMinutes() * 60000;
+    setProgress(total ? done / total : 0);
+
+    updateEndTime();
+  }
+
+  function setProgress(ratio) {
+    const p = Math.max(0, Math.min(1, ratio)) * 100;
+    el.progressBar.style.width = p + '%';
+    el.progressText.textContent = Math.floor(p) + '%';
+  }
+
+  function renderResult() {
+    const r = state.run;
+    const show = !!r && r.status === 'done';
+    el.resultCard.classList.toggle('hidden', !show);
+    if (!show) return;
+    let tp = 0, ta = 0;
+    el.resultBody.innerHTML = state.items.map((item, i) => {
+      const p = planMs(item), a = r.elapsed[i] || 0;
+      tp += p; ta += a;
+      return row(i + 1, escapeHtml(item.title), p, a);
+    }).join('');
+    el.resultFoot.innerHTML = row('', '合計', tp, ta);
+
+    function row(n, title, p, a) {
+      const diff = a - p;
+      const cls = Math.round(diff / 1000) > 0 ? 'plus' : (Math.round(diff / 1000) < 0 ? 'minus' : '');
+      return `<tr><td>${n}</td><td>${title}</td><td>${fmt(p)}</td><td>${fmt(a)}</td><td class="${cls}">${fmtSigned(diff)}</td></tr>`;
+    }
+  }
+
+  function resultText() {
+    const r = state.run;
+    const d = new Date(r.meetingStart);
+    const date = `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}`;
+    const lines = [];
+    lines.push(`【会議時間記録】${date} ${clock(r.meetingStart)}〜${clock(r.meetingEnd)}`);
+    lines.push('');
+    let tp = 0, ta = 0;
+    state.items.forEach((item, i) => {
+      const p = planMs(item), a = r.elapsed[i] || 0;
+      tp += p; ta += a;
+      lines.push(`${i + 1}. ${item.title}`);
+      lines.push(`   予定 ${fmt(p)} ／ 実際 ${fmt(a)}（${fmtSigned(a - p)}）`);
+    });
+    lines.push('');
+    lines.push(`合計：予定 ${fmt(tp)} ／ 実際 ${fmt(ta)}（${fmtSigned(ta - tp)}）`);
+    return lines.join('\n');
+  }
+
+  async function copyResult() {
+    const text = resultText();
+    let ok = false;
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        ok = true;
+      }
+    } catch (e) { /* fallback */ }
+    if (!ok) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      document.body.appendChild(ta);
+      ta.select();
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+    }
+    if (ok) {
+      el.copied.textContent = 'コピーしました';
+    } else {
+      el.copied.textContent = 'コピーできませんでした';
+      prompt('以下のテキストをコピーしてください', text);
+    }
+    el.copied.classList.remove('hidden');
+    clearTimeout(copyResult.t);
+    copyResult.t = setTimeout(() => el.copied.classList.add('hidden'), 2500);
+  }
+
+  // ---------- イベント ----------
+  el.form.addEventListener('submit', e => {
+    e.preventDefault();
+    if (isLocked()) return;
+    const title = el.title.value.trim();
+    const minutes = Math.round(Number(el.minutes.value));
+    if (!title) { el.title.focus(); return; }
+    if (!(minutes >= 1)) { el.minutes.focus(); return; }
+    // 終了後に編集したら結果はリセット
+    if (state.run && state.run.status === 'done') state.run = null;
+    addItem(title, Math.min(minutes, 600));
+    el.title.value = '';
+    el.title.focus();
+  });
+
+  el.agenda.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-act]');
+    if (!btn || isLocked()) return;
+    const i = Number(btn.closest('li').dataset.i);
+    if (state.run && state.run.status === 'done') state.run = null;
+    if (btn.dataset.act === 'up') moveItem(i, -1);
+    else if (btn.dataset.act === 'down') moveItem(i, 1);
+    else if (btn.dataset.act === 'del') removeItem(i);
+  });
+
+  el.start.addEventListener('click', start);
+  el.pause.addEventListener('click', togglePause);
+  el.next.addEventListener('click', next);
+  el.reset.addEventListener('click', reset);
+  el.copy.addEventListener('click', copyResult);
+
+  // キーボード操作：Space=一時停止/再開、→ / N = 次へ（入力中は無効）
+  document.addEventListener('keydown', e => {
+    if (e.target.matches('input, textarea')) return;
+    if (!state.run || state.run.status === 'done') return;
+    if (e.code === 'Space') { e.preventDefault(); togglePause(); }
+    else if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'n') { e.preventDefault(); next(); }
+  });
+
+  // 他タブでの変更を反映
+  window.addEventListener('storage', e => {
+    if (e.key === STORAGE_KEY) { state = load(); render(); }
+  });
+
+  // ---------- 起動 ----------
+  // 保存データの整合性チェック
+  if (state.run) {
+    const r = state.run;
+    if (!Array.isArray(r.elapsed) || r.elapsed.length !== state.items.length || r.idx > state.items.length) {
+      state.run = null;
+    }
+  }
+  render();
+  setInterval(() => {
+    if (state.run && state.run.status === 'running') tick();
+    else if (!state.run) updateEndTime();
+  }, 250);
+})();
+</script>
+</body>
+</html>
