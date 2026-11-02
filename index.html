@@ -573,7 +573,7 @@
         <button type="button" id="btnTeamEdit">✏ チーム員を編集</button>
         <button type="button" id="btnTeamOpen" class="secondary">📂 ファイルを開く</button>
         <label class="btn hidden" id="lblTeamImport" for="teamFile">📂 ファイルを読み込む</label>
-        <input type="file" id="teamFile" accept=".csv,.txt,.tsv,.json,text/csv,text/plain,application/json" hidden>
+        <input type="file" id="teamFile" hidden>
         <button type="button" id="btnTeamClear" class="secondary hidden">解除</button>
       </div>
       <div id="teamEditor" class="team-editor hidden">
@@ -2497,7 +2497,6 @@
   // ---------- チーム員ファイル（担当の選択肢。アプリ本体・共有ファイルには含めない） ----------
   // 1行1人の CSV / テキスト / JSON（名前の列だけを使う。ほかの列があっても無視）
   const TEAM_KEY = 'meetingTimer.team';
-  const TEAM_OPEN_TYPES = [{ description: 'チーム員ファイル (CSV・テキスト・JSON)', accept: { 'text/csv': ['.csv'], 'text/plain': ['.txt', '.tsv'], 'application/json': ['.json'] } }];
   const TEAM_SAVE_TYPES = [{ description: 'CSV ファイル', accept: { 'text/csv': ['.csv'] } }];
   // dirty = 画面で編集してまだファイルに保存していない
   const team = { members: [], fileName: '', loadedAt: 0, modified: 0, dirty: false, savedAt: 0, handle: null, writable: false, saving: false, error: '', timer: null };
@@ -2546,7 +2545,13 @@
       .filter(r => r.name && !seen.has(r.name) && seen.add(r.name));
   }
   async function loadTeamFrom(file, name) {
-    const members = parseTeam(decodeText(await file.arrayBuffer()), name);
+    const buf = await file.arrayBuffer();
+    const head = new Uint8Array(buf.slice(0, 4));
+    // Excel の保存形式（.xlsx / .xls）はそのままでは読めない
+    if (/\.xlsx?$/i.test(name) || (head[0] === 0x50 && head[1] === 0x4B) || (head[0] === 0xD0 && head[1] === 0xCF)) {
+      throw new Error('Excel のファイル（.xlsx）は読み込めません。Excel の「名前を付けて保存」で「CSV UTF-8（コンマ区切り）」を選んで保存してから読み込んでください');
+    }
+    const members = parseTeam(decodeText(buf), name);
     if (!members.length) throw new Error('名前が見つかりませんでした（1行に1人の名前を書いてください）');
     team.members = members; team.fileName = name; team.loadedAt = Date.now(); team.modified = file.lastModified || 0;
     team.error = ''; team.dirty = false;
@@ -2559,7 +2564,8 @@
   async function teamOpen() {
     if (team.dirty && team.members.length && !confirm('画面で編集したチーム員がまだファイルに保存されていません。別のファイルを読み込むと、その変更は消えます。よろしいですか？')) return;
     try {
-      const [h] = await window.showOpenFilePicker({ types: TEAM_OPEN_TYPES, multiple: false });
+      // ファイルの種類で絞り込まない（Mac などで .csv がグレーになり選べないことがあるため）。中身は読み込み時に確かめる
+      const [h] = await window.showOpenFilePicker({ multiple: false });
       const writable = await askWrite(h);   // 画面から編集した内容を、このファイルに保存するため
       await loadTeamFrom(await h.getFile(), h.name);
       team.handle = h; team.writable = writable; await idbSet('teamHandle', h);
