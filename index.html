@@ -63,8 +63,31 @@
   .dsec h3 { margin: 0 0 8px; font-size: .98rem; color: var(--accent-dark); }
   .dsec .share-status { font-size: .88rem; margin-bottom: 10px; }
   .dsec .note { margin: 8px 0 0; }
-  .howto { margin: 0; padding-left: 1.2em; font-size: .88rem; }
-  .howto li { margin-bottom: 4px; }
+  .guide-btn { width: 100%; min-height: 48px; font-weight: 700; }
+
+  /* 使い方ガイド */
+  .modal.help-modal { width: min(760px, calc(100vw - 24px)); height: min(86vh, 900px); padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+  .help-modal.hidden { display: none !important; }
+  .help-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px 12px 18px; border-bottom: 1px solid var(--line); }
+  .help-head h3 { margin: 0; }
+  .help-head button { width: 44px; min-height: 44px; padding: 0; }
+  .help-body { overflow-y: auto; padding: 14px 18px 20px; font-size: .93rem; }
+  .help-flow { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .help-flow span { background: #eaf1f3; color: var(--accent-dark); border-radius: 999px; padding: 3px 12px; font-size: .82rem; font-weight: 600; }
+  .help-sec { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; background: #fff; }
+  .help-sec > summary { cursor: pointer; padding: 12px 14px; font-weight: 700; color: var(--accent-dark); min-height: 44px; }
+  .help-sec[open] > summary { border-bottom: 1px solid var(--line); }
+  .help-sec > :not(summary) { margin-left: 14px; margin-right: 14px; }
+  .help-sec h4 { margin: 12px 14px 4px; font-size: .9rem; color: var(--text); }
+  .help-sec ul { padding-left: 1.3em; margin-top: 6px; }
+  .help-sec li { margin-bottom: 5px; }
+  .help-sec code { background: #f1f3f1; border-radius: 4px; padding: 1px 5px; font-size: .85em; word-break: break-all; }
+  .help-keys { width: auto; margin: 10px 14px; border-collapse: collapse; }
+  .help-keys th, .help-keys td { text-align: left; white-space: normal; padding: 6px 10px; border-bottom: 1px solid var(--line); font-size: .9rem; }
+  .help-keys th { color: var(--text); white-space: nowrap; }
+  .help-faq { margin: 10px 14px 14px; }
+  .help-faq dt { font-weight: 700; margin-top: 10px; }
+  .help-faq dd { margin: 2px 0 0; color: var(--text); }
   .notice-wrap { padding: 0 16px; }
   .notice-wrap:empty { display: none; }
 
@@ -591,11 +614,132 @@
   </div>
 </div>
 
+<!-- 使い方ガイド -->
+<div id="helpDim" class="drawer-dim hidden"></div>
+<div id="helpModal" class="modal help-modal hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="help-head">
+    <h3 id="helpTitle">📖 使い方ガイド</h3>
+    <button type="button" id="btnHelpClose" class="icon secondary" aria-label="閉じる">✕</button>
+  </div>
+  <div class="help-body">
+    <div class="help-flow" aria-label="会議の流れ">
+      <span>① 議題・参加者を準備</span><span>② ▶ 開始</span><span>③ 決まった事・TODOを記録</span><span>④ ⏭ 次の議題へ</span><span>⑤ ➡ 次の会議を準備</span>
+    </div>
+
+    <details class="help-sec" open>
+      <summary>① 会議の準備</summary>
+      <h4>議題を追加する</h4>
+      <ul>
+        <li>アジェンダの「＋ 議題を追加」で、議題名・持ち時間（分）・担当者・種類を入れて「追加」を押します。</li>
+        <li>種類は <b>🎯 決める</b>（決めることを書く）か <b>📢 報告</b>（報告だけの議題）を選びます。</li>
+        <li>▲▼ で並べ替え、✕ で削除できます（会議の開始前のみ）。</li>
+      </ul>
+      <h4>まとめて貼り付ける</h4>
+      <ul>
+        <li>「📥 まとめて貼り付けて追加」に、1行に1議題で貼り付けます。Excel からのコピーもそのまま使えます。</li>
+        <li>書き方：<code>議題名 / 分 / 担当者 / 決めること</code>（分を省くと10分。担当者・決めることは省略可）</li>
+        <li>報告だけの議題は、決めることの欄に「報告」と書きます。</li>
+        <li>例：<code>新機能のリリース日程 / 15 / 佐藤 / 11月か12月か</code>　<code>売上報告 / 5 / 鈴木 / 報告</code></li>
+        <li>議題の右に出る「14:15〜」は、今から始めた場合（会議中は今のペース）の開始の見込み時刻です。</li>
+      </ul>
+      <h4>参加者・司会・書記</h4>
+      <ul>
+        <li>「👥 参加者」で名前を入力して追加するか、「👥 チーム員から選ぶ」で押して選びます。</li>
+        <li>名前を押すと 出席／欠席 が切り替わります。✕ で一覧から外します。</li>
+        <li>司会・書記は、出席の人から選びます。前回の設定が次の会議にも残ります。</li>
+        <li>司会・書記が未設定のまま会議を始めると、タイマーの下にお知らせが出ます（会議は止まりません）。</li>
+      </ul>
+    </details>
+
+    <details class="help-sec">
+      <summary>② 会議の進行（タイマー）</summary>
+      <ul>
+        <li><b>▶ 開始</b>：1つ目の議題からタイマーが動きます。残り1分で黄色、時間を過ぎると赤になり、音でお知らせします。</li>
+        <li><b>⏸ 一時停止</b>／<b>▶ 再開</b>、<b>⏭ 次の議題へ</b>（最後の議題では「⏹ 会議を終了」）。</li>
+        <li>緑または赤の帯に、予定の終了時刻と今のペースでの終了見込みが出ます。</li>
+        <li><b>⏱ 時間の調整</b>を開くと：今の議題 +1分／+5分、<b>⚖ 残りを自動調整</b>（遅れた分を残りの議題から削ります。報告の議題から先に短くします）。</li>
+        <li>まだ始まっていない議題は、アジェンダで −／＋ で時間を変えたり、<b>次回へ</b> で今回は話さずに回したりできます。</li>
+        <li>会議中も「＋ 議題を追加」で議題を足せます（今の議題の次／最後を選べます）。</li>
+        <li><b>🗗 ミニタイマー</b>：資料の上に重ねて表示できる小さなタイマーです。</li>
+        <li><b>リセット</b>：会議を途中でやめて、会議前の状態に戻します。</li>
+      </ul>
+    </details>
+
+    <details class="help-sec">
+      <summary>③ 記録（決まった事・TODO）</summary>
+      <ul>
+        <li>会議中は、タイマーの下に今の議題の記録欄が出ます。</li>
+        <li><b>決める議題</b>：「決まった事」を書き、結論（決定／保留／持ち越し）を押します。</li>
+        <li><b>報告の議題</b>：「報告の要点」と「質疑・補足」を書き、報告済み／持ち越し を押します。</li>
+        <li><b>TODO</b>：「＋ TODOを追加」で、やること・担当・期限を入れます。やることの欄で <b>Enter</b> を押すと次の TODO が増えます。</li>
+        <li>担当欄を押すと選択パネルが開き、チーム員・参加者を押して選べます（複数可）。「出席者を全員選ぶ」や、名簿にない人の手入力もできます。</li>
+        <li>書いた内容は自動で保存されます。会議の後でも議事録の画面で直せます。</li>
+      </ul>
+    </details>
+
+    <details class="help-sec">
+      <summary>④ 会議のあと・次の会議</summary>
+      <ul>
+        <li>会議を終えると「会議結果・議事録」が表示され、<b>会議履歴に自動で保存</b>されます。</li>
+        <li><b>📋 議事録をテキストでコピー</b>：メールやチャットに貼り付けられる形でコピーします。</li>
+        <li><b>➡ 次の会議を準備</b>：議題を「持ち越し・保留だけ残す／同じ議題を使う／空にする」から選んで、次の会議の準備画面に切り替えます。参加者・司会・書記・TODO・履歴はそのまま引き継ぎます。</li>
+        <li><b>📝 TODO一覧</b>：これまでの会議の TODO を期限の近い順に表示します。担当で絞り込み、チェックで完了にできます。「未完了のTODOをコピー」で次の会議の冒頭の確認にも使えます。</li>
+        <li><b>🗂 会議履歴</b>：過去の議事録を開いたり、言葉で検索したりできます。持ち越し・保留の議題を貼り付け欄に戻すこともできます。</li>
+      </ul>
+    </details>
+
+    <details class="help-sec">
+      <summary>⑤ チームで使う（共有ファイル・チーム員）</summary>
+      <h4>共有ファイル（会議データ）</h4>
+      <ul>
+        <li>☰ メニュー →「☁ 共有ファイル」で、OneDrive の<b>同期フォルダ</b>にある会議データ（.json）を開くか、新規作成します。</li>
+        <li>以後は変更のたびに自動で保存され、他の PC の変更も数秒ごとに読み込みます。ヘッダーの「☁ 保存済み」で状態がわかります。</li>
+        <li>同時に編集して重なったときは、画面上の案内で「共有ファイルの内容を読み込む」か「この端末の内容で上書き」を選びます。</li>
+        <li>共有ファイルを使わない場合、データはこの PC のブラウザにだけ保存されます。「💾 バックアップ」で書き出し・読み込みができます。</li>
+      </ul>
+      <h4>チーム員</h4>
+      <ul>
+        <li>☰ メニュー →「👥 チーム員」→「✏ チーム員を編集」で、名前を追加・修正・並べ替えできます（Excel の名前の列の貼り付けも可）。</li>
+        <li>「💾 ファイルに保存」で CSV に保存すると、以後は編集のたびに自動で保存されます。他の PC では「📂 ファイルを開く」で同じファイルを選びます。</li>
+        <li>チーム員の名前は、この PC とご自分のファイルにだけ保存され、アプリ本体には含まれません。</li>
+      </ul>
+    </details>
+
+    <details class="help-sec">
+      <summary>⌨ キーボード操作</summary>
+      <table class="help-keys">
+        <tr><th>Space</th><td>一時停止／再開（会議中）</td></tr>
+        <tr><th>→ または N</th><td>次の議題へ（会議中）</td></tr>
+        <tr><th>Enter</th><td>TODO のやることの欄で：次の TODO を追加</td></tr>
+        <tr><th>Esc</th><td>メニュー・ダイアログ・選択パネルを閉じる</td></tr>
+      </table>
+      <p class="note">文字の入力中は、Space・N などのキー操作は効きません。</p>
+    </details>
+
+    <details class="help-sec">
+      <summary>❓ 困ったとき</summary>
+      <dl class="help-faq">
+        <dt>共有ファイル・チーム員ファイルに保存できない</dt>
+        <dd>パソコンの <b>Edge か Chrome</b> で開いてください。スマホや他のブラウザでは、ファイルへの自動保存はできません（画面の操作は使えます）。</dd>
+        <dt>チーム員ファイル（.csv）が選べない・読み込めない</dt>
+        <dd>Excel のまま（.xlsx）では読み込めません。Excel の「名前を付けて保存」で「CSV UTF-8（コンマ区切り）」を選んで保存してください。ファイル選択画面で「すべてのファイル」を選ぶと表示されることもあります。</dd>
+        <dt>「🔗 ○○に接続」というボタンが出ている</dt>
+        <dd>ブラウザを開き直すと、ファイルへのアクセスの許可が切れることがあります。ボタンを押して許可すると、続きから使えます。</dd>
+        <dt>他の人の変更が反映されない</dt>
+        <dd>OneDrive の同期に数秒〜1分ほどかかることがあります。少し待ってから確認してください。</dd>
+        <dt>データはどこに保存されていますか</dt>
+        <dd>この PC のブラウザと、ご自分で選んだファイル（共有ファイル・チーム員ファイル）だけです。外部には送られません。</dd>
+      </dl>
+    </details>
+  </div>
+</div>
+
 <!-- ☰ メニュー -->
 <div id="drawerDim" class="drawer-dim hidden"></div>
 <aside id="drawer" class="drawer hidden" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
   <div class="drawer-head"><b id="drawerTitle">メニュー</b><button type="button" id="btnMenuClose" class="icon" aria-label="閉じる">✕</button></div>
   <div class="drawer-body">
+    <button type="button" id="btnGuide" class="guide-btn">📖 使い方ガイド</button>
     <section class="dsec">
       <h3>☁ 共有ファイル</h3>
       <div id="shareStatus" class="share-status"></div>
@@ -645,14 +789,6 @@
         <input type="file" id="importFile" accept=".json,application/json" hidden>
       </div>
       <p class="note">アジェンダ・会議・履歴をファイルに書き出して保存できます（共有ファイルを使わないときや、念のための控えに）。</p>
-    </section>
-    <section class="dsec">
-      <h3>⌨ 使い方</h3>
-      <ul class="howto">
-        <li><b>Space</b>：一時停止／再開　<b>→</b> または <b>N</b>：次の議題へ</li>
-        <li>議題の貼り付け形式：「議題名 / 分 / 担当者 / 決めること」</li>
-        <li>TODO のやることの欄で <b>Enter</b>：次の TODO を追加</li>
-      </ul>
     </section>
   </div>
 </aside>
@@ -717,6 +853,7 @@
       報告だけの議題は、決めることの欄に「<b>報告</b>」と書いてください（「報告のみ」「共有」「報告事項」も可）。<br>
       区切りは「/」・タブ（Excelからのコピー）がおすすめ（空白区切りは「議題名 分 担当者」まで）。分を省略すると <b>10分</b>、担当者・決めることは省略できます。<br>
       担当者なしで決めることを書く場合は「議題名 / 10 / / 決めること」と空欄にしてください。
+      <div style="margin-top:8px"><button type="button" id="btnGuide2" class="secondary small">📖 使い方ガイドを開く</button></div>
     </div>
     <details id="addFold" class="fold add-fold" open>
     <summary>＋ 議題を追加</summary>
@@ -984,7 +1121,7 @@
     help: $('btnHelp'), agendaHelp: $('agendaHelp'),
     savedNote: $('savedNote'), nextMeeting: $('btnNextMeeting'), nextDim: $('nextDim'), nextModal: $('nextModal'),
     nextLead: $('nextLead'), nextOpts: $('nextOpts'), nextKeep: $('nextKeep'), nextCancel: $('btnNextCancel'), nextGo: $('btnNextGo'),
-    infoBar: $('infoBar'),
+    infoBar: $('infoBar'), guide: $('btnGuide'), helpModal: $('helpModal'), helpDim: $('helpDim'), helpClose: $('btnHelpClose'),
     roleWarn: $('roleWarn'), roleWarnText: $('roleWarnText'), roleSet: $('btnRoleSet'), roleSkip: $('btnRoleSkip'),
   };
 
@@ -3097,10 +3234,37 @@
     el.help.setAttribute('aria-expanded', on);
   });
   el.roleSet.addEventListener('click', goRoleSetting);
+  // ---------- 使い方ガイド ----------
+  const guideOpen = () => !el.helpModal.classList.contains('hidden');
+  let guideReturn = null;
+  function openGuide() {
+    const fromMenu = menuOpen();
+    if (fromMenu) closeMenu();
+    guideReturn = fromMenu ? el.menu : document.activeElement;
+    el.helpModal.classList.remove('hidden'); el.helpDim.classList.remove('hidden');
+    el.helpModal.querySelector('.help-body').scrollTop = 0;
+    el.helpClose.focus();
+  }
+  function closeGuide() {
+    if (!guideOpen()) return;
+    el.helpModal.classList.add('hidden'); el.helpDim.classList.add('hidden');
+    (guideReturn && document.body.contains(guideReturn) && guideReturn.offsetParent ? guideReturn : el.menu).focus();
+  }
+  el.guide.addEventListener('click', openGuide);
+  document.getElementById('btnGuide2').addEventListener('click', openGuide);
+  el.helpClose.addEventListener('click', closeGuide);
+  el.helpDim.addEventListener('click', closeGuide);
+  el.helpModal.addEventListener('keydown', e => {
+    if (e.key !== 'Tab') return;   // ガイドの中だけでフォーカスを回す
+    const f = [...el.helpModal.querySelectorAll('button, summary')];
+    if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+    else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+  });
   // Esc：開いているダイアログ・メニューを閉じる（フォーカスがどこにあっても）
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    if (!el.nextModal.classList.contains('hidden')) { e.preventDefault(); closeNextMeeting(); }
+    if (guideOpen()) { e.preventDefault(); closeGuide(); }
+    else if (!el.nextModal.classList.contains('hidden')) { e.preventDefault(); closeNextMeeting(); }
     else if (menuOpen()) { e.preventDefault(); closeMenu(); }
   });
   el.nextMeeting.addEventListener('click', openNextMeeting);
@@ -3201,7 +3365,7 @@
 
   // キーボード操作：Space=一時停止/再開、→ / N = 次へ（入力中は無効）
   document.addEventListener('keydown', e => {
-    if (e.target.matches('input, textarea, select') || menuOpen() || !el.nextModal.classList.contains('hidden')) return;
+    if (e.target.matches('input, textarea, select') || menuOpen() || guideOpen() || !el.nextModal.classList.contains('hidden')) return;
     if (!state.run || state.run.status === 'done') return;
     if (e.code === 'Space') { e.preventDefault(); togglePause(); }
     else if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'n') { e.preventDefault(); next(); }
@@ -3217,6 +3381,13 @@
   render();
   renderShare();
   renderTeam();
+  // はじめて使うときだけ、使い方ガイドの場所を案内する
+  try {
+    if (!state.items.length && !state.history.length && !localStorage.getItem('meetingTimer.guideHint')) {
+      showInfo('👋 はじめての方は、右上の ☰ メニューにある「📖 使い方ガイド」をご覧ください');
+      localStorage.setItem('meetingTimer.guideHint', '1');
+    }
+  } catch (e) { /* ignore */ }
   // チーム員ファイル：許可が残っていれば自動で読み直す（なければ前回読み込んだ一覧を使う）
   if (FS_SUPPORTED) idbGet('teamHandle').then(h => { if (h) teamReload(false); });
   // 閉じる前に未保存の変更があれば保存を急ぐ
