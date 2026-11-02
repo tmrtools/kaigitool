@@ -31,9 +31,81 @@
   header {
     background: var(--accent-dark);
     color: #fff;
-    padding: 14px 20px;
+    padding: 10px 16px 10px 20px;
+    display: flex; align-items: center; gap: 10px;
+    position: sticky; top: 0; z-index: 20;
   }
-  header h1 { margin: 0; font-size: 1.2rem; font-weight: 600; letter-spacing: .03em; }
+  header h1 { margin: 0; font-size: 1.2rem; font-weight: 600; letter-spacing: .03em; flex: 1; min-width: 0; }
+  header button {
+    min-height: 40px; padding: 4px 12px; font-size: .85rem; border-radius: 999px;
+    background: rgba(255,255,255,.14); color: #fff; white-space: nowrap;
+  }
+  header button:hover:not(:disabled) { background: rgba(255,255,255,.26); }
+  header .save-badge.warn { background: #f3d7d5; color: var(--over); font-weight: 700; }
+  header .save-badge.warn:hover:not(:disabled) { background: #fbe5e3; }
+  header .menu-btn { border-radius: 10px; font-size: 1.25rem; padding: 2px 14px; min-width: 48px; min-height: 44px; }
+  @media (max-width: 520px) {
+    header { padding-left: 14px; }
+    header h1 { font-size: 1rem; }
+    header .save-badge { padding: 4px 8px; font-size: .78rem; }
+  }
+
+  /* ☰ メニュー */
+  .drawer-dim { position: fixed; inset: 0; background: rgba(30,40,45,.4); z-index: 40; }
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(440px, 100vw); z-index: 41;
+    background: var(--bg); box-shadow: -8px 0 24px rgba(0,0,0,.18); display: flex; flex-direction: column;
+  }
+  .drawer-head { background: var(--accent-dark); color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 8px 10px 8px 18px; }
+  .drawer-head button { background: rgba(255,255,255,.14); width: 44px; min-height: 44px; padding: 0; }
+  .drawer-body { overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+  .dsec { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; }
+  .dsec h3 { margin: 0 0 8px; font-size: .98rem; color: var(--accent-dark); }
+  .dsec .share-status { font-size: .88rem; margin-bottom: 10px; }
+  .dsec .note { margin: 8px 0 0; }
+  .howto { margin: 0; padding-left: 1.2em; font-size: .88rem; }
+  .howto li { margin-bottom: 4px; }
+  .notice-wrap { padding: 0 16px; }
+  .notice-wrap:empty { display: none; }
+
+  /* 畳める欄 */
+  details.fold > summary {
+    cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    min-height: 44px; padding: 8px 12px; border: 1px dashed #c3cac5; border-radius: 10px;
+    background: #fbfcfb; color: var(--accent-dark); font-weight: 600; font-size: .95rem;
+  }
+  details.fold > summary::-webkit-details-marker { display: none; }
+  details.fold > summary::after { content: "▸"; margin-left: auto; color: var(--muted); transition: transform .15s; }
+  details.fold[open] > summary::after { transform: rotate(90deg); }
+  details.fold[open] > summary { margin-bottom: 10px; }
+  details.fold > summary .note { margin: 0; font-weight: 400; }
+  .adjust details.fold > summary { font-size: .9rem; }
+  details.fold-card > summary { cursor: pointer; list-style: none; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-height: 32px; }
+  details.fold-card > summary::-webkit-details-marker { display: none; }
+  details.fold-card > summary h2 { margin: 0; }
+  details.fold-card > summary .note { margin: 0; }
+  details.fold-card > summary::after { content: "開く ▸"; margin-left: auto; color: var(--muted); font-size: .85rem; }
+  details.fold-card[open] > summary::after { content: "閉じる ▾"; }
+  details.fold-card[open] > summary { margin-bottom: 14px; }
+  #todoCount.alert { color: var(--over); font-weight: 700; }
+
+  /* アジェンダの書き方（?） */
+  .h-row { display: flex; align-items: center; gap: 8px; }
+  .card h2 .help-btn {
+    width: 28px; height: 28px; min-height: 28px; padding: 0; border-radius: 50%;
+    background: #e7ebe8; color: var(--accent-dark); font-weight: 700; font-size: .9rem;
+  }
+  .card h2 .help-btn[aria-expanded="true"] { background: var(--accent); color: #fff; }
+  .help-box { background: #f4f7f8; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: .85rem; color: var(--text); margin-bottom: 12px; }
+  .add-fold { margin-bottom: 12px; }
+
+  /* 司会・書記の決め忘れ */
+  .role-warn {
+    margin-top: 10px; padding: 8px 12px; border-radius: 10px; background: var(--warn-bg); border: 1px solid #ecd28a;
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: .92rem; color: #7a5a06;
+  }
+  .role-warn span { flex: 1 1 220px; font-weight: 600; }
+  .role-warn button { min-height: 36px; padding: 4px 12px; font-size: .85rem; }
   main {
     max-width: 1100px;
     margin: 0 auto;
@@ -219,7 +291,7 @@
   /* Agenda list */
   .agenda { list-style: none; margin: 0; padding: 0; }
   .agenda li {
-    display: flex; align-items: center; gap: 10px;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;
     padding: 10px 12px;
     border: 1px solid var(--line);
     border-left: 5px solid var(--line);
@@ -239,9 +311,9 @@
   .agenda li.done .status { background: #dfeee3; color: var(--ok); }
   .agenda li.current .status { background: var(--accent); color: #fff; }
   .agenda .num { flex: 0 0 auto; color: var(--muted); font-variant-numeric: tabular-nums; }
-  .agenda .name { flex: 1 1 auto; min-width: 0; word-break: break-word; }
+  .agenda .name { flex: 1 1 8em; min-width: 8em; word-break: break-word; }
   .agenda .mins { flex: 0 0 auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .agenda .ops { flex: 0 0 auto; display: flex; gap: 4px; }
+  .agenda .ops { flex: 0 0 auto; display: flex; gap: 4px; margin-left: auto; }
   .agenda .br { display: none; }
   .empty { color: var(--muted); text-align: center; padding: 20px 0; }
 
@@ -268,11 +340,7 @@
   .copied { color: var(--ok); font-size: .95rem; }
 
   /* 共有ファイル */
-  .share-bar {
-    max-width: 1100px; margin: 12px auto 0; padding: 10px 16px;
-    display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center;
-  }
-  .share-status { flex: 1 1 260px; font-size: .92rem; }
+  .share-status { font-size: .92rem; }
   .share-status b { color: var(--accent-dark); }
   .share-status .ok { color: var(--ok); }
   .share-status .err { color: var(--over); }
@@ -285,8 +353,6 @@
     background: #e7ebe8; color: var(--text); font: inherit;
   }
   label.btn:hover { background: #d6dcd8; }
-  .share-wrap { padding: 0 16px; }
-  .share-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); max-width: 1100px; margin: 12px auto 0; }
   .conflict {
     max-width: 1100px; margin: 8px auto 0; padding: 12px 16px; border-radius: var(--radius);
     background: var(--warn-bg); border: 1px solid var(--warn); display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
@@ -316,8 +382,8 @@
   .agenda .mins small.at { color: var(--accent); }
 
   /* 参加者 */
-  .people { margin-top: 20px; padding-top: 4px; border-top: 1px solid var(--line); }
-  .people .notes-title { margin-top: 14px; }
+  .people { margin-top: 16px; }
+  .people .ptitle { color: var(--accent-dark); }
   .people-form { display: flex; gap: 8px; margin-bottom: 10px; }
   .people-form input {
     flex: 1; min-width: 0; font: inherit; font-size: 1rem; padding: 8px 12px; min-height: 44px;
@@ -400,7 +466,7 @@
   .picker-ft { display: flex; justify-content: flex-end; margin-top: 10px; }
 
   /* チーム員の編集 */
-  .team-editor { padding: 14px 16px; }
+  .team-editor { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
   .te-head { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; margin-bottom: 10px; }
   .te-head b { color: var(--accent-dark); }
   .te-add { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
@@ -414,7 +480,7 @@
   .te-bulk { margin-bottom: 10px; }
   .te-bulk summary { cursor: pointer; color: var(--accent-dark); font-weight: 600; font-size: .9rem; padding: 4px 0; }
   .te-bulk textarea { width: 100%; resize: vertical; margin: 6px 0; }
-  .te-rows { max-height: 420px; overflow: auto; border-top: 1px solid var(--line); }
+  .te-rows { border-top: 1px solid var(--line); }
   .te-row { display: flex; gap: 6px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); }
   .te-num { flex: 0 0 2em; text-align: right; color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
   .te-row input[data-tm=name] { flex: 1 1 160px; min-width: 0; }
@@ -465,57 +531,90 @@
 </style>
 </head>
 <body>
-<header><h1>会議タイマー＆アジェンダ進行表</h1></header>
+<header>
+  <h1>会議タイマー＆アジェンダ進行表</h1>
+  <button type="button" id="saveBadge" class="save-badge" title="保存の状態（押すとメニューを開きます）"></button>
+  <button type="button" id="btnMenu" class="menu-btn" aria-label="メニュー" aria-expanded="false" aria-controls="drawer">☰</button>
+</header>
 
-<div class="share-wrap">
-  <div class="share-card share-bar">
-    <div id="shareStatus" class="share-status"></div>
-    <div class="share-btns">
-      <button type="button" id="btnShareReconnect" class="hidden">🔗 前回の共有ファイルに接続</button>
-      <button type="button" id="btnShareOpen">📂 共有ファイルを開く</button>
-      <button type="button" id="btnShareNew" class="secondary">＋ 共有ファイルを新規作成</button>
-      <button type="button" id="btnShareDisconnect" class="secondary hidden">接続を解除</button>
-      <button type="button" id="btnExport" class="secondary">⬇ 書き出し</button>
-      <label class="btn" for="importFile">⬆ 読み込み</label>
-      <input type="file" id="importFile" accept=".json,application/json" hidden>
-    </div>
-  </div>
-  <div class="share-card share-bar">
-    <div id="teamStatus" class="share-status"></div>
-    <div class="share-btns">
-      <button type="button" id="btnTeamReload" class="hidden">🔗 接続</button>
-      <button type="button" id="btnTeamEdit">✏ チーム員を編集</button>
-      <button type="button" id="btnTeamOpen" class="secondary">📂 チーム員ファイルを開く</button>
-      <label class="btn hidden" id="lblTeamImport" for="teamFile">📂 チーム員ファイルを読み込む</label>
-      <input type="file" id="teamFile" accept=".csv,.txt,.tsv,.json,text/csv,text/plain,application/json" hidden>
-      <button type="button" id="btnTeamClear" class="secondary hidden">解除</button>
-    </div>
-  </div>
-  <div id="teamEditor" class="share-card team-editor hidden">
-    <div class="te-head"><b>👥 チーム員の編集</b><span id="teamSaveState" class="share-status"></span></div>
-    <form id="teamAddForm" class="te-add" autocomplete="off">
-      <input id="teamName" type="text" maxlength="40" placeholder="名前" aria-label="名前">
-      <button type="submit">追加</button>
-    </form>
-    <details class="te-bulk">
-      <summary>📥 まとめて追加（Excel からの貼り付けもできます）</summary>
-      <textarea id="teamBulk" rows="4" placeholder="1行に1人（Excel の名前の列をそのまま貼り付けできます）&#10;山田 太郎&#10;鈴木 一郎"></textarea>
-      <button type="button" id="btnTeamBulk" class="small">まとめて追加</button>
-    </details>
-    <div id="teamRows" class="te-rows"></div>
-    <div class="te-foot">
-      <button type="button" id="btnTeamSaveAs">💾 ファイルに保存</button>
-      <button type="button" id="btnTeamClose" class="secondary">閉じる</button>
-      <span id="teamMsg" class="copied hidden"></span>
-    </div>
-    <p id="teamNote" class="note">「ファイルに保存」で OneDrive などの非公開フォルダに保存しておくと、他の PC でもそのファイルを開いて同じチーム員を使えます。保存後は、画面で編集するたびに自動でファイルに保存されます。</p>
-  </div>
+<!-- 対応が必要なお知らせだけを画面に出す -->
+<div class="notice-wrap">
   <div id="conflictBar" class="conflict hidden">
     <span>⚠ 共有ファイルが他の端末で更新されました。この端末にも保存していない変更があります。どちらを残しますか？</span>
     <button type="button" id="btnTakeRemote">共有ファイルの内容を読み込む（この端末の変更は破棄）</button>
     <button type="button" id="btnKeepLocal" class="secondary">この端末の内容で上書き保存</button>
   </div>
+  <div id="errorBar" class="conflict hidden">
+    <span id="errorText"></span>
+    <button type="button" id="btnErrorMenu" class="secondary">メニューで確認</button>
+  </div>
 </div>
+
+<!-- ☰ メニュー -->
+<div id="drawerDim" class="drawer-dim hidden"></div>
+<aside id="drawer" class="drawer hidden" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+  <div class="drawer-head"><b id="drawerTitle">メニュー</b><button type="button" id="btnMenuClose" class="icon" aria-label="閉じる">✕</button></div>
+  <div class="drawer-body">
+    <section class="dsec">
+      <h3>☁ 共有ファイル</h3>
+      <div id="shareStatus" class="share-status"></div>
+      <div class="share-btns">
+        <button type="button" id="btnShareReconnect" class="hidden">🔗 前回の共有ファイルに接続</button>
+        <button type="button" id="btnShareOpen">📂 共有ファイルを開く</button>
+        <button type="button" id="btnShareNew" class="secondary">＋ 新規作成</button>
+        <button type="button" id="btnShareDisconnect" class="secondary hidden">接続を解除</button>
+      </div>
+    </section>
+    <section class="dsec">
+      <h3>👥 チーム員</h3>
+      <div id="teamStatus" class="share-status"></div>
+      <div class="share-btns">
+        <button type="button" id="btnTeamReload" class="hidden">🔗 接続</button>
+        <button type="button" id="btnTeamEdit">✏ チーム員を編集</button>
+        <button type="button" id="btnTeamOpen" class="secondary">📂 ファイルを開く</button>
+        <label class="btn hidden" id="lblTeamImport" for="teamFile">📂 ファイルを読み込む</label>
+        <input type="file" id="teamFile" accept=".csv,.txt,.tsv,.json,text/csv,text/plain,application/json" hidden>
+        <button type="button" id="btnTeamClear" class="secondary hidden">解除</button>
+      </div>
+      <div id="teamEditor" class="team-editor hidden">
+        <div class="te-head"><b>チーム員の編集</b><span id="teamSaveState" class="share-status"></span></div>
+        <form id="teamAddForm" class="te-add" autocomplete="off">
+          <input id="teamName" type="text" maxlength="40" placeholder="名前" aria-label="名前">
+          <button type="submit">追加</button>
+        </form>
+        <details class="te-bulk">
+          <summary>📥 まとめて追加（Excel からの貼り付けもできます）</summary>
+          <textarea id="teamBulk" rows="4" placeholder="1行に1人（Excel の名前の列をそのまま貼り付けできます）&#10;山田 太郎&#10;鈴木 一郎"></textarea>
+          <button type="button" id="btnTeamBulk" class="small">まとめて追加</button>
+        </details>
+        <div id="teamRows" class="te-rows"></div>
+        <div class="te-foot">
+          <button type="button" id="btnTeamSaveAs">💾 ファイルに保存</button>
+          <button type="button" id="btnTeamClose" class="secondary">編集を閉じる</button>
+          <span id="teamMsg" class="copied hidden"></span>
+        </div>
+        <p id="teamNote" class="note">「ファイルに保存」で OneDrive などの非公開フォルダに保存しておくと、他の PC でもそのファイルを開いて同じチーム員を使えます。保存後は、画面で編集するたびに自動でファイルに保存されます。</p>
+      </div>
+    </section>
+    <section class="dsec">
+      <h3>💾 バックアップ</h3>
+      <div class="share-btns">
+        <button type="button" id="btnExport" class="secondary">⬇ 書き出し</button>
+        <label class="btn" for="importFile">⬆ 読み込み</label>
+        <input type="file" id="importFile" accept=".json,application/json" hidden>
+      </div>
+      <p class="note">アジェンダ・会議・履歴をファイルに書き出して保存できます（共有ファイルを使わないときや、念のための控えに）。</p>
+    </section>
+    <section class="dsec">
+      <h3>⌨ 使い方</h3>
+      <ul class="howto">
+        <li><b>Space</b>：一時停止／再開　<b>→</b> または <b>N</b>：次の議題へ</li>
+        <li>議題の貼り付け形式：「議題名 / 分 / 担当者 / 決めること」</li>
+        <li>TODO のやることの欄で <b>Enter</b>：次の TODO を追加</li>
+      </ul>
+    </section>
+  </div>
+</aside>
 
 <main>
   <!-- タイマー -->
@@ -540,11 +639,20 @@
     <!-- 時間調整（進行中のみ表示） -->
     <div id="adjust" class="adjust hidden">
       <div id="delay" class="delay"></div>
-      <div class="adjust-btns">
-        <button type="button" class="secondary" data-extend="1">今の議題 +1分</button>
-        <button type="button" class="secondary" data-extend="5">今の議題 +5分</button>
-        <button type="button" id="btnAutoAdjust">⚖ 残りを自動調整</button>
-      </div>
+      <details id="adjustFold" class="fold">
+        <summary>⏱ 時間の調整（+1分・+5分・自動調整）</summary>
+        <div class="adjust-btns">
+          <button type="button" class="secondary" data-extend="1">今の議題 +1分</button>
+          <button type="button" class="secondary" data-extend="5">今の議題 +5分</button>
+          <button type="button" id="btnAutoAdjust">⚖ 残りを自動調整</button>
+        </div>
+      </details>
+    </div>
+    <!-- 司会・書記の決め忘れ（会議は止めない） -->
+    <div id="roleWarn" class="role-warn hidden">
+      <span id="roleWarnText"></span>
+      <button type="button" id="btnRoleSet" class="small">設定する</button>
+      <button type="button" id="btnRoleSkip" class="small secondary">今回は設定しない</button>
     </div>
 
     <div class="progress-wrap">
@@ -561,7 +669,16 @@
 
   <!-- アジェンダ -->
   <section class="card">
-    <h2>アジェンダ</h2>
+    <h2 class="h-row">アジェンダ <button type="button" id="btnHelp" class="help-btn" aria-expanded="false" aria-controls="agendaHelp" title="議題の書き方">?</button></h2>
+    <div id="agendaHelp" class="help-box hidden">
+      <b>まとめて貼り付けるときの書き方</b><br>
+      1行に1議題。「議題名 / 分 / 担当者 / 決めること」の形式で貼り付けてください。<br>
+      報告だけの議題は、決めることの欄に「<b>報告</b>」と書いてください（「報告のみ」「共有」「報告事項」も可）。<br>
+      区切りは「/」・タブ（Excelからのコピー）がおすすめ（空白区切りは「議題名 分 担当者」まで）。分を省略すると <b>10分</b>、担当者・決めることは省略できます。<br>
+      担当者なしで決めることを書く場合は「議題名 / 10 / / 決めること」と空欄にしてください。
+    </div>
+    <details id="addFold" class="fold add-fold" open>
+    <summary>＋ 議題を追加</summary>
     <form id="addForm" class="add-form" autocomplete="off">
       <input id="title" type="text" placeholder="議題名" maxlength="100" required>
       <span class="min-wrap">
@@ -584,10 +701,7 @@
     <details id="bulk" class="bulk">
       <summary>📥 まとめて貼り付けて追加</summary>
       <div class="bulk-body">
-        <p class="note">1行に1議題。「議題名 / 分 / 担当者 / 決めること」の形式で貼り付けてください。<br>
-          報告だけの議題は、決めることの欄に「<b>報告</b>」と書いてください（「報告のみ」「共有」「報告事項」も可）。<br>
-          区切りは「/」・タブ（Excelからのコピー）がおすすめ（空白区切りは「議題名 分 担当者」まで）。分を省略すると <b>10分</b>、担当者・決めることは省略できます。<br>
-          担当者なしで決めることを書く場合は「議題名 / 10 / / 決めること」と空欄にしてください。</p>
+        <p class="note">1行に1議題「議題名 / 分 / 担当者 / 決めること」。くわしい書き方は「?」を押してください。</p>
         <textarea id="bulkText" rows="6" placeholder="新機能のリリース日程 / 15 / 佐藤 / 11月リリースか12月に延期か&#10;先週の売上報告 / 5 / 鈴木 / 報告&#10;来期の目標 / 20 / 高橋 / 重点テーマを3つに絞る"></textarea>
         <div id="bulkPreview" class="bulk-preview"></div>
         <div class="bulk-actions">
@@ -595,6 +709,7 @@
           <button type="button" id="btnBulkReplace" class="secondary">今の一覧と置き換え</button>
         </div>
       </div>
+    </details>
     </details>
 
     <ul id="agenda" class="agenda"></ul>
@@ -610,8 +725,8 @@
     <div id="lockNote" class="note hidden">※ 進行中は議題の<b>追加</b>と、未着手の議題の時間調整・「次回へ」ができます。並べ替え・削除はリセット後にできます。</div>
 
     <!-- 参加者 -->
-    <div class="people">
-      <h3 class="notes-title">👥 参加者 <span id="peopleCount" class="note"></span></h3>
+    <details id="peopleFold" class="people fold" open>
+      <summary><span class="ptitle">👥 参加者</span> <span id="peopleCount" class="note"></span></summary>
       <form id="peopleForm" class="people-form" autocomplete="off">
         <input id="personName" type="text" placeholder="名前（「、」区切りで複数可）" maxlength="300" aria-label="参加者の名前">
         <button type="submit">追加</button>
@@ -624,7 +739,7 @@
         <label>書記<select id="roleScribe"></select></label>
       </div>
       <div id="peopleNote" class="note"></div>
-    </div>
+    </details>
     <datalist id="peopleList"></datalist>
   </section>
 
@@ -649,8 +764,8 @@
     </div>
   </section>
   <!-- TODO一覧 -->
-  <section class="card full">
-    <h2>📝 TODO一覧 <span id="todoCount" class="note"></span></h2>
+  <details id="todoFold" class="card full fold-card">
+    <summary><h2>📝 TODO一覧</h2><span id="todoCount" class="note"></span></summary>
     <div class="todo-tools">
       <label>担当<select id="todoWho"></select></label>
       <label><input type="checkbox" id="todoShowDone"> 完了したものも表示</label>
@@ -659,16 +774,16 @@
     </div>
     <ul id="todoBoard" class="todo-board"></ul>
     <p class="note">これまでの会議で記録したTODOをまとめて表示します（期限の近い順）。チェックを付けると完了になり、議事録にも反映されます。次回の会議の冒頭で確認すると便利です。</p>
-  </section>
+  </details>
   <!-- 会議履歴 -->
-  <section class="card full">
-    <h2>会議履歴 <span id="historyCount" class="note"></span></h2>
+  <details id="historyFold" class="card full fold-card">
+    <summary><h2>🗂 会議履歴</h2><span id="historyCount" class="note"></span></summary>
     <div class="history-tools">
       <input id="historySearch" type="search" placeholder="過去の議事録を検索（例：リリース、佐藤、持ち越し）">
     </div>
     <div id="historyList"></div>
     <p class="note">会議が終わると自動で履歴に保存されます。終了後に「決まった事」を直した内容も反映されます。</p>
-  </section>
+  </details>
 </main>
 
 <script>
@@ -820,6 +935,11 @@
     teamSaveState: $('teamSaveState'), teamAddForm: $('teamAddForm'), teamName: $('teamName'),
     teamBulk: $('teamBulk'), teamBulkBtn: $('btnTeamBulk'), teamRows: $('teamRows'), teamSaveAs: $('btnTeamSaveAs'),
     teamClose: $('btnTeamClose'), teamMsg: $('teamMsg'), teamNote: $('teamNote'),
+    saveBadge: $('saveBadge'), menu: $('btnMenu'), menuClose: $('btnMenuClose'), drawer: $('drawer'), drawerDim: $('drawerDim'),
+    errorBar: $('errorBar'), errorText: $('errorText'), errorMenu: $('btnErrorMenu'),
+    adjustFold: $('adjustFold'), addFold: $('addFold'), peopleFold: $('peopleFold'), todoFold: $('todoFold'), historyFold: $('historyFold'),
+    help: $('btnHelp'), agendaHelp: $('agendaHelp'),
+    roleWarn: $('roleWarn'), roleWarnText: $('roleWarnText'), roleSet: $('btnRoleSet'), roleSkip: $('btnRoleSkip'),
   };
 
   // ---------- ユーティリティ ----------
@@ -1254,7 +1374,73 @@
     renderPeople();
     renderTodoBoard();
     renderHistory();
+    renderFolds();
+    renderRoleWarn();
     updateMini();
+  }
+
+  // ---------- 畳める欄（会議の段階に合わせて開閉） ----------
+  // 段階が変わったときだけ開閉を決める（その段階の中では、利用者が開いた／閉じたままにする）
+  let lastPhase = '';
+  function renderFolds() {
+    const phase = !state.run ? 'before' : runActive() ? 'during' : 'after';
+    el.addFold.classList.toggle('hidden', !canAdd());
+    if (phase === lastPhase) return;
+    lastPhase = phase;
+    el.addFold.open = phase === 'before';
+    el.peopleFold.open = phase === 'before';
+    el.adjustFold.open = false;
+  }
+
+  // ---------- 司会・書記の決め忘れ（会議中だけ・会議は止めない） ----------
+  function renderRoleWarn() {
+    const r = state.run;
+    const show = runActive() && !r.rolesSkip && (!r.roles.chair || !r.roles.scribe);
+    el.roleWarn.classList.toggle('hidden', !show);
+    if (!show) return;
+    const miss = [!r.roles.chair && '司会', !r.roles.scribe && '書記'].filter(Boolean).join('・');
+    el.roleWarnText.textContent = r.people.some(p => p.present)
+      ? `⚠ ${miss}が未設定です（参加者欄で設定できます）`
+      : `⚠ 参加者・${miss}が未設定です（参加者欄で設定できます）`;
+  }
+  function goRoleSetting() {
+    el.peopleFold.open = true;
+    el.peopleFold.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const r = state.run, target = !r || !r.people.some(p => p.present) ? el.personName
+      : !r.roles.chair ? el.roleChair : el.roleScribe;
+    setTimeout(() => target.focus({ preventScroll: true }), 300);
+  }
+
+  // ---------- ☰ メニュー ----------
+  let menuReturn = null;
+  function openMenu(focusEl) {
+    menuReturn = document.activeElement;
+    el.drawer.classList.remove('hidden'); el.drawerDim.classList.remove('hidden');
+    el.menu.setAttribute('aria-expanded', 'true');
+    (focusEl || el.menuClose).focus();
+  }
+  function closeMenu() {
+    if (el.drawer.classList.contains('hidden')) return;
+    el.drawer.classList.add('hidden'); el.drawerDim.classList.add('hidden');
+    el.menu.setAttribute('aria-expanded', 'false');
+    (menuReturn && document.body.contains(menuReturn) ? menuReturn : el.menu).focus();
+  }
+  const menuOpen = () => !el.drawer.classList.contains('hidden');
+  // ヘッダーの保存表示と、対応が必要なときのお知らせ
+  function renderBadge() {
+    let txt, warn = false;
+    if (share.handle) {
+      if (share.error) { txt = '⚠ 保存エラー'; warn = true; }
+      else if (share.conflict) { txt = '⚠ 要確認'; warn = true; }
+      else if (share.saving || isDirty()) txt = '☁ 保存中…';
+      else txt = '☁ 保存済み';
+    } else txt = '💻 この PC に保存';
+    if (!warn && team.error) { txt = '⚠ チーム員'; warn = true; }
+    el.saveBadge.textContent = txt;
+    el.saveBadge.classList.toggle('warn', warn);
+    const err = share.handle && share.error ? share.error : team.error;
+    el.errorBar.classList.toggle('hidden', !err);
+    el.errorText.textContent = err ? '⚠ ' + err : '';
   }
 
   // ---------- 参加者 ----------
@@ -1275,7 +1461,10 @@
   function renderPeople() {
     const tg = peopleTarget(), people = tg.people, roles = tg.roles;
     const pres = people.filter(p => p.present);
-    el.peopleCount.textContent = people.length ? `（出席 ${pres.length}名${people.length > pres.length ? `・欠席 ${people.length - pres.length}名` : ''}）` : '';
+    el.peopleCount.textContent = people.length
+      ? `出席 ${pres.length}名${people.length > pres.length ? `・欠席 ${people.length - pres.length}名` : ''}` +
+        (roles.chair ? `・司会 ${roles.chair}` : '') + (roles.scribe ? `・書記 ${roles.scribe}` : '')
+      : '未登録';
     el.peopleChips.innerHTML = people.length ? people.map((p, k) => `<span class="chip ${p.present ? '' : 'absent'}" data-k="${k}">
         <button type="button" data-pact="toggle" aria-pressed="${p.present}" title="出席／欠席を切り替え">${escapeHtml(p.name)}<small>${p.present ? '出席' : '欠席'}</small></button><button type="button" class="del" data-pact="del" aria-label="${escapeHtml(p.name)}さんを一覧から外す" title="一覧から外す">✕</button>
       </span>`).join('') : '<span class="note" style="margin:0">まだ登録されていません</span>';
@@ -1348,8 +1537,7 @@
     else if (b.dataset.ppickTeam !== undefined) {
       peoplePickerOpen = false; renderPeoplePicker();
       teamEditorOpen = true; renderTeamEditor();
-      el.teamEditor.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      el.teamName.focus({ preventScroll: true });
+      openMenu(el.teamName);
       return;
     } else return;
     save(); render();
@@ -1406,7 +1594,8 @@
     }
     const open = all.filter(x => !x.t.done);
     const over = open.filter(x => dueClass(x.t) === 'overdue').length;
-    el.todoCount.textContent = all.length ? `（未完了 ${open.length}件${over ? `・期限切れ ${over}件` : ''}）` : '';
+    el.todoCount.textContent = all.length ? `未完了 ${open.length}件${over ? `（期限切れ ${over}件）` : ''}` : 'まだありません';
+    el.todoCount.classList.toggle('alert', over > 0);
     const list = sortTodos(filterTodos(all));
     if (!all.length) { el.todoBoard.innerHTML = '<li class="empty" style="border:none;justify-content:center">TODOはまだありません（会議中の記録欄で追加できます）</li>'; return; }
     if (!list.length) { el.todoBoard.innerHTML = `<li class="empty" style="border:none;justify-content:center">${showDone ? '該当するTODOはありません' : '未完了のTODOはありません 🎉'}</li>`; return; }
@@ -1464,7 +1653,7 @@
     const times = startTimes();
     el.agenda.querySelectorAll('small.at').forEach(s => {
       const ts = times[Number(s.dataset.at)];
-      const txt = ts ? `${clock(ts)}〜${state.run ? '（見込み）' : ''}` : '';
+      const txt = ts ? `${clock(ts)}〜` : '';
       if (s.textContent !== txt) s.textContent = txt;
       s.classList.toggle('hidden', !txt);
     });
@@ -1502,7 +1691,7 @@
           <span class="num">${i + 1}.</span>
           <span class="name">${escapeHtml(item.title)}${isAdded(i) ? '<span class="badge 追加">追加</span>' : ''}${statusBadge(i)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}${isReport(item) ? '<span class="report-line">📢 報告</span>' : item.goal ? `<span class="goal-line">🎯 ${escapeHtml(item.goal)}</span>` : ''}</span>
           <span class="br"></span>
-          <span class="mins">${st === 'skipped' ? '—' : effMin(i) + '分'}${isChanged(i) || st === 'skipped' ? `<small>当初${item.minutes}分</small>` : ''}<small class="at hidden" data-at="${i}"></small></span>
+          <span class="mins">${st === 'skipped' ? '—' : effMin(i) + '分'}${isChanged(i) || st === 'skipped' ? `<small>当初${item.minutes}分</small>` : ''}<small class="at hidden" data-at="${i}" title="開始の見込み時刻"></small></span>
           <span class="ops">${opsHTML(i, st, active, dis)}</span>
         </li>`;
       }).join('');
@@ -2050,7 +2239,7 @@
     const key = JSON.stringify(state.history.map(h => [h.id, h.run.meetingEnd, h.run.notes, h.run.people, h.run.roles])) + '|' + q;
     if (key === historyKey) return;  // 変化がなければ描き直さない（開いている項目を保つ）
     historyKey = key;
-    el.historyCount.textContent = state.history.length ? `（${state.history.length}件）` : '';
+    el.historyCount.textContent = state.history.length ? `${state.history.length}件` : 'まだありません';
     if (!state.history.length) { el.historyList.innerHTML = '<p class="empty">まだ履歴はありません</p>'; return; }
     const rows = state.history.map(rec => {
       const text = withSnapshot(rec, resultText);
@@ -2293,6 +2482,7 @@
     if (share.storedName) el.shareReconnect.textContent = `🔗 「${share.storedName}」に接続`;
     el.shareDisconnect.classList.toggle('hidden', !share.handle);
     el.conflictBar.classList.toggle('hidden', !share.conflict);
+    renderBadge();
   }
   async function takeRemote() {
     try { const d = await readShared(); if (d) applyRemote(d); renderShare(); }
@@ -2576,6 +2766,7 @@
     el.teamReload.textContent = `🔗 「${team.fileName}」に接続`;
     el.teamClear.classList.toggle('hidden', !n);
     el.teamNote.classList.toggle('hidden', !!team.handle || !FS_SUPPORTED);
+    renderBadge();
   }
 
   // 書き出し／読み込み（バックアップ・Edge/Chrome 以外のブラウザ用）
@@ -2751,6 +2942,34 @@
     el.personName.focus();
   });
   el.peopleChips.addEventListener('click', onPeopleClick);
+  el.menu.addEventListener('click', () => menuOpen() ? closeMenu() : openMenu());
+  el.saveBadge.addEventListener('click', () => openMenu());
+  el.errorMenu.addEventListener('click', () => openMenu());
+  el.menuClose.addEventListener('click', closeMenu);
+  el.drawerDim.addEventListener('click', closeMenu);
+  el.drawer.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { e.preventDefault(); closeMenu(); return; }
+    if (e.key !== 'Tab') return;   // メニューの中だけでフォーカスを回す
+    const f = [...el.drawer.querySelectorAll('button, input, textarea, summary, label.btn')].filter(x => !x.disabled && x.offsetParent !== null);
+    if (!f.length) return;
+    if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+    else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+  });
+  el.help.addEventListener('click', () => {
+    const on = el.agendaHelp.classList.toggle('hidden') === false;
+    el.help.setAttribute('aria-expanded', on);
+  });
+  el.roleSet.addEventListener('click', goRoleSetting);
+  el.roleSkip.addEventListener('click', () => { if (runActive()) { state.run.rolesSkip = true; save(); render(); } });
+  // TODO一覧・会議履歴の開閉は、この端末で覚えておく
+  const UI_KEY = 'meetingTimer.ui';
+  try {
+    const ui = JSON.parse(localStorage.getItem(UI_KEY)) || {};
+    el.todoFold.open = !!ui.todo; el.historyFold.open = !!ui.history;
+  } catch (e) { /* ignore */ }
+  [el.todoFold, el.historyFold].forEach(d => d.addEventListener('toggle', () => {
+    try { localStorage.setItem(UI_KEY, JSON.stringify({ todo: el.todoFold.open, history: el.historyFold.open })); } catch (e) { /* ignore */ }
+  }));
   el.peoplePick.addEventListener('click', () => {
     peoplePickerOpen = !peoplePickerOpen; renderPeoplePicker();
     const f = peoplePickerOpen && el.peoplePicker.querySelector('.pchip, button');
@@ -2760,6 +2979,8 @@
   el.peoplePicker.addEventListener('keydown', e => { if (e.key === 'Escape') { peoplePickerOpen = false; renderPeoplePicker(); el.peoplePick.focus(); } });
   [[el.roleChair, 'chair'], [el.roleScribe, 'scribe']].forEach(([sel, key]) => sel.addEventListener('change', () => {
     peopleTarget().roles[key] = sel.value;
+    // 会議中・会議後に決めた司会・書記も、次回の初期値として残す
+    if (state.run) state.roles[key] = sel.value;
     sel.blur();
     save(); render();
   }));
@@ -2823,7 +3044,7 @@
 
   // キーボード操作：Space=一時停止/再開、→ / N = 次へ（入力中は無効）
   document.addEventListener('keydown', e => {
-    if (e.target.matches('input, textarea')) return;
+    if (e.target.matches('input, textarea, select') || menuOpen()) return;
     if (!state.run || state.run.status === 'done') return;
     if (e.code === 'Space') { e.preventDefault(); togglePause(); }
     else if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'n') { e.preventDefault(); next(); }
