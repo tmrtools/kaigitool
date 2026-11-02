@@ -323,7 +323,11 @@
     flex: 1; min-width: 0; font: inherit; font-size: 1rem; padding: 8px 12px; min-height: 44px;
     border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--text);
   }
+  .people-form { flex-wrap: wrap; }
+  .people-form input { flex: 1 1 180px; }
   .people-form button { min-height: 44px; padding: 8px 16px; }
+  #btnPeoplePick[aria-expanded="true"] { outline: 2px solid var(--accent); outline-offset: 1px; }
+  #peoplePicker { margin-bottom: 10px; }
   .people-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
   .chip { display: inline-flex; align-items: stretch; border: 1px solid var(--ok); border-radius: 999px; overflow: hidden; background: #e8f1ea; }
   .chip button { min-height: 36px; padding: 4px 10px; border-radius: 0; background: transparent; color: var(--text); font-size: .92rem; }
@@ -406,7 +410,6 @@
   }
   .te-add input:focus, .te-row input:focus, .te-bulk textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
   .te-add #teamName { flex: 1 1 160px; min-width: 0; }
-  .te-add #teamGroup { flex: 1 1 160px; min-width: 0; }
   .te-add button { min-height: 42px; padding: 6px 18px; }
   .te-bulk { margin-bottom: 10px; }
   .te-bulk summary { cursor: pointer; color: var(--accent-dark); font-weight: 600; font-size: .9rem; padding: 4px 0; }
@@ -415,15 +418,9 @@
   .te-row { display: flex; gap: 6px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); }
   .te-num { flex: 0 0 2em; text-align: right; color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
   .te-row input[data-tm=name] { flex: 1 1 160px; min-width: 0; }
-  .te-row input[data-tm=group] { flex: 1 1 140px; min-width: 0; }
   .te-row button.icon { width: 40px; min-height: 40px; font-size: .9rem; flex: 0 0 auto; }
   .te-foot { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
   .te-foot button { min-height: 42px; padding: 6px 14px; font-size: .92rem; }
-  @media (max-width: 520px) {
-    .te-row { flex-wrap: wrap; }
-    .te-row input[data-tm=name] { flex: 1 1 calc(100% - 3em); }
-    .te-row input[data-tm=group] { flex: 1 1 100px; margin-left: calc(2em + 6px); }
-  }
 
   /* TODO一覧 */
   .todo-tools { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-bottom: 12px; }
@@ -498,23 +495,20 @@
     <div class="te-head"><b>👥 チーム員の編集</b><span id="teamSaveState" class="share-status"></span></div>
     <form id="teamAddForm" class="te-add" autocomplete="off">
       <input id="teamName" type="text" maxlength="40" placeholder="名前" aria-label="名前">
-      <input id="teamGroup" type="text" maxlength="40" list="teamGroups" placeholder="グループ（部署など・任意）" aria-label="グループ">
       <button type="submit">追加</button>
     </form>
     <details class="te-bulk">
       <summary>📥 まとめて追加（Excel からの貼り付けもできます）</summary>
-      <textarea id="teamBulk" rows="4" placeholder="1行に1人。「名前,グループ」またはタブ区切り&#10;山田 太郎,営業&#10;鈴木 一郎,開発"></textarea>
+      <textarea id="teamBulk" rows="4" placeholder="1行に1人（Excel の名前の列をそのまま貼り付けできます）&#10;山田 太郎&#10;鈴木 一郎"></textarea>
       <button type="button" id="btnTeamBulk" class="small">まとめて追加</button>
     </details>
     <div id="teamRows" class="te-rows"></div>
     <div class="te-foot">
       <button type="button" id="btnTeamSaveAs">💾 ファイルに保存</button>
-      <button type="button" id="btnTeamSort" class="secondary">グループ順に並べる</button>
       <button type="button" id="btnTeamClose" class="secondary">閉じる</button>
       <span id="teamMsg" class="copied hidden"></span>
     </div>
     <p id="teamNote" class="note">「ファイルに保存」で OneDrive などの非公開フォルダに保存しておくと、他の PC でもそのファイルを開いて同じチーム員を使えます。保存後は、画面で編集するたびに自動でファイルに保存されます。</p>
-    <datalist id="teamGroups"></datalist>
   </div>
   <div id="conflictBar" class="conflict hidden">
     <span>⚠ 共有ファイルが他の端末で更新されました。この端末にも保存していない変更があります。どちらを残しますか？</span>
@@ -621,7 +615,9 @@
       <form id="peopleForm" class="people-form" autocomplete="off">
         <input id="personName" type="text" placeholder="名前（「、」区切りで複数可）" maxlength="300" aria-label="参加者の名前">
         <button type="submit">追加</button>
+        <button type="button" id="btnPeoplePick" class="secondary" aria-expanded="false">👥 チーム員から選ぶ</button>
       </form>
+      <div id="peoplePicker" class="picker hidden"></div>
       <div id="peopleChips" class="people-chips"></div>
       <div class="roles">
         <label>司会<select id="roleChair"></select></label>
@@ -815,15 +811,15 @@
     agenda: $('agenda'), total: $('totalTime'), end: $('endTime'), lockNote: $('lockNote'),
     resultCard: $('resultCard'), resultBody: $('resultBody'), resultFoot: $('resultFoot'),
     copy: $('btnCopy'), copied: $('copied'),
-    peopleForm: $('peopleForm'), personName: $('personName'), peopleChips: $('peopleChips'), peopleCount: $('peopleCount'),
+    peoplePick: $('btnPeoplePick'), peoplePicker: $('peoplePicker'), peopleForm: $('peopleForm'), personName: $('personName'), peopleChips: $('peopleChips'), peopleCount: $('peopleCount'),
     roleChair: $('roleChair'), roleScribe: $('roleScribe'), peopleNote: $('peopleNote'), peopleList: $('peopleList'),
     todoBoard: $('todoBoard'), todoWho: $('todoWho'), todoShowDone: $('todoShowDone'), todoCount: $('todoCount'),
     copyTodos: $('btnCopyTodos'), todoMsg: $('todoMsg'),
     teamStatus: $('teamStatus'), teamOpen: $('btnTeamOpen'), teamImport: $('lblTeamImport'), teamFile: $('teamFile'),
     teamReload: $('btnTeamReload'), teamClear: $('btnTeamClear'), teamEdit: $('btnTeamEdit'), teamEditor: $('teamEditor'),
-    teamSaveState: $('teamSaveState'), teamAddForm: $('teamAddForm'), teamName: $('teamName'), teamGroup: $('teamGroup'),
+    teamSaveState: $('teamSaveState'), teamAddForm: $('teamAddForm'), teamName: $('teamName'),
     teamBulk: $('teamBulk'), teamBulkBtn: $('btnTeamBulk'), teamRows: $('teamRows'), teamSaveAs: $('btnTeamSaveAs'),
-    teamSort: $('btnTeamSort'), teamClose: $('btnTeamClose'), teamMsg: $('teamMsg'), teamNote: $('teamNote'), teamGroups: $('teamGroups'),
+    teamClose: $('btnTeamClose'), teamMsg: $('teamMsg'), teamNote: $('teamNote'),
   };
 
   // ---------- ユーティリティ ----------
@@ -1290,6 +1286,7 @@
       sel.innerHTML = '<option value="">（未設定）</option>' + opts.map(nm => `<option ${nm === roles[key] ? 'selected' : ''}>${escapeHtml(nm)}</option>`).join('');
       sel.disabled = !opts.length;
     });
+    renderPeoplePicker();
     el.peopleNote.textContent = !state.run ? '名前を押すと出席／欠席を切り替えられます。名簿は次回の会議でもそのまま使えます。'
       : runActive() ? 'この会議の出欠を記録しています（途中参加の人もここで追加できます）。'
       : '議事録に記録されます。あとから修正もできます。';
@@ -1297,6 +1294,65 @@
     const cand = new Set([...team.members, ...state.people, ...people].map(p => p.name));
     state.items.forEach(x => x.presenter && cand.add(x.presenter));
     el.peopleList.innerHTML = [...cand].map(nm => `<option value="${escapeHtml(nm)}">`).join('');
+  }
+  // ---- チーム員から参加者を選ぶ ----
+  let peoplePickerOpen = false;
+  function renderPeoplePicker() {
+    el.peoplePicker.classList.toggle('hidden', !peoplePickerOpen);
+    el.peoplePick.setAttribute('aria-expanded', peoplePickerOpen);
+    if (!peoplePickerOpen) return;
+    const people = peopleTarget().people;
+    const inList = new Map(people.map(p => [p.name, p]));
+    const names = team.members.map(m => m.name);
+    const nIn = names.filter(n => inList.has(n)).length;
+    const keep = document.activeElement && el.peoplePicker.contains(document.activeElement) ? document.activeElement.dataset.ppick : null;
+    el.peoplePicker.innerHTML = names.length ? `
+      <div class="picker-hd"><b>チーム員から参加者を選ぶ</b><span>チーム員 ${names.length}名中 ${nIn}名が参加者</span></div>
+      <div class="picker-quick">
+        <button type="button" data-ppick-all="add" ${nIn === names.length ? 'disabled' : ''}>チーム員を全員追加</button>
+        <button type="button" data-ppick-all="remove" ${nIn ? '' : 'disabled'}>チーム員を全員外す</button>
+      </div>
+      <div class="picker-chips" style="margin-top:8px">${names.map(n => {
+        const p = inList.get(n);
+        return `<button type="button" class="pchip ${p ? 'on' : ''} ${p && !p.present ? 'absent' : ''}" data-ppick="${escapeHtml(n)}" aria-pressed="${!!p}">${escapeHtml(n)}${p && !p.present ? ' <small>欠席</small>' : ''}</button>`;
+      }).join('')}</div>
+      <p class="note" style="margin:8px 0 0">押すと参加者に追加／もう一度押すと外します。チーム員にいない人は上の欄に入力してください。</p>
+      <div class="picker-ft"><button type="button" data-ppick-close>完了</button></div>`
+      : `<p class="note" style="margin:0 0 8px">チーム員がまだ登録されていません。画面上部の「✏ チーム員を編集」で登録すると、ここから選べるようになります。</p>
+      <div class="picker-ft"><button type="button" class="secondary" data-ppick-team>チーム員を登録する</button><button type="button" data-ppick-close style="margin-left:6px">閉じる</button></div>`;
+    if (keep) { const f = el.peoplePicker.querySelector(`[data-ppick="${CSS.escape(keep)}"]`); if (f) f.focus({ preventScroll: true }); }
+  }
+  function setParticipant(name, on) {
+    const tg = peopleTarget();
+    const k = tg.people.findIndex(p => p.name === name);
+    if (on && k < 0) {
+      tg.people.push({ name, present: true });
+      // 会議中に加えた人も、次回のために名簿へ
+      if (tg !== state && !state.people.some(p => p.name === name)) state.people.push({ name, present: true });
+    } else if (!on && k >= 0) {
+      tg.people.splice(k, 1);
+      if (tg.roles.chair === name) tg.roles.chair = '';
+      if (tg.roles.scribe === name) tg.roles.scribe = '';
+    }
+  }
+  function onPeoplePickerClick(e) {
+    const b = e.target.closest('button');
+    if (!b) return;
+    const tg = peopleTarget();
+    if (b.dataset.ppick !== undefined) setParticipant(b.dataset.ppick, !tg.people.some(p => p.name === b.dataset.ppick));
+    else if (b.dataset.ppickAll) {
+      const names = team.members.map(m => m.name);
+      if (b.dataset.ppickAll === 'remove' && !confirm(`チーム員${names.filter(n => tg.people.some(p => p.name === n)).length}名を参加者から外しますか？`)) return;
+      names.forEach(n => setParticipant(n, b.dataset.ppickAll === 'add'));
+    } else if (b.dataset.ppickClose !== undefined) { peoplePickerOpen = false; renderPeoplePicker(); el.peoplePick.focus(); return; }
+    else if (b.dataset.ppickTeam !== undefined) {
+      peoplePickerOpen = false; renderPeoplePicker();
+      teamEditorOpen = true; renderTeamEditor();
+      el.teamEditor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.teamName.focus({ preventScroll: true });
+      return;
+    } else return;
+    save(); render();
   }
   function onPeopleClick(e) {
     const btn = e.target.closest('button[data-pact]');
@@ -1537,7 +1593,7 @@
 
   // ---------- 担当の選択パネル ----------
   const picker = { tid: '' };  // 開いているTODOのid（同時に開くのは1つだけ）
-  // 選べる人：チーム員（グループ別）→ 参加者（チーム員以外）→ 手入力したことのある人
+  // 選べる人：チーム員 → 参加者（チーム員以外）→ 手入力したことのある人
   function pickerGroups() {
     const groups = [], seen = new Set();
     const tg = peopleTarget();
@@ -1547,13 +1603,7 @@
       list.forEach(n => seen.add(n));
       if (list.length) groups.push({ label, names: list, kind });
     };
-    const byGroup = new Map();
-    team.members.forEach(m => {
-      const g = m.group || 'チーム員';
-      if (!byGroup.has(g)) byGroup.set(g, []);
-      byGroup.get(g).push(m.name);
-    });
-    byGroup.forEach((names, g) => push(g, names, 'team'));
+    push('チーム員', team.members.map(m => m.name), 'team');
     push('参加者（チーム員以外）', tg.people.map(p => p.name), 'people');
     const used = new Set();
     collectTodos().forEach(x => x.t.whos.forEach(n => used.add(n)));
@@ -1580,7 +1630,7 @@
         ${team.members.length ? '<button type="button" data-pick-all="team">チーム員を全員選ぶ</button>' : ''}
         <button type="button" data-pick-all="none" ${t.whos.length ? '' : 'disabled'}>選択を解除</button>
       </div>
-      ${groups.length ? groups.map((g, k) => `<div class="picker-grp"><span>${escapeHtml(g.label)}（${g.names.length}名）</span>${g.names.length > 1 ? `<button type="button" class="link" data-pick-group="${k}">このグループを全員</button>` : ''}</div>
+      ${groups.length ? groups.map((g, k) => `<div class="picker-grp"><span>${escapeHtml(g.label)}（${g.names.length}名）</span>${g.names.length > 1 ? `<button type="button" class="link" data-pick-group="${k}">この中の全員</button>` : ''}</div>
         <div class="picker-chips">${g.names.map(chip).join('')}</div>`).join('')
         : `<p class="note" style="margin:4px 0">選べる人がまだいません。画面上部の「✏ チーム員を編集」で登録するか、参加者を登録してください。下の欄に手入力もできます。</p>`}
       <div class="picker-free">
@@ -2255,7 +2305,7 @@
   }
 
   // ---------- チーム員ファイル（担当の選択肢。アプリ本体・共有ファイルには含めない） ----------
-  // 1行1人の CSV / テキスト / JSON。「名前,グループ」の2列目は任意（部署やチームで分けて表示）
+  // 1行1人の CSV / テキスト / JSON（名前の列だけを使う。ほかの列があっても無視）
   const TEAM_KEY = 'meetingTimer.team';
   const TEAM_OPEN_TYPES = [{ description: 'チーム員ファイル (CSV・テキスト・JSON)', accept: { 'text/csv': ['.csv'], 'text/plain': ['.txt', '.tsv'], 'application/json': ['.json'] } }];
   const TEAM_SAVE_TYPES = [{ description: 'CSV ファイル', accept: { 'text/csv': ['.csv'] } }];
@@ -2263,7 +2313,7 @@
   const team = { members: [], fileName: '', loadedAt: 0, modified: 0, dirty: false, savedAt: 0, handle: null, writable: false, saving: false, error: '', timer: null };
   try { Object.assign(team, JSON.parse(localStorage.getItem(TEAM_KEY)) || {}); } catch (e) { /* ignore */ }
   Object.assign(team, { handle: null, writable: false, saving: false, error: '', timer: null });
-  if (!Array.isArray(team.members)) team.members = [];
+  team.members = Array.isArray(team.members) ? team.members.filter(m => m && m.name).map(m => ({ name: String(m.name) })) : [];
   function persistTeam() {
     try { localStorage.setItem(TEAM_KEY, JSON.stringify({ members: team.members, fileName: team.fileName, loadedAt: team.loadedAt, modified: team.modified, dirty: team.dirty, savedAt: team.savedAt })); } catch (e) { /* ignore */ }
   }
@@ -2286,26 +2336,23 @@
     return out.map(x => x.trim());
   }
   const NAME_HEAD = /^(名前|氏名|なまえ|メンバー|担当者?|name)$/i;
-  const GROUP_HEAD = /^(グループ|部署|部門|チーム|所属|課|group|team|dept)$/i;
   function parseTeam(text, fileName) {
     let rows = [];
     if (/\.json$/i.test(fileName) || /^\s*[\[{]/.test(text)) {
       let d = JSON.parse(text);
       if (d && !Array.isArray(d)) d = d.members || d.team || [];
-      rows = (Array.isArray(d) ? d : []).map(x => typeof x === 'string' ? { name: x, group: '' }
-        : { name: String(x.name || x['名前'] || x['氏名'] || ''), group: String(x.group || x['グループ'] || x['部署'] || x['チーム'] || '') });
+      rows = (Array.isArray(d) ? d : []).map(x => ({ name: typeof x === 'string' ? x : String(x.name || x['名前'] || x['氏名'] || '') }));
     } else {
       const lines = text.split(/\r?\n/).filter(l => l.trim() && !/^\s*#/.test(l)).map(splitCsvLine);
-      let ni = 0, gi = 1;
+      let ni = 0;
       if (lines.length && lines[0].some(c => NAME_HEAD.test(c))) {
         ni = lines[0].findIndex(c => NAME_HEAD.test(c));
-        gi = lines[0].findIndex(c => GROUP_HEAD.test(c));
         lines.shift();
       }
-      rows = lines.map(c => ({ name: c[ni] || '', group: gi >= 0 ? (c[gi] || '') : '' }));
+      rows = lines.map(c => ({ name: c[ni] || '' }));
     }
     const seen = new Set();
-    return rows.map(r => ({ name: r.name.trim().slice(0, 40), group: r.group.trim().slice(0, 40) }))
+    return rows.map(r => ({ name: r.name.trim().slice(0, 40) }))
       .filter(r => r.name && !seen.has(r.name) && seen.add(r.name));
   }
   async function loadTeamFrom(file, name) {
@@ -2315,7 +2362,7 @@
     team.error = ''; team.dirty = false;
     persistTeam();
     todoKey = '';
-    render(); renderTeam();
+    render(); renderTeam(); renderTeamEditor();
   }
   const canWrite = async h => { try { return (await h.queryPermission({ mode: 'readwrite' })) === 'granted'; } catch (e) { return false; } };
   async function askWrite(h) { try { return (await h.requestPermission({ mode: 'readwrite' })) === 'granted'; } catch (e) { return false; } }
@@ -2365,7 +2412,7 @@
   function teamFileText(name) {
     if (/\.json$/i.test(name)) return JSON.stringify(team.members, null, 1);
     // 先頭の BOM で、Excel でも文字化けせずに開ける
-    return '﻿名前,グループ\r\n' + team.members.map(m => `${csvCell(m.name)},${csvCell(m.group)}`).join('\r\n') + '\r\n';
+    return '\uFEFF名前\r\n' + team.members.map(m => csvCell(m.name)).join('\r\n') + '\r\n';
   }
   async function writeTeam() {
     if (!team.handle || !team.writable) return;
@@ -2423,10 +2470,10 @@
     const have = new Set(team.members.map(m => m.name));
     const added = [], dup = [];
     rows.forEach(r => {
-      const name = r.name.trim().slice(0, 40), group = (r.group || '').trim().slice(0, 40);
+      const name = r.name.trim().slice(0, 40);
       if (!name) return;
       if (have.has(name)) { dup.push(name); return; }
-      have.add(name); added.push({ name, group });
+      have.add(name); added.push({ name });
     });
     if (added.length) { team.members.push(...added); teamChanged(); }
     return { added: added.length, dup };
@@ -2455,7 +2502,6 @@
     const k = Number(inp.closest('.te-row').dataset.k), m = team.members[k];
     if (!m) return;
     const v = inp.value.trim().slice(0, 40);
-    if (inp.dataset.tm === 'group') { m.group = v; teamChanged(); return; }
     if (v === m.name) return;
     if (!v) { inp.value = m.name; alert('名前を空にはできません。外す場合は ✕ を押してください。'); return; }
     if (team.members.some(x => x !== m && x.name === v)) { inp.value = m.name; alert(`「${v}」はすでに登録されています。`); return; }
@@ -2486,32 +2532,22 @@
     const f = el.teamRows.querySelector(`.te-row[data-k="${act === 'up' ? k - 1 : act === 'down' ? k + 1 : Math.min(k, team.members.length - 1)}"] button[data-tm-act="${act}"]`);
     if (f && !f.disabled) f.focus();
   }
-  function sortTeamByGroup() {
-    const order = [];
-    team.members.forEach(m => { if (!order.includes(m.group)) order.push(m.group); });
-    team.members = order.flatMap(g => team.members.filter(m => m.group === g));
-    teamChanged();
-  }
   let teamEditorOpen = false;
   function renderTeamEditor() {
     el.teamEditor.classList.toggle('hidden', !teamEditorOpen);
     el.teamEdit.textContent = teamEditorOpen ? '✏ 編集を閉じる' : (team.members.length ? '✏ チーム員を編集' : '✏ 画面で登録する');
     if (!teamEditorOpen) return;
-    const groups = [...new Set(team.members.map(m => m.group).filter(Boolean))];
-    el.teamGroups.innerHTML = groups.map(g => `<option value="${escapeHtml(g)}">`).join('');
     // 入力中の欄があるときは描き直さない（カーソルが飛ばないように）
     if (!el.teamRows.contains(document.activeElement) || document.activeElement.tagName === 'BUTTON') {
       const n = team.members.length;
       el.teamRows.innerHTML = n ? team.members.map((m, k) => `<div class="te-row" data-k="${k}">
           <span class="te-num">${k + 1}</span>
           <input type="text" data-tm="name" value="${escapeHtml(m.name)}" maxlength="40" aria-label="名前">
-          <input type="text" data-tm="group" value="${escapeHtml(m.group)}" maxlength="40" list="teamGroups" placeholder="グループ（任意）" aria-label="グループ">
           <button type="button" class="secondary icon" data-tm-act="up" ${k === 0 ? 'disabled' : ''} aria-label="上へ" title="上へ">▲</button>
           <button type="button" class="secondary icon" data-tm-act="down" ${k === n - 1 ? 'disabled' : ''} aria-label="下へ" title="下へ">▼</button>
           <button type="button" class="danger icon" data-tm-act="del" aria-label="${escapeHtml(m.name)}を外す" title="外す">✕</button>
         </div>`).join('') : '<p class="empty">まだ登録されていません。上の欄から追加してください。</p>';
     }
-    el.teamSort.disabled = groups.length < 2;
     el.teamSaveAs.textContent = !FS_SUPPORTED ? '⬇ CSVファイルをダウンロード' : team.handle ? '💾 別のファイルに保存' : '💾 ファイルに保存';
   }
   function teamSaveText() {
@@ -2524,9 +2560,8 @@
   }
   function renderTeam() {
     const n = team.members.length;
-    const groups = new Set(team.members.map(m => m.group).filter(Boolean));
     let html;
-    if (n) html = `👥 チーム員 <b>${n}名</b>${groups.size ? `（${groups.size}グループ）` : ''}` +
+    if (n) html = `👥 チーム員 <b>${n}名</b>` +
       (team.fileName ? `・<b>${escapeHtml(team.fileName)}</b>` : '') + '　' +
       (teamSaveText() || (team.handle ? '' : `<span style="color:var(--muted)">${team.loadedAt ? `${dateLabel(team.loadedAt)} ${clock(team.loadedAt)} 読み込み` : ''}</span>`));
     else html = team.error ? `👥 <span class="err">⚠ ${escapeHtml(team.error)}</span>`
@@ -2716,6 +2751,13 @@
     el.personName.focus();
   });
   el.peopleChips.addEventListener('click', onPeopleClick);
+  el.peoplePick.addEventListener('click', () => {
+    peoplePickerOpen = !peoplePickerOpen; renderPeoplePicker();
+    const f = peoplePickerOpen && el.peoplePicker.querySelector('.pchip, button');
+    if (f) f.focus({ preventScroll: true });
+  });
+  el.peoplePicker.addEventListener('click', onPeoplePickerClick);
+  el.peoplePicker.addEventListener('keydown', e => { if (e.key === 'Escape') { peoplePickerOpen = false; renderPeoplePicker(); el.peoplePick.focus(); } });
   [[el.roleChair, 'chair'], [el.roleScribe, 'scribe']].forEach(([sel, key]) => sel.addEventListener('change', () => {
     peopleTarget().roles[key] = sel.value;
     sel.blur();
@@ -2732,9 +2774,9 @@
     e.preventDefault();
     const name = el.teamName.value.trim();
     if (!name) { el.teamName.focus(); return; }
-    const r = teamAdd([{ name, group: el.teamGroup.value }]);
+    const r = teamAdd([{ name }]);
     if (r.dup.length) { flash(el.teamMsg, `「${name}」はすでに登録されています`); return; }
-    el.teamName.value = '';   // グループは続けて同じ部署の人を入れやすいよう残す
+    el.teamName.value = '';
     el.teamName.focus();
   });
   el.teamBulkBtn.addEventListener('click', () => {
@@ -2748,7 +2790,6 @@
   el.teamRows.addEventListener('click', onTeamRowsClick);
   el.teamRows.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('input[data-tm]') && !e.isComposing) e.target.blur(); });
   el.teamSaveAs.addEventListener('click', teamSaveAs);
-  el.teamSort.addEventListener('click', sortTeamByGroup);
   el.teamClear.addEventListener('click', teamClear);
   el.teamFile.addEventListener('change', async () => {
     const f = el.teamFile.files[0];
