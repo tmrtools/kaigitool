@@ -99,6 +99,33 @@
   .help-box { background: #f4f7f8; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: .85rem; color: var(--text); margin-bottom: 12px; }
   .add-fold { margin-bottom: 12px; }
 
+  /* 次の会議を準備 */
+  .saved-note { margin: 14px 0 10px; padding: 8px 12px; border-radius: 10px; background: #e8f1ea; color: var(--ok); font-weight: 600; font-size: .92rem; }
+  .saved-note.warn { background: var(--warn-bg); color: #7a5a06; }
+  .next-btn { width: 100%; font-size: 1.1rem; font-weight: 700; min-height: 52px; }
+  .modal {
+    position: fixed; z-index: 41; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: min(520px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow-y: auto;
+    background: #fff; border-radius: 14px; box-shadow: 0 12px 36px rgba(0,0,0,.28); padding: 18px;
+  }
+  .modal h3 { margin: 0 0 4px; color: var(--accent-dark); font-size: 1.1rem; }
+  .modal-lead { margin: 0 0 12px; color: var(--muted); font-size: .9rem; }
+  .next-opts { display: flex; flex-direction: column; gap: 8px; }
+  .next-opt { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; cursor: pointer; }
+  .next-opt:has(input:checked) { border: 2px solid var(--accent); background: #f1f6f8; padding: 9px 11px; }
+  .next-opt input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--accent); flex: 0 0 auto; }
+  .next-opt b { display: block; }
+  .next-opt small { display: block; color: var(--muted); font-size: .82rem; }
+  .next-opt ul { margin: 4px 0 0; padding-left: 1.2em; font-size: .85rem; }
+  .next-keep { margin: 12px 0; padding: 8px 12px; background: #f7f8f6; border-radius: 8px; font-size: .85rem; color: var(--muted); }
+  .next-keep b { color: var(--text); }
+  .modal-foot { display: flex; justify-content: flex-end; gap: 8px; }
+  .info-bar {
+    max-width: 1100px; margin: 8px auto 0; padding: 10px 16px; border-radius: var(--radius);
+    background: #e8f1ea; border: 1px solid #b9d5c1; color: var(--ok); font-weight: 600;
+  }
+  .badge.carry { background: #fbe5e3; color: var(--over); }
+
   /* 司会・書記の決め忘れ */
   .role-warn {
     margin-top: 10px; padding: 8px 12px; border-radius: 10px; background: var(--warn-bg); border: 1px solid #ecd28a;
@@ -544,9 +571,23 @@
     <button type="button" id="btnTakeRemote">共有ファイルの内容を読み込む（この端末の変更は破棄）</button>
     <button type="button" id="btnKeepLocal" class="secondary">この端末の内容で上書き保存</button>
   </div>
+  <div id="infoBar" class="info-bar hidden" role="status"></div>
   <div id="errorBar" class="conflict hidden">
     <span id="errorText"></span>
     <button type="button" id="btnErrorMenu" class="secondary">メニューで確認</button>
+  </div>
+</div>
+
+<!-- 次の会議を準備 -->
+<div id="nextDim" class="drawer-dim hidden"></div>
+<div id="nextModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="nextTitle">
+  <h3 id="nextTitle">次の会議を準備</h3>
+  <p id="nextLead" class="modal-lead"></p>
+  <div id="nextOpts" class="next-opts" role="radiogroup" aria-label="次の会議の議題"></div>
+  <div id="nextKeep" class="next-keep"></div>
+  <div class="modal-foot">
+    <button type="button" id="btnNextCancel" class="secondary">キャンセル</button>
+    <button type="button" id="btnNextGo">次の会議へ</button>
   </div>
 </div>
 
@@ -755,6 +796,8 @@
         <tfoot id="resultFoot"></tfoot>
       </table>
     </div>
+    <div id="savedNote" class="saved-note"></div>
+    <button type="button" id="btnNextMeeting" class="next-btn">➡ 次の会議を準備</button>
     <h3 class="notes-title">決まった事の記録（あとから修正できます）</h3>
     <div id="resultNotes"></div>
     <div class="result-actions">
@@ -939,6 +982,9 @@
     errorBar: $('errorBar'), errorText: $('errorText'), errorMenu: $('btnErrorMenu'),
     adjustFold: $('adjustFold'), addFold: $('addFold'), peopleFold: $('peopleFold'), todoFold: $('todoFold'), historyFold: $('historyFold'),
     help: $('btnHelp'), agendaHelp: $('agendaHelp'),
+    savedNote: $('savedNote'), nextMeeting: $('btnNextMeeting'), nextDim: $('nextDim'), nextModal: $('nextModal'),
+    nextLead: $('nextLead'), nextOpts: $('nextOpts'), nextKeep: $('nextKeep'), nextCancel: $('btnNextCancel'), nextGo: $('btnNextGo'),
+    infoBar: $('infoBar'),
     roleWarn: $('roleWarn'), roleWarnText: $('roleWarnText'), roleSet: $('btnRoleSet'), roleSkip: $('btnRoleSkip'),
   };
 
@@ -1043,9 +1089,15 @@
   const hasNotes = () => !!state.run && (state.run.notes || []).some(n => n.decision || n.qa || n.status || n.todos.some(t => t.text.trim()));
   const LOSE_MSG = '会議結果（決まった事の記録）が消えます。\n必要なら先に「議事録をテキストでコピー」で保存してください。\n\n';
 
+  // 終了した会議を閉じるときの確認（履歴に保存済みなら、消えないことを伝える）
+  function doneCloseMsg(action) {
+    return state.run.historyDeleted
+      ? LOSE_MSG + action
+      : 'この会議の議事録は会議履歴に保存されています（あとから見たり、コピーしたりできます）。\n\n' + action;
+  }
   function start() {
     if (!state.items.length) { el.title.focus(); return; }
-    if (state.run && state.run.status === 'done' && !confirm(LOSE_MSG + '新しく会議を開始しますか？')) return;
+    if (state.run && state.run.status === 'done' && !confirm(doneCloseMsg('同じ議題で新しく会議を始めますか？'))) return;
     ensureAudio();
     const now = Date.now();
     state.run = {
@@ -1166,10 +1218,82 @@
     save(); render();
   }
 
+  // ---------- 次の会議を準備 ----------
+  // 持ち越し・保留の議題（「次回へ」にした議題も含む）
+  function carryItems() {
+    const r = state.run;
+    return state.items.map((item, i) => ({ item, st: r.notes[i].status })).filter(x => x.st === '保留' || x.st === '持ち越し');
+  }
+  function openNextMeeting() {
+    const r = state.run;
+    if (!r || r.status !== 'done') return;
+    const carry = carryItems(), n = state.items.length;
+    el.nextLead.textContent = r.historyDeleted
+      ? '⚠ この会議の履歴は削除されています。次へ進むと議事録は残りません。次の会議の議題をどうしますか？'
+      : '今回の議事録は会議履歴に保存されています。次の会議の議題をどうしますか？';
+    const opt = (val, title, sub, extra, checked, disabled) => `<label class="next-opt">
+        <input type="radio" name="nextMode" value="${val}" ${checked ? 'checked' : ''} ${disabled ? 'disabled' : ''}>
+        <span><b>${title}</b><small>${sub}</small>${extra || ''}</span></label>`;
+    el.nextOpts.innerHTML =
+      opt('carry', `持ち越し・保留の議題だけ残す（${carry.length}件）`,
+        carry.length ? '決まらなかった議題を次回に続けるとき' : '今回は持ち越し・保留の議題はありません',
+        carry.length ? `<ul>${carry.map(x => `<li>${escapeHtml(x.item.title)}（${x.item.minutes}分）${x.st === '保留' ? '・保留' : ''}</li>`).join('')}</ul>` : '',
+        carry.length > 0, !carry.length) +
+      opt('same', `同じ議題をそのまま使う（${n}件）`, '定例会など、毎回同じ議題のとき', '', !carry.length) +
+      opt('empty', '議題を空にする', 'まったく別の会議を始めるとき', '', false);
+    const roles = [state.roles.chair && `司会 ${state.roles.chair}`, state.roles.scribe && `書記 ${state.roles.scribe}`].filter(Boolean).join('・');
+    const openTodos = collectTodos().filter(x => !x.t.done).length;
+    el.nextKeep.innerHTML = 'そのまま引き継ぐもの：<b>' + [
+      `参加者（${state.people.length}名）`, roles, `TODO（未完了${openTodos}件）`, '会議履歴',
+    ].filter(Boolean).map(escapeHtml).join('・') + '</b>';
+    el.nextModal.classList.remove('hidden'); el.nextDim.classList.remove('hidden');
+    const first = el.nextOpts.querySelector('input:checked');
+    if (first) first.focus();
+  }
+  function closeNextMeeting() {
+    if (el.nextModal.classList.contains('hidden')) return;
+    el.nextModal.classList.add('hidden'); el.nextDim.classList.add('hidden');
+    el.nextMeeting.focus();
+  }
+  function goNextMeeting() {
+    const r = state.run;
+    if (!r || r.status !== 'done') return;
+    const mode = (el.nextOpts.querySelector('input:checked') || {}).value || 'same';
+    // 持ち時間は当初の値に戻す（会議中の調整は今回だけのもの）
+    const fresh = item => ({ id: newId(), title: item.title, minutes: item.minutes, presenter: item.presenter || '', goal: item.goal || '', kind: item.kind });
+    let items, msg;
+    if (mode === 'carry') {
+      const carry = carryItems();
+      items = carry.map(x => ({ ...fresh(x.item), carry: x.st }));
+      msg = `次の会議の準備ができました（持ち越し・保留 ${items.length}件）`;
+    } else if (mode === 'empty') {
+      items = [];
+      msg = '次の会議の準備ができました。議題を追加してください';
+    } else {
+      items = state.items.map(fresh);
+      msg = `次の会議の準備ができました（同じ議題 ${items.length}件）`;
+    }
+    state.items = items;
+    state.run = null;
+    notesPanelKey = '';
+    el.bulk.open = false;
+    el.nextModal.classList.add('hidden'); el.nextDim.classList.add('hidden');
+    save(); render();
+    showInfo('✓ ' + msg);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => (items.length ? el.start : el.title).focus({ preventScroll: true }), 300);
+  }
+  function showInfo(text) {
+    el.infoBar.textContent = text;
+    el.infoBar.classList.remove('hidden');
+    clearTimeout(el.infoBar._t);
+    el.infoBar._t = setTimeout(() => el.infoBar.classList.add('hidden'), 8000);
+  }
+
   function reset() {
     if (!state.run) return;
     const msg = state.run.status === 'done'
-      ? LOSE_MSG + 'リセットしますか？'
+      ? doneCloseMsg('会議結果の表示を閉じて、会議前の画面に戻りますか？')
       : 'タイマーをリセットしますか？（進行状況' + (hasNotes() ? 'と入力した決まった事' : '') + 'は消えます）';
     if (!confirm(msg)) return;
     state.run = null;
@@ -1689,7 +1813,7 @@
         return `<li class="${st}" data-i="${i}">
           <span class="status">${labels[st]}</span>
           <span class="num">${i + 1}.</span>
-          <span class="name">${escapeHtml(item.title)}${isAdded(i) ? '<span class="badge 追加">追加</span>' : ''}${statusBadge(i)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}${isReport(item) ? '<span class="report-line">📢 報告</span>' : item.goal ? `<span class="goal-line">🎯 ${escapeHtml(item.goal)}</span>` : ''}</span>
+          <span class="name">${escapeHtml(item.title)}${isAdded(i) ? '<span class="badge 追加">追加</span>' : ''}${carryBadge(item)}${statusBadge(i)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}${isReport(item) ? '<span class="report-line">📢 報告</span>' : item.goal ? `<span class="goal-line">🎯 ${escapeHtml(item.goal)}</span>` : ''}</span>
           <span class="br"></span>
           <span class="mins">${st === 'skipped' ? '—' : effMin(i) + '分'}${isChanged(i) || st === 'skipped' ? `<small>当初${item.minutes}分</small>` : ''}<small class="at hidden" data-at="${i}" title="開始の見込み時刻"></small></span>
           <span class="ops">${opsHTML(i, st, active, dis)}</span>
@@ -1720,6 +1844,10 @@
     return '';
   }
 
+  // 前回の会議から残した議題の目印
+  function carryBadge(item) {
+    return item.carry ? `<span class="badge carry">${item.carry === '保留' ? '前回は保留' : '前回から持ち越し'}</span>` : '';
+  }
   function statusBadge(i) {
     const n = state.run && state.run.notes && state.run.notes[i];
     return n && n.status ? `<span class="badge ${n.status}">${n.status}</span>` : '';
@@ -2113,6 +2241,10 @@
     const show = !!r && r.status === 'done';
     el.resultCard.classList.toggle('hidden', !show);
     if (!show) return;
+    el.savedNote.classList.toggle('warn', !!r.historyDeleted);
+    el.savedNote.textContent = r.historyDeleted
+      ? '⚠ この会議の履歴は削除されています。必要なら「議事録をテキストでコピー」で控えてください。'
+      : '✓ 会議履歴に保存しました（あとから修正した内容も反映されます）';
     let tp = 0, ta = 0;
     el.resultBody.innerHTML = state.items.map((item, i) => {
       const orig = item.minutes * 60000;
@@ -2152,7 +2284,7 @@
       const p = effMs(i), a = r.elapsed[i] || 0;
       const n = r.notes[i];
       tp += p; ta += a;
-      const head = `${i + 1}. ${isAdded(i) ? '［追加］' : ''}${isReport(item) ? '［報告］' : ''}${item.title}` + (item.presenter ? `（担当：${item.presenter}）` : '');
+      const head = `${i + 1}. ${item.carry ? (item.carry === '保留' ? '［前回保留］' : '［前回持ち越し］') : ''}${isAdded(i) ? '［追加］' : ''}${isReport(item) ? '［報告］' : ''}${item.title}` + (item.presenter ? `（担当：${item.presenter}）` : '');
       if (r.skipped[i]) {
         lines.push(`${head}　［次回へ］当初${fmt(orig)}・今回は実施せず`);
       } else {
@@ -2954,7 +3086,6 @@
   el.menuClose.addEventListener('click', closeMenu);
   el.drawerDim.addEventListener('click', closeMenu);
   el.drawer.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { e.preventDefault(); closeMenu(); return; }
     if (e.key !== 'Tab') return;   // メニューの中だけでフォーカスを回す
     const f = [...el.drawer.querySelectorAll('button, input, textarea, summary, label.btn')].filter(x => !x.disabled && x.offsetParent !== null);
     if (!f.length) return;
@@ -2966,6 +3097,26 @@
     el.help.setAttribute('aria-expanded', on);
   });
   el.roleSet.addEventListener('click', goRoleSetting);
+  // Esc：開いているダイアログ・メニューを閉じる（フォーカスがどこにあっても）
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (!el.nextModal.classList.contains('hidden')) { e.preventDefault(); closeNextMeeting(); }
+    else if (menuOpen()) { e.preventDefault(); closeMenu(); }
+  });
+  el.nextMeeting.addEventListener('click', openNextMeeting);
+  el.nextCancel.addEventListener('click', closeNextMeeting);
+  el.nextDim.addEventListener('click', closeNextMeeting);
+  el.nextGo.addEventListener('click', goNextMeeting);
+  el.nextModal.addEventListener('keydown', e => {
+    if (e.key === 'Tab') {  // ダイアログの中だけでフォーカスを回す
+      const f = [...el.nextModal.querySelectorAll('input:not(:disabled), button')];
+      const radios = f.filter(x => x.type === 'radio');
+      const list = [radios.find(x => x.checked) || radios[0], el.nextCancel, el.nextGo].filter(Boolean);
+      const k = list.indexOf(document.activeElement);
+      if (e.shiftKey && k <= 0) { e.preventDefault(); list[list.length - 1].focus(); }
+      else if (!e.shiftKey && k === list.length - 1) { e.preventDefault(); list[0].focus(); }
+    }
+  });
   el.roleSkip.addEventListener('click', () => { if (runActive()) { state.run.rolesSkip = true; save(); render(); } });
   // TODO一覧・会議履歴の開閉は、この端末で覚えておく
   const UI_KEY = 'meetingTimer.ui';
@@ -3050,7 +3201,7 @@
 
   // キーボード操作：Space=一時停止/再開、→ / N = 次へ（入力中は無効）
   document.addEventListener('keydown', e => {
-    if (e.target.matches('input, textarea, select') || menuOpen()) return;
+    if (e.target.matches('input, textarea, select') || menuOpen() || !el.nextModal.classList.contains('hidden')) return;
     if (!state.run || state.run.status === 'done') return;
     if (e.code === 'Space') { e.preventDefault(); togglePause(); }
     else if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'n') { e.preventDefault(); next(); }
