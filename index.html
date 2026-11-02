@@ -64,6 +64,7 @@
   .dsec .share-status { font-size: .88rem; margin-bottom: 10px; }
   .dsec .note { margin: 8px 0 0; }
   .guide-btn { width: 100%; min-height: 48px; font-weight: 700; }
+  .mobile-note { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--warn-bg); border: 1px solid #ecd28a; color: #6b4f05; font-size: .85rem; line-height: 1.6; }
 
   /* 使い方ガイド */
   .modal.help-modal { width: min(760px, calc(100vw - 24px)); height: min(86vh, 900px); padding: 0; display: flex; flex-direction: column; overflow: hidden; }
@@ -720,7 +721,12 @@
       <summary>❓ 困ったとき</summary>
       <dl class="help-faq">
         <dt>共有ファイル・チーム員ファイルに保存できない</dt>
-        <dd>パソコンの <b>Edge か Chrome</b> で開いてください。スマホや他のブラウザでは、ファイルへの自動保存はできません（画面の操作は使えます）。</dd>
+        <dd>パソコンの <b>Edge か Chrome</b> で開いてください。スマホ・タブレットや他のブラウザでは、ファイルへの自動保存はできません（画面の操作は使えます）。</dd>
+        <dt>スマホで OneDrive に保存できない（読み込みはできる）</dt>
+        <dd>スマホの OneDrive アプリは、ファイルを<b>読み込む</b>ときはコピーを渡してくれますが、ブラウザからの<b>保存先</b>には選べません（特に会社のアカウント）。これはスマホと OneDrive の仕様で、アプリ側では変えられません。<br>
+          ・スマホで読み込んだチーム員ファイルはコピーなので、編集しても OneDrive の元のファイルは変わりません。<br>
+          ・スマホで作ったファイルを OneDrive に置くには、「⬇ CSVファイルをダウンロード」で端末に保存 → OneDrive アプリの「＋」→「アップロード」。<br>
+          ・共有ファイル（会議データ）とチーム員ファイルの保存は、パソコンの Edge・Chrome でお使いください。タイマー・議題・記録などの画面操作はスマホでも使えます。</dd>
         <dt>チーム員ファイル（.csv）が選べない・読み込めない</dt>
         <dd>Excel のまま（.xlsx）では読み込めません。Excel の「名前を付けて保存」で「CSV UTF-8（コンマ区切り）」を選んで保存してください。ファイル選択画面で「すべてのファイル」を選ぶと表示されることもあります。</dd>
         <dt>「🔗 ○○に接続」というボタンが出ている</dt>
@@ -778,6 +784,10 @@
           <button type="button" id="btnTeamClose" class="secondary">編集を閉じる</button>
           <span id="teamMsg" class="copied hidden"></span>
         </div>
+        <div id="teamMobileNote" class="mobile-note hidden">📱 <b>スマホ・タブレットでは、チーム員ファイルへの保存はできません。</b><br>
+          ・読み込んだファイルはコピーとして使います（編集しても OneDrive の元のファイルは変わりません）。<br>
+          ・OneDrive に置くには「⬇ CSVファイルをダウンロード」→ OneDrive アプリの「＋」→「アップロード」。<br>
+          ・チーム員の登録・編集は、パソコンの Edge・Chrome で行うのがおすすめです。</div>
         <p id="teamNote" class="note">「ファイルに保存」で OneDrive などの非公開フォルダに保存しておくと、他の PC でもそのファイルを開いて同じチーム員を使えます。保存後は、画面で編集するたびに自動でファイルに保存されます。</p>
       </div>
     </section>
@@ -1114,7 +1124,7 @@
     teamReload: $('btnTeamReload'), teamClear: $('btnTeamClear'), teamEdit: $('btnTeamEdit'), teamEditor: $('teamEditor'),
     teamSaveState: $('teamSaveState'), teamAddForm: $('teamAddForm'), teamName: $('teamName'),
     teamBulk: $('teamBulk'), teamBulkBtn: $('btnTeamBulk'), teamRows: $('teamRows'), teamSaveAs: $('btnTeamSaveAs'),
-    teamClose: $('btnTeamClose'), teamMsg: $('teamMsg'), teamNote: $('teamNote'),
+    teamClose: $('btnTeamClose'), teamMsg: $('teamMsg'), teamNote: $('teamNote'), teamMobileNote: $('teamMobileNote'),
     saveBadge: $('saveBadge'), menu: $('btnMenu'), menuClose: $('btnMenuClose'), drawer: $('drawer'), drawerDim: $('drawerDim'),
     errorBar: $('errorBar'), errorText: $('errorText'), errorMenu: $('btnErrorMenu'),
     adjustFold: $('adjustFold'), addFold: $('addFold'), peopleFold: $('peopleFold'), todoFold: $('todoFold'), historyFold: $('historyFold'),
@@ -1695,7 +1705,7 @@
       else if (share.conflict) { txt = '⚠ 要確認'; warn = true; }
       else if (share.saving || isDirty()) txt = '☁ 保存中…';
       else txt = '☁ 保存済み';
-    } else txt = '💻 この PC に保存';
+    } else txt = IS_MOBILE ? '📱 この端末に保存' : '💻 この PC に保存';
     if (!warn && team.error) { txt = '⚠ チーム員'; warn = true; }
     el.saveBadge.textContent = txt;
     el.saveBadge.classList.toggle('warn', warn);
@@ -2564,7 +2574,10 @@
   }
 
   // ---------- 共有ファイル（OneDrive などの同期フォルダ上の JSON） ----------
-  const FS_SUPPORTED = 'showOpenFilePicker' in window && 'showSaveFilePicker' in window;
+  // スマホ・タブレット（iPad も含む）。ファイルを開いて上書き保存し続ける仕組みは、パソコンの Edge・Chrome だけで使う
+  const IS_MOBILE = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const FS_SUPPORTED = !IS_MOBILE && 'showOpenFilePicker' in window && 'showSaveFilePicker' in window;
+  const HERE = IS_MOBILE ? 'この端末' : 'この PC';
   const FILE_TYPES = [{ description: '会議データ (JSON)', accept: { 'application/json': ['.json'] } }];
   const APP_ID = 'kaigi-timer';
   const META_KEY = 'meetingTimer.share';
@@ -2739,6 +2752,8 @@
         : isDirty() ? '未保存の変更があります…'
         : `<span class="ok">✓ 保存済み</span>${savedAt ? `（${savedAt}）` : ''}`;
       html = `☁ 共有ファイル <b>${escapeHtml(share.handle.name)}</b> に接続中　${st}`;
+    } else if (IS_MOBILE) {
+      html = '📱 この端末のブラウザにだけ保存しています。<div class="mobile-note">📱 <b>スマホ・タブレットでは共有ファイルは使えません。</b>OneDrive の共有ファイルへの保存は、パソコンの <b>Edge・Chrome</b> でお使いください（スマホの OneDrive は、ブラウザからの保存先に選べないため）。<br>画面の操作（タイマー・議題・記録など）はスマホでも使えます。</div>';
     } else if (!FS_SUPPORTED) {
       html = '💻 この PC のブラウザにだけ保存しています。<br><span class="err">このブラウザは共有ファイルへの直接保存に対応していません（Edge か Chrome で開いてください）。</span>「書き出し／読み込み」は使えます。';
     } else {
@@ -3021,7 +3036,7 @@
     if (team.handle && !team.writable) return `<span class="err">⚠ ファイルへの書き込みが許可されていません（変更はこの PC にだけ保存）</span>`;
     if (team.handle) return team.saving || team.dirty ? '保存中…'
       : `<span class="ok">✓ 「${escapeHtml(team.handle.name)}」に保存済み</span>${team.savedAt ? `（${clock(team.savedAt)}）` : ''}`;
-    return team.dirty ? '<span class="err">● ファイルに未保存</span>（この PC のブラウザにだけ保存されています）' : '';
+    return team.dirty ? `<span class="err">● ファイルに未保存</span>（${HERE}のブラウザにだけ保存されています）` : '';
   }
   function renderTeam() {
     const n = team.members.length;
@@ -3030,7 +3045,8 @@
       (team.fileName ? `・<b>${escapeHtml(team.fileName)}</b>` : '') + '　' +
       (teamSaveText() || (team.handle ? '' : `<span style="color:var(--muted)">${team.loadedAt ? `${dateLabel(team.loadedAt)} ${clock(team.loadedAt)} 読み込み` : ''}</span>`));
     else html = team.error ? `👥 <span class="err">⚠ ${escapeHtml(team.error)}</span>`
-      : '👥 チーム員は未登録です。画面で登録するか、CSVファイルを読み込むと、TODOの担当を選べるようになります（名前はこの PC とご自分のファイルにだけ保存され、アプリ本体には含まれません）。';
+      : `👥 チーム員は未登録です。画面で登録するか、CSVファイルを読み込むと、TODOの担当を選べるようになります（名前は${HERE}とご自分のファイルにだけ保存され、アプリ本体には含まれません）。` +
+        (IS_MOBILE ? '<div class="mobile-note">📱 スマホでは読み込み（コピーとして）のみ。ファイルへの保存はパソコンの Edge・Chrome でお使いください。</div>' : '');
     el.teamStatus.innerHTML = html;
     el.teamSaveState.innerHTML = teamSaveText() || (team.members.length ? '' : '');
     el.teamOpen.classList.toggle('hidden', !FS_SUPPORTED);
@@ -3041,6 +3057,7 @@
     el.teamReload.textContent = `🔗 「${team.fileName}」に接続`;
     el.teamClear.classList.toggle('hidden', !n);
     el.teamNote.classList.toggle('hidden', !!team.handle || !FS_SUPPORTED);
+    el.teamMobileNote.classList.toggle('hidden', !IS_MOBILE);
     renderBadge();
   }
 
