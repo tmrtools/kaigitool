@@ -395,6 +395,36 @@
   .picker-free input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
   .picker-ft { display: flex; justify-content: flex-end; margin-top: 10px; }
 
+  /* チーム員の編集 */
+  .team-editor { padding: 14px 16px; }
+  .te-head { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; margin-bottom: 10px; }
+  .te-head b { color: var(--accent-dark); }
+  .te-add { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+  .te-add input, .te-row input, .te-bulk textarea {
+    font: inherit; font-size: .95rem; padding: 6px 10px; min-height: 42px;
+    border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--text);
+  }
+  .te-add input:focus, .te-row input:focus, .te-bulk textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .te-add #teamName { flex: 1 1 160px; min-width: 0; }
+  .te-add #teamGroup { flex: 1 1 160px; min-width: 0; }
+  .te-add button { min-height: 42px; padding: 6px 18px; }
+  .te-bulk { margin-bottom: 10px; }
+  .te-bulk summary { cursor: pointer; color: var(--accent-dark); font-weight: 600; font-size: .9rem; padding: 4px 0; }
+  .te-bulk textarea { width: 100%; resize: vertical; margin: 6px 0; }
+  .te-rows { max-height: 420px; overflow: auto; border-top: 1px solid var(--line); }
+  .te-row { display: flex; gap: 6px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .te-num { flex: 0 0 2em; text-align: right; color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
+  .te-row input[data-tm=name] { flex: 1 1 160px; min-width: 0; }
+  .te-row input[data-tm=group] { flex: 1 1 140px; min-width: 0; }
+  .te-row button.icon { width: 40px; min-height: 40px; font-size: .9rem; flex: 0 0 auto; }
+  .te-foot { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+  .te-foot button { min-height: 42px; padding: 6px 14px; font-size: .92rem; }
+  @media (max-width: 520px) {
+    .te-row { flex-wrap: wrap; }
+    .te-row input[data-tm=name] { flex: 1 1 calc(100% - 3em); }
+    .te-row input[data-tm=group] { flex: 1 1 100px; margin-left: calc(2em + 6px); }
+  }
+
   /* TODO一覧 */
   .todo-tools { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-bottom: 12px; }
   .todo-tools select {
@@ -456,13 +486,35 @@
   <div class="share-card share-bar">
     <div id="teamStatus" class="share-status"></div>
     <div class="share-btns">
-      <button type="button" id="btnTeamReload" class="hidden">🔄 再読み込み</button>
-      <button type="button" id="btnTeamOpen" class="secondary">👥 チーム員ファイルを選ぶ</button>
-      <label class="btn hidden" id="lblTeamImport" for="teamFile">👥 チーム員ファイルを読み込む</label>
+      <button type="button" id="btnTeamReload" class="hidden">🔗 接続</button>
+      <button type="button" id="btnTeamEdit">✏ チーム員を編集</button>
+      <button type="button" id="btnTeamOpen" class="secondary">📂 チーム員ファイルを開く</button>
+      <label class="btn hidden" id="lblTeamImport" for="teamFile">📂 チーム員ファイルを読み込む</label>
       <input type="file" id="teamFile" accept=".csv,.txt,.tsv,.json,text/csv,text/plain,application/json" hidden>
-      <button type="button" id="btnTeamTemplate" class="secondary">ひな形を作成</button>
       <button type="button" id="btnTeamClear" class="secondary hidden">解除</button>
     </div>
+  </div>
+  <div id="teamEditor" class="share-card team-editor hidden">
+    <div class="te-head"><b>👥 チーム員の編集</b><span id="teamSaveState" class="share-status"></span></div>
+    <form id="teamAddForm" class="te-add" autocomplete="off">
+      <input id="teamName" type="text" maxlength="40" placeholder="名前" aria-label="名前">
+      <input id="teamGroup" type="text" maxlength="40" list="teamGroups" placeholder="グループ（部署など・任意）" aria-label="グループ">
+      <button type="submit">追加</button>
+    </form>
+    <details class="te-bulk">
+      <summary>📥 まとめて追加（Excel からの貼り付けもできます）</summary>
+      <textarea id="teamBulk" rows="4" placeholder="1行に1人。「名前,グループ」またはタブ区切り&#10;山田 太郎,営業&#10;鈴木 一郎,開発"></textarea>
+      <button type="button" id="btnTeamBulk" class="small">まとめて追加</button>
+    </details>
+    <div id="teamRows" class="te-rows"></div>
+    <div class="te-foot">
+      <button type="button" id="btnTeamSaveAs">💾 ファイルに保存</button>
+      <button type="button" id="btnTeamSort" class="secondary">グループ順に並べる</button>
+      <button type="button" id="btnTeamClose" class="secondary">閉じる</button>
+      <span id="teamMsg" class="copied hidden"></span>
+    </div>
+    <p id="teamNote" class="note">「ファイルに保存」で OneDrive などの非公開フォルダに保存しておくと、他の PC でもそのファイルを開いて同じチーム員を使えます。保存後は、画面で編集するたびに自動でファイルに保存されます。</p>
+    <datalist id="teamGroups"></datalist>
   </div>
   <div id="conflictBar" class="conflict hidden">
     <span>⚠ 共有ファイルが他の端末で更新されました。この端末にも保存していない変更があります。どちらを残しますか？</span>
@@ -768,7 +820,10 @@
     todoBoard: $('todoBoard'), todoWho: $('todoWho'), todoShowDone: $('todoShowDone'), todoCount: $('todoCount'),
     copyTodos: $('btnCopyTodos'), todoMsg: $('todoMsg'),
     teamStatus: $('teamStatus'), teamOpen: $('btnTeamOpen'), teamImport: $('lblTeamImport'), teamFile: $('teamFile'),
-    teamReload: $('btnTeamReload'), teamTemplate: $('btnTeamTemplate'), teamClear: $('btnTeamClear'),
+    teamReload: $('btnTeamReload'), teamClear: $('btnTeamClear'), teamEdit: $('btnTeamEdit'), teamEditor: $('teamEditor'),
+    teamSaveState: $('teamSaveState'), teamAddForm: $('teamAddForm'), teamName: $('teamName'), teamGroup: $('teamGroup'),
+    teamBulk: $('teamBulk'), teamBulkBtn: $('btnTeamBulk'), teamRows: $('teamRows'), teamSaveAs: $('btnTeamSaveAs'),
+    teamSort: $('btnTeamSort'), teamClose: $('btnTeamClose'), teamMsg: $('teamMsg'), teamNote: $('teamNote'), teamGroups: $('teamGroups'),
   };
 
   // ---------- ユーティリティ ----------
@@ -1527,7 +1582,7 @@
       </div>
       ${groups.length ? groups.map((g, k) => `<div class="picker-grp"><span>${escapeHtml(g.label)}（${g.names.length}名）</span>${g.names.length > 1 ? `<button type="button" class="link" data-pick-group="${k}">このグループを全員</button>` : ''}</div>
         <div class="picker-chips">${g.names.map(chip).join('')}</div>`).join('')
-        : `<p class="note" style="margin:4px 0">選べる人がまだいません。上の「チーム員」でファイルを読み込むか、参加者を登録してください。下の欄に手入力もできます。</p>`}
+        : `<p class="note" style="margin:4px 0">選べる人がまだいません。画面上部の「✏ チーム員を編集」で登録するか、参加者を登録してください。下の欄に手入力もできます。</p>`}
       <div class="picker-free">
         <input type="text" data-pick-free maxlength="200" list="peopleList" placeholder="名簿にない人は入力して Enter（「、」区切りで複数可）" aria-label="担当者の名前を入力">
         <button type="button" class="secondary" data-pick-add>追加</button>
@@ -2202,13 +2257,15 @@
   // ---------- チーム員ファイル（担当の選択肢。アプリ本体・共有ファイルには含めない） ----------
   // 1行1人の CSV / テキスト / JSON。「名前,グループ」の2列目は任意（部署やチームで分けて表示）
   const TEAM_KEY = 'meetingTimer.team';
-  const TEAM_TYPES = [{ description: 'チーム員ファイル (CSV・テキスト・JSON)', accept: { 'text/csv': ['.csv'], 'text/plain': ['.txt', '.tsv'], 'application/json': ['.json'] } }];
-  const team = { members: [], fileName: '', loadedAt: 0, modified: 0, handle: null, error: '' };
+  const TEAM_OPEN_TYPES = [{ description: 'チーム員ファイル (CSV・テキスト・JSON)', accept: { 'text/csv': ['.csv'], 'text/plain': ['.txt', '.tsv'], 'application/json': ['.json'] } }];
+  const TEAM_SAVE_TYPES = [{ description: 'CSV ファイル', accept: { 'text/csv': ['.csv'] } }];
+  // dirty = 画面で編集してまだファイルに保存していない
+  const team = { members: [], fileName: '', loadedAt: 0, modified: 0, dirty: false, savedAt: 0, handle: null, writable: false, saving: false, error: '', timer: null };
   try { Object.assign(team, JSON.parse(localStorage.getItem(TEAM_KEY)) || {}); } catch (e) { /* ignore */ }
-  team.handle = null; team.error = '';
+  Object.assign(team, { handle: null, writable: false, saving: false, error: '', timer: null });
   if (!Array.isArray(team.members)) team.members = [];
   function persistTeam() {
-    try { localStorage.setItem(TEAM_KEY, JSON.stringify({ members: team.members, fileName: team.fileName, loadedAt: team.loadedAt, modified: team.modified })); } catch (e) { /* ignore */ }
+    try { localStorage.setItem(TEAM_KEY, JSON.stringify({ members: team.members, fileName: team.fileName, loadedAt: team.loadedAt, modified: team.modified, dirty: team.dirty, savedAt: team.savedAt })); } catch (e) { /* ignore */ }
   }
   // Excel の CSV（Shift_JIS）にも対応
   function decodeText(buf) {
@@ -2254,77 +2311,236 @@
   async function loadTeamFrom(file, name) {
     const members = parseTeam(decodeText(await file.arrayBuffer()), name);
     if (!members.length) throw new Error('名前が見つかりませんでした（1行に1人の名前を書いてください）');
-    team.members = members; team.fileName = name; team.loadedAt = Date.now(); team.modified = file.lastModified || 0; team.error = '';
+    team.members = members; team.fileName = name; team.loadedAt = Date.now(); team.modified = file.lastModified || 0;
+    team.error = ''; team.dirty = false;
     persistTeam();
     todoKey = '';
     render(); renderTeam();
   }
+  const canWrite = async h => { try { return (await h.queryPermission({ mode: 'readwrite' })) === 'granted'; } catch (e) { return false; } };
+  async function askWrite(h) { try { return (await h.requestPermission({ mode: 'readwrite' })) === 'granted'; } catch (e) { return false; } }
   async function teamOpen() {
+    if (team.dirty && team.members.length && !confirm('画面で編集したチーム員がまだファイルに保存されていません。別のファイルを読み込むと、その変更は消えます。よろしいですか？')) return;
     try {
-      const [h] = await window.showOpenFilePicker({ types: TEAM_TYPES, multiple: false });
+      const [h] = await window.showOpenFilePicker({ types: TEAM_OPEN_TYPES, multiple: false });
+      const writable = await askWrite(h);   // 画面から編集した内容を、このファイルに保存するため
       await loadTeamFrom(await h.getFile(), h.name);
-      team.handle = h; await idbSet('teamHandle', h);
+      team.handle = h; team.writable = writable; await idbSet('teamHandle', h);
       renderTeam();
       flash(el.agendaMsg, `チーム員 ${team.members.length}名を読み込みました`);
     } catch (e) { if (e.name !== 'AbortError') alert('チーム員ファイルを読み込めませんでした：' + (e.message || e.name)); }
   }
+  // 前回のファイルにつなぎ直す（ask=true はボタンから：書き込みの許可も求める）
   async function teamReload(ask = true) {
-    let h = team.handle || await idbGet('teamHandle');
+    const h = team.handle || await idbGet('teamHandle');
     if (!h) { teamOpen(); return; }
     try {
-      const ok = (await h.queryPermission({ mode: 'read' })) === 'granted' || (ask && (await h.requestPermission({ mode: 'read' })) === 'granted');
-      if (!ok) { renderTeam(); return; }
-      team.handle = h;
-      await loadTeamFrom(await h.getFile(), h.name);
+      let writable = await canWrite(h);
+      if (!writable && ask) writable = await askWrite(h);
+      const readable = writable || (await h.queryPermission({ mode: 'read' })) === 'granted';
+      if (!readable) { renderTeam(); return; }
+      team.handle = h; team.writable = writable; team.error = '';
+      if (team.dirty && writable) await writeTeam();          // つながっていない間に画面で編集した分を保存
+      else if (!team.dirty) await loadTeamFrom(await h.getFile(), h.name);
+      renderTeam();
     } catch (e) { team.error = 'チーム員ファイルを読み込めません（' + (e.message || e.name) + '）'; renderTeam(); }
   }
-  // ファイルが更新されていたら読み直す（Excel などで編集したとき）
+  // ファイルが更新されていたら読み直す（Excel などで編集したとき）。画面で編集中・保存中は読まない
   async function pollTeam() {
-    if (!team.handle) return;
+    if (!team.handle || team.dirty || team.saving) return;
     try {
       const f = await team.handle.getFile();
-      if (f.lastModified !== team.modified) await loadTeamFrom(f, team.handle.name);
+      if (f.lastModified !== team.modified) { await loadTeamFrom(f, team.handle.name); renderTeamEditor(); }
     } catch (e) { /* 一時的に読めないときは次回 */ }
   }
   async function teamClear() {
     if (!confirm('チーム員の一覧をこの PC から消しますか？（チーム員ファイル自体は消えません）')) return;
-    team.members = []; team.fileName = ''; team.loadedAt = 0; team.modified = 0; team.handle = null; team.error = '';
+    Object.assign(team, { members: [], fileName: '', loadedAt: 0, modified: 0, handle: null, writable: false, error: '', dirty: false, savedAt: 0 });
     await idbDel('teamHandle');
-    persistTeam(); render(); renderTeam();
+    persistTeam(); render(); renderTeam(); renderTeamEditor();
   }
-  async function teamTemplate() {
-    const text = '\uFEFF名前,グループ\n山田 太郎,営業\n佐藤 花子,営業\n鈴木 一郎,開発\n';
-    if (FS_SUPPORTED) {
-      try {
-        const h = await window.showSaveFilePicker({ suggestedName: 'チーム員.csv', types: TEAM_TYPES });
-        const w = await h.createWritable(); await w.write(text); await w.close();
-        alert('ひな形を作成しました。Excel やメモ帳で名前を書き換えて保存し、「チーム員ファイルを選ぶ」で読み込んでください。');
-      } catch (e) { if (e.name !== 'AbortError') alert('作成できませんでした：' + (e.message || e.name)); }
+
+  // ---- 保存（ファイルの形式は拡張子に合わせる：.json は JSON、それ以外は CSV） ----
+  const csvCell = v => /[",\r\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+  function teamFileText(name) {
+    if (/\.json$/i.test(name)) return JSON.stringify(team.members, null, 1);
+    // 先頭の BOM で、Excel でも文字化けせずに開ける
+    return '﻿名前,グループ\r\n' + team.members.map(m => `${csvCell(m.name)},${csvCell(m.group)}`).join('\r\n') + '\r\n';
+  }
+  async function writeTeam() {
+    if (!team.handle || !team.writable) return;
+    if (team.saving) { team.again = true; return; }
+    team.saving = true; renderTeam();
+    try {
+      const w = await team.handle.createWritable();
+      await w.write(teamFileText(team.handle.name));
+      await w.close();
+      team.modified = (await team.handle.getFile()).lastModified;
+      team.dirty = false; team.savedAt = Date.now(); team.error = '';
+    } catch (e) {
+      team.error = 'チーム員ファイルに保存できませんでした（' + (e.message || e.name) + '）。この PC には保存されています。';
+    } finally {
+      team.saving = false;
+      persistTeam(); renderTeam();
+      if (team.again) { team.again = false; writeTeam(); }
+    }
+  }
+  function scheduleTeamSave() {
+    clearTimeout(team.timer);
+    if (team.handle && team.writable) team.timer = setTimeout(writeTeam, 600);
+  }
+  // 新しいファイルに保存（または別名で保存）して、以後はそのファイルに自動保存
+  async function teamSaveAs() {
+    const name = team.fileName && !/\.json$/i.test(team.fileName) ? team.fileName.replace(/\.[^.]*$/, '') + '.csv' : 'チーム員.csv';
+    if (!FS_SUPPORTED) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([teamFileText(name)], { type: 'text/csv' }));
+      a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      team.dirty = false; team.fileName = name; persistTeam(); renderTeam();
       return;
     }
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv' }));
-    a.download = 'チーム員.csv';
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    try {
+      // 保存の種類は CSV だけにする（複数指定すると「.csv.json」のような名前になるブラウザがある）
+      const h = await window.showSaveFilePicker({ suggestedName: name, types: TEAM_SAVE_TYPES });
+      team.handle = h; team.writable = true; team.fileName = h.name;
+      await idbSet('teamHandle', h);
+      await writeTeam();
+      flash(el.teamMsg, `「${h.name}」に保存しました`);
+    } catch (e) { if (e.name !== 'AbortError') alert('保存できませんでした：' + (e.message || e.name)); }
+  }
+  function teamChanged() {
+    team.dirty = true;
+    persistTeam();
+    todoKey = '';
+    render(); renderTeam(); renderTeamEditor();
+    scheduleTeamSave();
+  }
+
+  // ---- 画面での追加・編集 ----
+  function teamAdd(rows) {
+    const have = new Set(team.members.map(m => m.name));
+    const added = [], dup = [];
+    rows.forEach(r => {
+      const name = r.name.trim().slice(0, 40), group = (r.group || '').trim().slice(0, 40);
+      if (!name) return;
+      if (have.has(name)) { dup.push(name); return; }
+      have.add(name); added.push({ name, group });
+    });
+    if (added.length) { team.members.push(...added); teamChanged(); }
+    return { added: added.length, dup };
+  }
+  // 名前を変えたとき、TODOの担当・参加者名簿の同じ名前も直す
+  function renameEverywhere(from, to) {
+    const runs = [state.run, ...state.history.map(h => h.run)].filter(Boolean);
+    let n = 0;
+    runs.forEach(r => r.notes.forEach(nt => nt.todos.forEach(t => {
+      const k = t.whos.indexOf(from);
+      if (k >= 0) { t.whos = t.whos.includes(to) ? t.whos.filter(x => x !== from) : t.whos.map(x => x === from ? to : x); n++; }
+    })));
+    [state, state.run].filter(Boolean).forEach(tg => {
+      (tg.people || []).forEach(p => { if (p.name === from && !tg.people.some(q => q.name === to)) p.name = to; });
+      if (tg.roles) ['chair', 'scribe'].forEach(k => { if (tg.roles[k] === from) tg.roles[k] = to; });
+    });
+    return n;
+  }
+  function countTodoUses(name) {
+    return [state.run, ...state.history.map(h => h.run)].filter(Boolean)
+      .reduce((a, r) => a + r.notes.reduce((b, nt) => b + nt.todos.filter(t => t.whos.includes(name)).length, 0), 0);
+  }
+  function onTeamRowsChange(e) {
+    const inp = e.target.closest('input[data-tm]');
+    if (!inp) return;
+    const k = Number(inp.closest('.te-row').dataset.k), m = team.members[k];
+    if (!m) return;
+    const v = inp.value.trim().slice(0, 40);
+    if (inp.dataset.tm === 'group') { m.group = v; teamChanged(); return; }
+    if (v === m.name) return;
+    if (!v) { inp.value = m.name; alert('名前を空にはできません。外す場合は ✕ を押してください。'); return; }
+    if (team.members.some(x => x !== m && x.name === v)) { inp.value = m.name; alert(`「${v}」はすでに登録されています。`); return; }
+    const uses = countTodoUses(m.name);
+    if (uses && confirm(`「${m.name}」が担当になっているTODOが${uses}件あります。\nTODOの担当と参加者名簿の名前も「${v}」に直しますか？\n（「キャンセル」ならチーム員の名前だけ変えます）`)) {
+      renameEverywhere(m.name, v);
+      notesPanelKey = ''; historyKey = '';
+      save();
+    }
+    m.name = v;
+    teamChanged();
+  }
+  function onTeamRowsClick(e) {
+    const b = e.target.closest('button[data-tm-act]');
+    if (!b) return;
+    const k = Number(b.closest('.te-row').dataset.k), m = team.members[k];
+    if (!m) return;
+    const act = b.dataset.tmAct;
+    if (act === 'del') {
+      if (!confirm(`「${m.name}」をチーム員から外しますか？（TODOの担当はそのまま残ります）`)) return;
+      team.members.splice(k, 1);
+    } else {
+      const j = k + (act === 'up' ? -1 : 1);
+      if (j < 0 || j >= team.members.length) return;
+      [team.members[k], team.members[j]] = [team.members[j], team.members[k]];
+    }
+    teamChanged();
+    const f = el.teamRows.querySelector(`.te-row[data-k="${act === 'up' ? k - 1 : act === 'down' ? k + 1 : Math.min(k, team.members.length - 1)}"] button[data-tm-act="${act}"]`);
+    if (f && !f.disabled) f.focus();
+  }
+  function sortTeamByGroup() {
+    const order = [];
+    team.members.forEach(m => { if (!order.includes(m.group)) order.push(m.group); });
+    team.members = order.flatMap(g => team.members.filter(m => m.group === g));
+    teamChanged();
+  }
+  let teamEditorOpen = false;
+  function renderTeamEditor() {
+    el.teamEditor.classList.toggle('hidden', !teamEditorOpen);
+    el.teamEdit.textContent = teamEditorOpen ? '✏ 編集を閉じる' : (team.members.length ? '✏ チーム員を編集' : '✏ 画面で登録する');
+    if (!teamEditorOpen) return;
+    const groups = [...new Set(team.members.map(m => m.group).filter(Boolean))];
+    el.teamGroups.innerHTML = groups.map(g => `<option value="${escapeHtml(g)}">`).join('');
+    // 入力中の欄があるときは描き直さない（カーソルが飛ばないように）
+    if (!el.teamRows.contains(document.activeElement) || document.activeElement.tagName === 'BUTTON') {
+      const n = team.members.length;
+      el.teamRows.innerHTML = n ? team.members.map((m, k) => `<div class="te-row" data-k="${k}">
+          <span class="te-num">${k + 1}</span>
+          <input type="text" data-tm="name" value="${escapeHtml(m.name)}" maxlength="40" aria-label="名前">
+          <input type="text" data-tm="group" value="${escapeHtml(m.group)}" maxlength="40" list="teamGroups" placeholder="グループ（任意）" aria-label="グループ">
+          <button type="button" class="secondary icon" data-tm-act="up" ${k === 0 ? 'disabled' : ''} aria-label="上へ" title="上へ">▲</button>
+          <button type="button" class="secondary icon" data-tm-act="down" ${k === n - 1 ? 'disabled' : ''} aria-label="下へ" title="下へ">▼</button>
+          <button type="button" class="danger icon" data-tm-act="del" aria-label="${escapeHtml(m.name)}を外す" title="外す">✕</button>
+        </div>`).join('') : '<p class="empty">まだ登録されていません。上の欄から追加してください。</p>';
+    }
+    el.teamSort.disabled = groups.length < 2;
+    el.teamSaveAs.textContent = !FS_SUPPORTED ? '⬇ CSVファイルをダウンロード' : team.handle ? '💾 別のファイルに保存' : '💾 ファイルに保存';
+  }
+  function teamSaveText() {
+    if (!team.members.length && !team.handle) return '';
+    if (team.error) return `<span class="err">⚠ ${escapeHtml(team.error)}</span>`;
+    if (team.handle && !team.writable) return `<span class="err">⚠ ファイルへの書き込みが許可されていません（変更はこの PC にだけ保存）</span>`;
+    if (team.handle) return team.saving || team.dirty ? '保存中…'
+      : `<span class="ok">✓ 「${escapeHtml(team.handle.name)}」に保存済み</span>${team.savedAt ? `（${clock(team.savedAt)}）` : ''}`;
+    return team.dirty ? '<span class="err">● ファイルに未保存</span>（この PC のブラウザにだけ保存されています）' : '';
   }
   function renderTeam() {
     const n = team.members.length;
     const groups = new Set(team.members.map(m => m.group).filter(Boolean));
-    const at = team.loadedAt ? `${dateLabel(team.loadedAt)} ${clock(team.loadedAt)} 読み込み` : '';
     let html;
-    if (team.error) html = `👥 <span class="err">⚠ ${escapeHtml(team.error)}</span>`;
-    else if (n) html = `👥 チーム員 <b>${n}名</b>${groups.size ? `（${groups.size}グループ）` : ''}・<b>${escapeHtml(team.fileName)}</b>　` +
-      (team.handle ? '<span class="ok">✓ 接続中（ファイルを更新すると自動で反映）</span>' : `<span style="color:var(--muted)">${at}</span>`);
-    else html = '👥 チーム員ファイルは未設定です。CSV・テキストに名前を書いて読み込むと、TODOの担当を選べるようになります（名前はこの PC にだけ保存され、アプリ本体には含まれません）。';
+    if (n) html = `👥 チーム員 <b>${n}名</b>${groups.size ? `（${groups.size}グループ）` : ''}` +
+      (team.fileName ? `・<b>${escapeHtml(team.fileName)}</b>` : '') + '　' +
+      (teamSaveText() || (team.handle ? '' : `<span style="color:var(--muted)">${team.loadedAt ? `${dateLabel(team.loadedAt)} ${clock(team.loadedAt)} 読み込み` : ''}</span>`));
+    else html = team.error ? `👥 <span class="err">⚠ ${escapeHtml(team.error)}</span>`
+      : '👥 チーム員は未登録です。画面で登録するか、CSVファイルを読み込むと、TODOの担当を選べるようになります（名前はこの PC とご自分のファイルにだけ保存され、アプリ本体には含まれません）。';
     el.teamStatus.innerHTML = html;
+    el.teamSaveState.innerHTML = teamSaveText() || (team.members.length ? '' : '');
     el.teamOpen.classList.toggle('hidden', !FS_SUPPORTED);
-    el.teamOpen.textContent = n ? '👥 別のファイルを選ぶ' : '👥 チーム員ファイルを選ぶ';
+    el.teamOpen.textContent = team.handle || n ? '📂 別のファイルを開く' : '📂 チーム員ファイルを開く';
     el.teamImport.classList.toggle('hidden', FS_SUPPORTED);
-    el.teamReload.classList.toggle('hidden', !FS_SUPPORTED || !team.fileName || !!team.handle && !team.error);
-    el.teamReload.textContent = `🔄 「${team.fileName}」を再読み込み`;
-    el.teamTemplate.classList.toggle('hidden', n > 0);
+    const needReconnect = FS_SUPPORTED && !!team.fileName && (!team.handle || !team.writable || !!team.error);
+    el.teamReload.classList.toggle('hidden', !needReconnect);
+    el.teamReload.textContent = `🔗 「${team.fileName}」に接続`;
     el.teamClear.classList.toggle('hidden', !n);
+    el.teamNote.classList.toggle('hidden', !!team.handle || !FS_SUPPORTED);
   }
 
   // 書き出し／読み込み（バックアップ・Edge/Chrome 以外のブラウザ用）
@@ -2507,7 +2723,32 @@
   }));
   el.teamOpen.addEventListener('click', teamOpen);
   el.teamReload.addEventListener('click', () => teamReload(true));
-  el.teamTemplate.addEventListener('click', teamTemplate);
+  el.teamEdit.addEventListener('click', () => {
+    teamEditorOpen = !teamEditorOpen; renderTeamEditor();
+    if (teamEditorOpen) el.teamName.focus();
+  });
+  el.teamClose.addEventListener('click', () => { teamEditorOpen = false; renderTeamEditor(); el.teamEdit.focus(); });
+  el.teamAddForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const name = el.teamName.value.trim();
+    if (!name) { el.teamName.focus(); return; }
+    const r = teamAdd([{ name, group: el.teamGroup.value }]);
+    if (r.dup.length) { flash(el.teamMsg, `「${name}」はすでに登録されています`); return; }
+    el.teamName.value = '';   // グループは続けて同じ部署の人を入れやすいよう残す
+    el.teamName.focus();
+  });
+  el.teamBulkBtn.addEventListener('click', () => {
+    const rows = parseTeam(el.teamBulk.value, '');
+    if (!rows.length) { el.teamBulk.focus(); return; }
+    const r = teamAdd(rows);
+    el.teamBulk.value = '';
+    flash(el.teamMsg, `${r.added}名を追加しました` + (r.dup.length ? `（登録済みの${r.dup.length}名は除きました）` : ''));
+  });
+  el.teamRows.addEventListener('change', onTeamRowsChange);
+  el.teamRows.addEventListener('click', onTeamRowsClick);
+  el.teamRows.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('input[data-tm]') && !e.isComposing) e.target.blur(); });
+  el.teamSaveAs.addEventListener('click', teamSaveAs);
+  el.teamSort.addEventListener('click', sortTeamByGroup);
   el.teamClear.addEventListener('click', teamClear);
   el.teamFile.addEventListener('change', async () => {
     const f = el.teamFile.files[0];
@@ -2558,7 +2799,9 @@
   renderShare();
   renderTeam();
   // チーム員ファイル：許可が残っていれば自動で読み直す（なければ前回読み込んだ一覧を使う）
-  if (FS_SUPPORTED) idbGet('teamHandle').then(h => { if (h) { team.handle = null; teamReload(false); } });
+  if (FS_SUPPORTED) idbGet('teamHandle').then(h => { if (h) teamReload(false); });
+  // 閉じる前に未保存の変更があれば保存を急ぐ
+  window.addEventListener('pagehide', () => { if (team.dirty) writeTeam(); });
   setInterval(pollTeam, 10000);
   // 前回の共有ファイルに、許可が残っていれば自動で接続（なければボタンを表示）
   if (FS_SUPPORTED) {
