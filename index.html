@@ -348,13 +348,52 @@
   }
   .todo-row input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
   .todo-row input[data-tf=text] { flex: 1 1 auto; min-width: 0; }
-  .todo-row input[data-tf=who] { flex: 0 1 96px; min-width: 0; }
   .todo-row input[data-tf=due] { flex: 0 0 auto; width: 136px; }
   .todo-row button.icon { flex: 0 0 auto; }
   .todo-row input[type=checkbox], .todo-board input[type=checkbox] { width: 22px; height: 22px; margin: 0; accent-color: var(--ok); flex: 0 0 auto; }
   .todo-row.done input[data-tf=text] { text-decoration: line-through; color: var(--muted); }
   .todo-row button.icon { width: 40px; min-height: 40px; font-size: .95rem; }
   button.small { min-height: 40px; padding: 6px 12px; font-size: .9rem; }
+
+  /* 担当ボタン・選択パネル */
+  .todo-row .whobtn {
+    flex: 0 0 186px; min-width: 0; min-height: 40px; padding: 4px 6px; border-radius: 8px;
+    border: 1px solid var(--line); background: #fff; color: var(--text);
+    display: flex; flex-wrap: nowrap; gap: 4px; align-items: center; justify-content: flex-start; text-align: left; overflow: hidden;
+  }
+  .todo-row .whobtn:hover:not(:disabled) { background: #f4f7f8; }
+  .todo-row .whobtn.open { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .whobtn .add { color: var(--accent); font-size: .82rem; font-weight: 600; padding: 2px 4px; }
+  .whobtn .tag { background: #e3edf0; color: var(--accent-dark); border-radius: 999px; padding: 1px 8px; font-size: .8rem; font-weight: 600; white-space: nowrap; min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; }
+  .whobtn .tag.more { background: #eef0ee; color: var(--muted); flex: 0 0 auto; }
+  .picker {
+    border: 1px solid var(--accent); border-radius: 10px; background: #fbfcfc; padding: 12px;
+    margin: 0 0 4px; box-shadow: 0 6px 18px rgba(47,85,100,.12);
+  }
+  .picker-hd { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; font-size: .82rem; color: var(--muted); }
+  .picker-hd b { font-size: .92rem; color: var(--accent-dark); }
+  .picker-quick { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+  .picker button { min-height: 36px; padding: 4px 10px; font-size: .85rem; }
+  .picker-quick button { background: #fff; color: var(--text); border: 1px solid var(--line); }
+  .picker-quick button:hover:not(:disabled) { background: #eef2f1; }
+  .picker-grp { display: flex; gap: 10px; align-items: baseline; font-size: .76rem; color: var(--muted); font-weight: 600; margin: 10px 0 4px; }
+  .picker button.link { min-height: 0; padding: 0; background: none; color: var(--accent); font-size: .76rem; text-decoration: underline; }
+  .picker button.link:hover:not(:disabled) { background: none; color: var(--accent-dark); }
+  .picker-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .picker .pchip { border: 1px solid var(--line); background: #fff; color: var(--text); border-radius: 999px; padding: 4px 12px; font-size: .9rem; }
+  .picker .pchip:hover:not(:disabled) { background: #eef2f1; }
+  .picker .pchip small { font-size: .68rem; color: var(--muted); margin-left: 2px; }
+  .picker .pchip.absent { border-style: dashed; color: var(--muted); }
+  .picker .pchip.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; border-style: solid; }
+  .picker .pchip.on::before { content: "✓ "; }
+  .picker .pchip.on small { color: #d8e6ea; }
+  .picker-free { display: flex; gap: 6px; margin-top: 12px; }
+  .picker-free input {
+    flex: 1; min-width: 0; font: inherit; font-size: .9rem; padding: 6px 10px; min-height: 40px;
+    border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--text);
+  }
+  .picker-free input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .picker-ft { display: flex; justify-content: flex-end; margin-top: 10px; }
 
   /* TODO一覧 */
   .todo-tools { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-bottom: 12px; }
@@ -393,7 +432,8 @@
     /* スマホ：やること を1行目、担当・期限・削除を2行目に */
     .todo-row { flex-wrap: wrap; padding-bottom: 6px; border-bottom: 1px dashed var(--line); }
     .todo-row input[data-tf=text] { flex: 1 1 calc(100% - 40px); }
-    .todo-row input[data-tf=who] { flex: 1 1 80px; }
+    .todo-row .whobtn { flex: 1 1 80px; }
+    .todo-row input[data-tf=due] { width: 128px; }
   }
 </style>
 </head>
@@ -411,6 +451,17 @@
       <button type="button" id="btnExport" class="secondary">⬇ 書き出し</button>
       <label class="btn" for="importFile">⬆ 読み込み</label>
       <input type="file" id="importFile" accept=".json,application/json" hidden>
+    </div>
+  </div>
+  <div class="share-card share-bar">
+    <div id="teamStatus" class="share-status"></div>
+    <div class="share-btns">
+      <button type="button" id="btnTeamReload" class="hidden">🔄 再読み込み</button>
+      <button type="button" id="btnTeamOpen" class="secondary">👥 チーム員ファイルを選ぶ</button>
+      <label class="btn hidden" id="lblTeamImport" for="teamFile">👥 チーム員ファイルを読み込む</label>
+      <input type="file" id="teamFile" accept=".csv,.txt,.tsv,.json,text/csv,text/plain,application/json" hidden>
+      <button type="button" id="btnTeamTemplate" class="secondary">ひな形を作成</button>
+      <button type="button" id="btnTeamClear" class="secondary hidden">解除</button>
     </div>
   </div>
   <div id="conflictBar" class="conflict hidden">
@@ -586,7 +637,7 @@
   //   決定の議題：decision=決まった事, status=''|'決定'|'保留'|'持ち越し'
   //   報告の議題：decision=報告の要点, qa=質疑・補足, status=''|'報告済み'|'持ち越し'
   //   run.plan[]=調整後の持ち時間, run.skipped[]=次回へ, run.added[]=会議中に追加, run.plannedEnd=開始時の予定終了
-  //   notes[].todos: [{id, text, who, due: 'YYYY-MM-DD'|'', done}]（notes[].todo は旧版向けのテキスト）
+  //   notes[].todos: [{id, text, whos: [担当者名], due: 'YYYY-MM-DD'|'', done}]（notes[].todo は旧版向けのテキスト）
   //   run.people / run.roles = この会議の参加者・役割（開始時に名簿から写す）
   // people: [{name, present}] 参加者の名簿（次回も使う）, roles: {chair, scribe}
   // history: [{id, items, run}]  終了した会議のスナップショット（新しい順）
@@ -617,20 +668,24 @@
       }
       const wm = l.match(/^(\S{1,20})[\s　]+(.+)$/);
       if (wm && names.has(wm[1])) { who = wm[1]; l = wm[2]; }
-      return { id: newId(), text: l, who, due, done: false };
+      return { id: newId(), text: l, whos: who ? [who] : [], due, done: false };
     });
   }
   function normNotes(notes, names, baseTs) {
     notes.forEach(n => {
       ['decision', 'qa', 'status'].forEach(k => { if (typeof n[k] !== 'string') n[k] = ''; });
       if (!Array.isArray(n.todos)) n.todos = parseTodoText(n.todo, names, baseTs);
+      n.todos.forEach(t => {  // 担当1人（who）→ 複数（whos）
+        if (!Array.isArray(t.whos)) t.whos = t.who ? [String(t.who)] : [];
+        delete t.who;
+      });
       n.todo = legacyTodo(n.todos);
     });
   }
   // 旧版のアプリでも共有ファイルを読めるよう、テキスト形式のTODOも残しておく
   function legacyTodo(todos) {
     return (todos || []).filter(t => t.text.trim()).map(t =>
-      (t.done ? '［済］' : '') + (t.who ? t.who + ' ' : '') + t.text + (t.due ? `（${fmtDue(t.due)}まで）` : '')).join('\n');
+      (t.done ? '［済］' : '') + (t.whos.length ? t.whos.join('・') + ' ' : '') + t.text + (t.due ? `（${fmtDue(t.due)}まで）` : '')).join('\n');
   }
   function normRun(r, items, names) {
     const n = items.length;
@@ -712,6 +767,8 @@
     roleChair: $('roleChair'), roleScribe: $('roleScribe'), peopleNote: $('peopleNote'), peopleList: $('peopleList'),
     todoBoard: $('todoBoard'), todoWho: $('todoWho'), todoShowDone: $('todoShowDone'), todoCount: $('todoCount'),
     copyTodos: $('btnCopyTodos'), todoMsg: $('todoMsg'),
+    teamStatus: $('teamStatus'), teamOpen: $('btnTeamOpen'), teamImport: $('lblTeamImport'), teamFile: $('teamFile'),
+    teamReload: $('btnTeamReload'), teamTemplate: $('btnTeamTemplate'), teamClear: $('btnTeamClear'),
   };
 
   // ---------- ユーティリティ ----------
@@ -1182,7 +1239,7 @@
       : runActive() ? 'この会議の出欠を記録しています（途中参加の人もここで追加できます）。'
       : '議事録に記録されます。あとから修正もできます。';
     // TODOの担当欄の候補（参加者＋議題の担当者）
-    const cand = new Set([...state.people, ...people].map(p => p.name));
+    const cand = new Set([...team.members, ...state.people, ...people].map(p => p.name));
     state.items.forEach(x => x.presenter && cand.add(x.presenter));
     el.peopleList.innerHTML = [...cand].map(nm => `<option value="${escapeHtml(nm)}">`).join('');
   }
@@ -1226,8 +1283,8 @@
   function renderTodoBoard() {
     const all = collectTodos();
     const who = el.todoWho.value, showDone = el.todoShowDone.checked;
-    const names = [...new Set(all.map(x => x.t.who).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ja'));
-    const hasNoWho = all.some(x => !x.t.who);
+    const names = [...new Set(all.flatMap(x => x.t.whos))].sort((a, b) => a.localeCompare(b, 'ja'));
+    const hasNoWho = all.some(x => !x.t.whos.length);
     const key = JSON.stringify([all.map(x => [x.t, x.item.title, x.run.meetingStart]), who, showDone, todayStr()]);
     if (key === todoKey) return;
     todoKey = key;
@@ -1248,13 +1305,15 @@
       return `<li class="${t.done ? 'done' : dc}">
         <input type="checkbox" data-todo-done="${t.id}" ${t.done ? 'checked' : ''} aria-label="完了">
         <span class="body"><span class="t">${escapeHtml(t.text)}</span>
-          <span class="meta">${t.who ? `<span class="who">${escapeHtml(t.who)}</span>・` : ''}${dueText}・${dateLabel(run.meetingStart)}の会議「${escapeHtml(item.title)}」${run === state.run && runActive() ? '（進行中）' : ''}</span></span>
+          <span class="meta">${t.whos.length ? `<span class="who" title="${escapeHtml(t.whos.join('・'))}">${escapeHtml(whoShort(t.whos))}</span>・` : ''}${dueText}・${dateLabel(run.meetingStart)}の会議「${escapeHtml(item.title)}」${run === state.run && runActive() ? '（進行中）' : ''}</span></span>
       </li>`;
     }).join('');
   }
+  // 「鈴木・高橋・田中 ほか2名」
+  const whoShort = (whos, max = 3) => whos.slice(0, max).join('・') + (whos.length > max ? ` ほか${whos.length - max}名` : '');
   function filterTodos(all) {
     const who = el.todoWho.value, showDone = el.todoShowDone.checked;
-    return all.filter(x => (showDone || !x.t.done) && (!who || (who === '\u0000' ? !x.t.who : x.t.who === who)));
+    return all.filter(x => (showDone || !x.t.done) && (!who || (who === '\u0000' ? !x.t.whos.length : x.t.whos.includes(who))));
   }
   function onTodoBoardChange(e) {
     const cb = e.target.closest('input[data-todo-done]');
@@ -1408,14 +1467,129 @@
     return state.run.notes[i].todos.map(t => `<div class="todo-row ${t.done ? 'done' : ''}" data-tid="${t.id}">
         <input type="checkbox" data-tf="done" ${t.done ? 'checked' : ''} aria-label="完了" title="完了">
         <input type="text" data-tf="text" value="${escapeHtml(t.text)}" maxlength="200" placeholder="やること（例：${example}）" aria-label="やること">
-        <input type="text" data-tf="who" value="${escapeHtml(t.who)}" maxlength="40" list="peopleList" placeholder="担当" aria-label="担当">
+        <button type="button" class="whobtn ${picker.tid === t.id ? 'open' : ''}" data-who-open aria-expanded="${picker.tid === t.id}" title="${t.whos.length ? '担当：' + escapeHtml(t.whos.join('・')) : '担当を選ぶ'}">${whoTagsHTML(t.whos)}</button>
         <input type="date" data-tf="due" value="${escapeHtml(t.due)}" aria-label="期限" title="期限">
         <button type="button" class="danger icon" data-todo-del aria-label="このTODOを削除" title="削除">✕</button>
-      </div>`).join('');
+      </div>${picker.tid === t.id ? pickerHTML(t) : ''}`).join('');
+  }
+  function whoTagsHTML(whos) {
+    if (!whos.length) return '<span class="add">＋ 担当を選ぶ</span>';
+    // 欄に収まる人数だけタグで表示（フルネームなら1人、短い名前なら2人）＋残りは「+N」
+    const max = whos.length >= 2 && whos[0].length + whos[1].length <= 8 ? 2 : 1;
+    return whos.slice(0, max).map(n => `<span class="tag">${escapeHtml(n)}</span>`).join('') +
+      (whos.length > max ? `<span class="tag more">+${whos.length - max}</span>` : '');
+  }
+
+  // ---------- 担当の選択パネル ----------
+  const picker = { tid: '' };  // 開いているTODOのid（同時に開くのは1つだけ）
+  // 選べる人：チーム員（グループ別）→ 参加者（チーム員以外）→ 手入力したことのある人
+  function pickerGroups() {
+    const groups = [], seen = new Set();
+    const tg = peopleTarget();
+    const presence = new Map(tg.people.map(p => [p.name, p.present]));
+    const push = (label, names, kind) => {
+      const list = names.filter(n => n && !seen.has(n));
+      list.forEach(n => seen.add(n));
+      if (list.length) groups.push({ label, names: list, kind });
+    };
+    const byGroup = new Map();
+    team.members.forEach(m => {
+      const g = m.group || 'チーム員';
+      if (!byGroup.has(g)) byGroup.set(g, []);
+      byGroup.get(g).push(m.name);
+    });
+    byGroup.forEach((names, g) => push(g, names, 'team'));
+    push('参加者（チーム員以外）', tg.people.map(p => p.name), 'people');
+    const used = new Set();
+    collectTodos().forEach(x => x.t.whos.forEach(n => used.add(n)));
+    state.items.forEach(x => x.presenter && used.add(x.presenter));
+    push('これまでに入力した人', [...used].sort((a, b) => a.localeCompare(b, 'ja')), 'free');
+    return { groups, presence };
+  }
+  function pickerHTML(t) {
+    const { groups, presence } = pickerGroups();
+    const sel = new Set(t.whos);
+    // 選択中だが、どのグループにもない名前（いま手入力した人など）
+    const extra = t.whos.filter(n => !groups.some(g => g.names.includes(n)));
+    if (extra.length) groups.push({ label: '手入力', names: extra, kind: 'free' });
+    const chip = n => {
+      const pr = presence.get(n);
+      const mark = pr === true ? ' <small>出席</small>' : pr === false ? ' <small>欠席</small>' : '';
+      return `<button type="button" class="pchip ${sel.has(n) ? 'on' : ''} ${pr === false ? 'absent' : ''}" data-pick="${escapeHtml(n)}" aria-pressed="${sel.has(n)}">${escapeHtml(n)}${mark}</button>`;
+    };
+    const hasPresent = peopleTarget().people.some(p => p.present);
+    return `<div class="picker" data-picker="${t.id}">
+      <div class="picker-hd"><b>担当を選択（複数選べます）</b><span>${t.whos.length}人を選択中</span></div>
+      <div class="picker-quick">
+        ${hasPresent ? '<button type="button" data-pick-all="present">出席者を全員選ぶ</button>' : ''}
+        ${team.members.length ? '<button type="button" data-pick-all="team">チーム員を全員選ぶ</button>' : ''}
+        <button type="button" data-pick-all="none" ${t.whos.length ? '' : 'disabled'}>選択を解除</button>
+      </div>
+      ${groups.length ? groups.map((g, k) => `<div class="picker-grp"><span>${escapeHtml(g.label)}（${g.names.length}名）</span>${g.names.length > 1 ? `<button type="button" class="link" data-pick-group="${k}">このグループを全員</button>` : ''}</div>
+        <div class="picker-chips">${g.names.map(chip).join('')}</div>`).join('')
+        : `<p class="note" style="margin:4px 0">選べる人がまだいません。上の「チーム員」でファイルを読み込むか、参加者を登録してください。下の欄に手入力もできます。</p>`}
+      <div class="picker-free">
+        <input type="text" data-pick-free maxlength="200" list="peopleList" placeholder="名簿にない人は入力して Enter（「、」区切りで複数可）" aria-label="担当者の名前を入力">
+        <button type="button" class="secondary" data-pick-add>追加</button>
+      </div>
+      <div class="picker-ft"><button type="button" data-pick-close>完了</button></div>
+    </div>`;
+  }
+  // 選択パネルの中の操作。groups の並びは描画時と同じものを使う
+  function onPickerClick(e, card, i) {
+    const t = state.run.notes[i].todos.find(x => x.id === picker.tid);
+    if (!t) return false;
+    const b = e.target.closest('button');
+    if (!b || !b.closest('.picker')) return false;
+    const set = new Set(t.whos);
+    if (b.dataset.pick !== undefined) {
+      set.has(b.dataset.pick) ? set.delete(b.dataset.pick) : set.add(b.dataset.pick);
+    } else if (b.dataset.pickAll === 'present') peopleTarget().people.filter(p => p.present).forEach(p => set.add(p.name));
+    else if (b.dataset.pickAll === 'team') team.members.forEach(m => set.add(m.name));
+    else if (b.dataset.pickAll === 'none') set.clear();
+    else if (b.dataset.pickGroup !== undefined) {
+      const g = pickerGroups().groups[Number(b.dataset.pickGroup)];
+      if (g) { const all = g.names.every(n => set.has(n)); g.names.forEach(n => all ? set.delete(n) : set.add(n)); }
+    } else if (b.dataset.pickAdd !== undefined) {
+      addFreeNames(card, set);
+    } else if (b.dataset.pickClose !== undefined) {
+      closePicker(card, i, true);
+      return true;
+    } else return false;
+    t.whos = orderNames([...set]);
+    save();
+    redrawTodos(card, i, b);
+    return true;
+  }
+  function addFreeNames(card, set) {
+    const inp = card.querySelector('[data-pick-free]');
+    if (!inp) return;
+    inp.value.split(/[、,，\n\t]+|　/).map(x => x.trim().slice(0, 40)).filter(Boolean).forEach(n => set.add(n));
+    inp.value = '';
+  }
+  // 担当の並び：チーム員の順 → それ以外は選んだ順
+  function orderNames(list) {
+    const rank = new Map(team.members.map((m, k) => [m.name, k]));
+    return list.map((n, k) => [n, rank.has(n) ? rank.get(n) : 1e6 + k]).sort((a, b) => a[1] - b[1]).map(x => x[0]);
+  }
+  function redrawTodos(card, i, focusBtn) {
+    const key = focusBtn && (focusBtn.dataset.pick !== undefined ? `[data-pick="${CSS.escape(focusBtn.dataset.pick)}"]`
+      : focusBtn.dataset.pickAdd !== undefined ? '[data-pick-free]' : null);
+    card.querySelector('.todo-list').innerHTML = todoRowsHTML(i);
+    const f = key && card.querySelector(`.picker ${key}`);
+    if (f) f.focus({ preventScroll: true });
+    renderTodoBoard();
+  }
+  function closePicker(card, i, focusRow) {
+    const tid = picker.tid;
+    picker.tid = '';
+    if (!card) return;
+    card.querySelector('.todo-list').innerHTML = todoRowsHTML(i);
+    if (focusRow) { const b = card.querySelector(`.todo-row[data-tid="${tid}"] [data-who-open]`); if (b) b.focus(); }
   }
   function addTodo(card, i) {
     const n = state.run.notes[i];
-    const t = { id: newId(), text: '', who: state.items[i].presenter || '', due: '', done: false };
+    const t = { id: newId(), text: '', whos: state.items[i].presenter ? [state.items[i].presenter] : [], due: '', done: false };
     n.todos.push(t);
     save();
     card.querySelector('.todo-list').innerHTML = todoRowsHTML(i);
@@ -1446,7 +1620,7 @@
       const t = state.run.notes[Number(card.dataset.i)].todos.find(x => x.id === row.dataset.tid);
       if (!t) return;
       if (f.dataset.tf === 'done') { t.done = f.checked; row.classList.toggle('done', t.done); }
-      else t[f.dataset.tf] = f.value.slice(0, f.dataset.tf === 'who' ? 40 : 200);
+      else t[f.dataset.tf] = f.value.slice(0, 200);
       save();
       renderTodoBoard();
       return;
@@ -1459,14 +1633,43 @@
   }
   // TODOの欄で Enter を押したら次のTODOを追加
   function onNoteKey(e) {
+    if (!state.run) return;
+    const card = e.target.closest('.note-card');
+    if (card && picker.tid && e.key === 'Escape') { e.preventDefault(); return closePicker(card, Number(card.dataset.i), true); }
+    const free = e.target.closest('input[data-pick-free]');
+    if (free && e.key === 'Enter' && !e.isComposing) {
+      e.preventDefault();
+      const i = Number(card.dataset.i), t = state.run.notes[i].todos.find(x => x.id === picker.tid);
+      if (!t || !free.value.trim()) return;
+      const set = new Set(t.whos);
+      addFreeNames(card, set);
+      t.whos = orderNames([...set]);
+      save();
+      redrawTodos(card, i, { dataset: { pickAdd: '' } });
+      return;
+    }
     const f = e.target.closest('input[data-tf=text]');
     if (!f || e.key !== 'Enter' || e.isComposing || !state.run) return;
     e.preventDefault();
-    const card = f.closest('.note-card');
     addTodo(card, Number(card.dataset.i));
   }
   function onNoteClick(e) {
     if (!state.run) return;
+    const pcard = e.target.closest('.note-card');
+    if (pcard && e.target.closest('.picker') && onPickerClick(e, pcard, Number(pcard.dataset.i))) return;
+    const ob = e.target.closest('button[data-who-open]');
+    if (ob) {
+      const card = ob.closest('.note-card'), i = Number(card.dataset.i);
+      const tid = ob.closest('.todo-row').dataset.tid;
+      if (picker.tid === tid) return closePicker(card, i, true);
+      // 別の記録欄で開いているパネルは閉じる
+      if (picker.tid) document.querySelectorAll('.picker').forEach(p => { const c = p.closest('.note-card'); picker.tid = ''; c.querySelector('.todo-list').innerHTML = todoRowsHTML(Number(c.dataset.i)); });
+      picker.tid = tid;
+      card.querySelector('.todo-list').innerHTML = todoRowsHTML(i);
+      const first = card.querySelector('.picker .pchip, .picker [data-pick-free]');
+      if (first) first.focus({ preventScroll: true });
+      return;
+    }
     const add = e.target.closest('button[data-todo-add]');
     const del = e.target.closest('button[data-todo-del]');
     if (add || del) {
@@ -1476,6 +1679,7 @@
       const t = n.todos.find(x => x.id === tid);
       if (t && t.text.trim() && !confirm(`TODO「${t.text}」を削除しますか？`)) return;
       n.todos = n.todos.filter(x => x.id !== tid);
+      if (picker.tid === tid) picker.tid = '';
       save();
       card.querySelector('.todo-list').innerHTML = todoRowsHTML(i);
       renderTodoBoard();
@@ -1691,7 +1895,7 @@
   }
   // 「告知文の作成（担当：佐藤／期限：11/12）［完了］」
   function todoLine(t) {
-    const meta = [t.who ? `担当：${t.who}` : '', t.due ? `期限：${fmtDue(t.due)}` : ''].filter(Boolean).join('／');
+    const meta = [t.whos.length ? `担当：${t.whos.join('・')}` : '', t.due ? `期限：${fmtDue(t.due)}` : ''].filter(Boolean).join('／');
     return t.text.trim() + (meta ? `（${meta}）` : '') + (t.done ? '［完了］' : '');
   }
   // 「出席：佐藤（司会）、鈴木（書記）、高橋／欠席：田中」
@@ -1995,6 +2199,134 @@
     await writeShared(true);
   }
 
+  // ---------- チーム員ファイル（担当の選択肢。アプリ本体・共有ファイルには含めない） ----------
+  // 1行1人の CSV / テキスト / JSON。「名前,グループ」の2列目は任意（部署やチームで分けて表示）
+  const TEAM_KEY = 'meetingTimer.team';
+  const TEAM_TYPES = [{ description: 'チーム員ファイル (CSV・テキスト・JSON)', accept: { 'text/csv': ['.csv'], 'text/plain': ['.txt', '.tsv'], 'application/json': ['.json'] } }];
+  const team = { members: [], fileName: '', loadedAt: 0, modified: 0, handle: null, error: '' };
+  try { Object.assign(team, JSON.parse(localStorage.getItem(TEAM_KEY)) || {}); } catch (e) { /* ignore */ }
+  team.handle = null; team.error = '';
+  if (!Array.isArray(team.members)) team.members = [];
+  function persistTeam() {
+    try { localStorage.setItem(TEAM_KEY, JSON.stringify({ members: team.members, fileName: team.fileName, loadedAt: team.loadedAt, modified: team.modified })); } catch (e) { /* ignore */ }
+  }
+  // Excel の CSV（Shift_JIS）にも対応
+  function decodeText(buf) {
+    const bytes = new Uint8Array(buf);
+    try { return new TextDecoder('utf-8', { fatal: true }).decode(bytes).replace(/^\uFEFF/, ''); }
+    catch (e) { return new TextDecoder('shift_jis').decode(bytes); }
+  }
+  function splitCsvLine(line) {
+    const out = []; let cur = '', q = false;
+    for (let k = 0; k < line.length; k++) {
+      const c = line[k];
+      if (q) { if (c === '"' && line[k + 1] === '"') { cur += '"'; k++; } else if (c === '"') q = false; else cur += c; }
+      else if (c === '"') q = true;
+      else if (c === ',' || c === '\t') { out.push(cur); cur = ''; }
+      else cur += c;
+    }
+    out.push(cur);
+    return out.map(x => x.trim());
+  }
+  const NAME_HEAD = /^(名前|氏名|なまえ|メンバー|担当者?|name)$/i;
+  const GROUP_HEAD = /^(グループ|部署|部門|チーム|所属|課|group|team|dept)$/i;
+  function parseTeam(text, fileName) {
+    let rows = [];
+    if (/\.json$/i.test(fileName) || /^\s*[\[{]/.test(text)) {
+      let d = JSON.parse(text);
+      if (d && !Array.isArray(d)) d = d.members || d.team || [];
+      rows = (Array.isArray(d) ? d : []).map(x => typeof x === 'string' ? { name: x, group: '' }
+        : { name: String(x.name || x['名前'] || x['氏名'] || ''), group: String(x.group || x['グループ'] || x['部署'] || x['チーム'] || '') });
+    } else {
+      const lines = text.split(/\r?\n/).filter(l => l.trim() && !/^\s*#/.test(l)).map(splitCsvLine);
+      let ni = 0, gi = 1;
+      if (lines.length && lines[0].some(c => NAME_HEAD.test(c))) {
+        ni = lines[0].findIndex(c => NAME_HEAD.test(c));
+        gi = lines[0].findIndex(c => GROUP_HEAD.test(c));
+        lines.shift();
+      }
+      rows = lines.map(c => ({ name: c[ni] || '', group: gi >= 0 ? (c[gi] || '') : '' }));
+    }
+    const seen = new Set();
+    return rows.map(r => ({ name: r.name.trim().slice(0, 40), group: r.group.trim().slice(0, 40) }))
+      .filter(r => r.name && !seen.has(r.name) && seen.add(r.name));
+  }
+  async function loadTeamFrom(file, name) {
+    const members = parseTeam(decodeText(await file.arrayBuffer()), name);
+    if (!members.length) throw new Error('名前が見つかりませんでした（1行に1人の名前を書いてください）');
+    team.members = members; team.fileName = name; team.loadedAt = Date.now(); team.modified = file.lastModified || 0; team.error = '';
+    persistTeam();
+    todoKey = '';
+    render(); renderTeam();
+  }
+  async function teamOpen() {
+    try {
+      const [h] = await window.showOpenFilePicker({ types: TEAM_TYPES, multiple: false });
+      await loadTeamFrom(await h.getFile(), h.name);
+      team.handle = h; await idbSet('teamHandle', h);
+      renderTeam();
+      flash(el.agendaMsg, `チーム員 ${team.members.length}名を読み込みました`);
+    } catch (e) { if (e.name !== 'AbortError') alert('チーム員ファイルを読み込めませんでした：' + (e.message || e.name)); }
+  }
+  async function teamReload(ask = true) {
+    let h = team.handle || await idbGet('teamHandle');
+    if (!h) { teamOpen(); return; }
+    try {
+      const ok = (await h.queryPermission({ mode: 'read' })) === 'granted' || (ask && (await h.requestPermission({ mode: 'read' })) === 'granted');
+      if (!ok) { renderTeam(); return; }
+      team.handle = h;
+      await loadTeamFrom(await h.getFile(), h.name);
+    } catch (e) { team.error = 'チーム員ファイルを読み込めません（' + (e.message || e.name) + '）'; renderTeam(); }
+  }
+  // ファイルが更新されていたら読み直す（Excel などで編集したとき）
+  async function pollTeam() {
+    if (!team.handle) return;
+    try {
+      const f = await team.handle.getFile();
+      if (f.lastModified !== team.modified) await loadTeamFrom(f, team.handle.name);
+    } catch (e) { /* 一時的に読めないときは次回 */ }
+  }
+  async function teamClear() {
+    if (!confirm('チーム員の一覧をこの PC から消しますか？（チーム員ファイル自体は消えません）')) return;
+    team.members = []; team.fileName = ''; team.loadedAt = 0; team.modified = 0; team.handle = null; team.error = '';
+    await idbDel('teamHandle');
+    persistTeam(); render(); renderTeam();
+  }
+  async function teamTemplate() {
+    const text = '\uFEFF名前,グループ\n山田 太郎,営業\n佐藤 花子,営業\n鈴木 一郎,開発\n';
+    if (FS_SUPPORTED) {
+      try {
+        const h = await window.showSaveFilePicker({ suggestedName: 'チーム員.csv', types: TEAM_TYPES });
+        const w = await h.createWritable(); await w.write(text); await w.close();
+        alert('ひな形を作成しました。Excel やメモ帳で名前を書き換えて保存し、「チーム員ファイルを選ぶ」で読み込んでください。');
+      } catch (e) { if (e.name !== 'AbortError') alert('作成できませんでした：' + (e.message || e.name)); }
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv' }));
+    a.download = 'チーム員.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  function renderTeam() {
+    const n = team.members.length;
+    const groups = new Set(team.members.map(m => m.group).filter(Boolean));
+    const at = team.loadedAt ? `${dateLabel(team.loadedAt)} ${clock(team.loadedAt)} 読み込み` : '';
+    let html;
+    if (team.error) html = `👥 <span class="err">⚠ ${escapeHtml(team.error)}</span>`;
+    else if (n) html = `👥 チーム員 <b>${n}名</b>${groups.size ? `（${groups.size}グループ）` : ''}・<b>${escapeHtml(team.fileName)}</b>　` +
+      (team.handle ? '<span class="ok">✓ 接続中（ファイルを更新すると自動で反映）</span>' : `<span style="color:var(--muted)">${at}</span>`);
+    else html = '👥 チーム員ファイルは未設定です。CSV・テキストに名前を書いて読み込むと、TODOの担当を選べるようになります（名前はこの PC にだけ保存され、アプリ本体には含まれません）。';
+    el.teamStatus.innerHTML = html;
+    el.teamOpen.classList.toggle('hidden', !FS_SUPPORTED);
+    el.teamOpen.textContent = n ? '👥 別のファイルを選ぶ' : '👥 チーム員ファイルを選ぶ';
+    el.teamImport.classList.toggle('hidden', FS_SUPPORTED);
+    el.teamReload.classList.toggle('hidden', !FS_SUPPORTED || !team.fileName || !!team.handle && !team.error);
+    el.teamReload.textContent = `🔄 「${team.fileName}」を再読み込み`;
+    el.teamTemplate.classList.toggle('hidden', n > 0);
+    el.teamClear.classList.toggle('hidden', !n);
+  }
+
   // 書き出し／読み込み（バックアップ・Edge/Chrome 以外のブラウザ用）
   async function exportData() {
     const d = new Date();
@@ -2173,6 +2505,17 @@
     sel.blur();
     save(); render();
   }));
+  el.teamOpen.addEventListener('click', teamOpen);
+  el.teamReload.addEventListener('click', () => teamReload(true));
+  el.teamTemplate.addEventListener('click', teamTemplate);
+  el.teamClear.addEventListener('click', teamClear);
+  el.teamFile.addEventListener('change', async () => {
+    const f = el.teamFile.files[0];
+    el.teamFile.value = '';
+    if (!f) return;
+    try { await loadTeamFrom(f, f.name); flash(el.agendaMsg, `チーム員 ${team.members.length}名を読み込みました`); }
+    catch (e) { alert('チーム員ファイルを読み込めませんでした：' + (e.message || e.name)); }
+  });
   el.todoBoard.addEventListener('change', onTodoBoardChange);
   el.todoWho.addEventListener('change', () => { todoKey = ''; renderTodoBoard(); });
   el.todoShowDone.addEventListener('change', () => { todoKey = ''; renderTodoBoard(); });
@@ -2213,6 +2556,10 @@
   state = load();
   render();
   renderShare();
+  renderTeam();
+  // チーム員ファイル：許可が残っていれば自動で読み直す（なければ前回読み込んだ一覧を使う）
+  if (FS_SUPPORTED) idbGet('teamHandle').then(h => { if (h) { team.handle = null; teamReload(false); } });
+  setInterval(pollTeam, 10000);
   // 前回の共有ファイルに、許可が残っていれば自動で接続（なければボタンを表示）
   if (FS_SUPPORTED) {
     idbGet('handle').then(async h => {
