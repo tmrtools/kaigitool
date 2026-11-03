@@ -271,15 +271,10 @@
   }
   .add-form input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
   .add-form #title { flex: 1 1 100%; min-width: 0; font-size: 1.05rem; }
-  .add-form .min-wrap { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
-  .add-form #minutes { width: 80px; }
-  .add-form #presenter { flex: 1 1 100px; min-width: 0; }
+  .add-form .min-wrap { display: flex; align-items: center; gap: 6px; flex: 1 1 0; min-width: 0; }
+  .add-form #minutes { flex: 1 1 auto; width: 0; min-width: 60px; }
+  .add-form #presenter { flex: 1 1 100%; min-width: 0; }
   .add-form #goal { flex: 1 1 100%; min-width: 0; }
-  /* 種類は「追加」ボタンと同じ行に（決めること／報告内容の要約の欄を1行まるごと使う） */
-  .add-form #goal { order: 1; }
-  .add-form #kind { order: 2; }
-  .add-form #addPos { order: 3; }
-  .add-form button[type=submit] { order: 4; }
   .add-form button { flex: 0 0 auto; margin-left: auto; min-width: 120px; }
 
   /* Bulk import */
@@ -336,6 +331,7 @@
   .goal.report { border-left-color: #8a7bb0; background: #f1eff7; }
   .agenda .report-line { display: block; font-size: .8rem; color: #6c5f96; font-weight: 600; }
   .agenda .report-line .sum { font-weight: 400; }
+  .add-form #kind { flex: 1 1 0 !important; min-width: 0; }
   .add-form #kind, .add-form #addPos {
     font: inherit; font-size: 1rem; min-height: 48px; padding: 8px 10px;
     border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--text); flex: 0 0 auto;
@@ -895,11 +891,11 @@
     <summary>＋ 議題を追加</summary>
     <form id="addForm" class="add-form" autocomplete="off">
       <input id="title" type="text" placeholder="議題名" maxlength="100" required>
+      <input id="presenter" type="text" placeholder="担当者（任意）" maxlength="40">
       <span class="min-wrap">
         <input id="minutes" type="number" min="1" max="600" step="1" value="10" required aria-label="持ち時間（分）">
         <span>分</span>
       </span>
-      <input id="presenter" type="text" placeholder="担当者（任意）" maxlength="40">
       <select id="kind" aria-label="議題の種類">
         <option value="decide">🎯 決める</option>
         <option value="report">📢 報告</option>
