@@ -41,6 +41,9 @@
     background: rgba(255,255,255,.14); color: #fff; white-space: nowrap;
   }
   header button:hover:not(:disabled) { background: rgba(255,255,255,.26); }
+  /* 保存の状態は「表示」なので、ボタンに見えないよう枠線だけの控えめな見た目に（エラー時だけ目立たせる） */
+  header .save-badge { background: transparent; border: 1px solid rgba(255,255,255,.35); color: #e3edf0; font-weight: 400; }
+  header .save-badge:hover:not(:disabled) { background: rgba(255,255,255,.1); }
   header .save-badge.warn { background: #f3d7d5; color: var(--over); font-weight: 700; }
   header .save-badge.warn:hover:not(:disabled) { background: #fbe5e3; }
   header .menu-btn { border-radius: 10px; font-size: 1.25rem; padding: 2px 14px; min-width: 48px; min-height: 44px; }
@@ -721,7 +724,7 @@
 <body>
 <header>
   <h1>会議タイマー＆アジェンダ進行表</h1>
-  <button type="button" id="saveBadge" class="save-badge" title="保存の状態（押すとメニューを開きます）"></button>
+  <button type="button" id="saveBadge" class="save-badge" title="いまの保存先と保存の状態です（押すとメニューで保存先を変えられます）"></button>
   <button type="button" id="btnMenu" class="menu-btn" aria-label="メニュー" aria-expanded="false" aria-controls="drawer">☰</button>
 </header>
 
@@ -864,7 +867,7 @@
       <h4>共有ファイル（会議データ）</h4>
       <ul>
         <li>☰ メニュー →「☁ 共有ファイル」で、OneDrive の<b>同期フォルダ</b>にある会議データ（.json）を開くか、新規作成します。</li>
-        <li>以後は変更のたびに自動で保存され、他の PC の変更も数秒ごとに読み込みます。ヘッダーの「☁ 保存済み」で状態がわかります。</li>
+        <li>以後は変更のたびに自動で保存され、他の PC の変更も数秒ごとに読み込みます。ヘッダー右上の「☁ 保存先：共有ファイル」で状態がわかります（保存中は「☁ 共有ファイルに保存中…」、問題があると「⚠」）。</li>
         <li>同時に編集して重なったときは、画面上の案内で「共有ファイルの内容を読み込む」か「この端末の内容で上書き」を選びます。</li>
         <li>共有ファイルを使わない場合、データはこの PC のブラウザにだけ保存されます。「💾 バックアップ」で書き出し・読み込みができます。</li>
       </ul>
@@ -2253,9 +2256,9 @@
     if (share.handle) {
       if (share.error) { txt = '⚠ 保存エラー'; warn = true; }
       else if (share.conflict) { txt = '⚠ 要確認'; warn = true; }
-      else if (share.saving || isDirty()) txt = '☁ 保存中…';
-      else txt = '☁ 保存済み';
-    } else txt = IS_MOBILE ? '📱 この端末に保存' : '💻 この PC に保存';
+      else if (share.saving || isDirty()) txt = '☁ 共有ファイルに保存中…';
+      else txt = '☁ 保存先：共有ファイル';
+    } else txt = IS_MOBILE ? '💾 保存先：この端末' : '💾 保存先：この PC';
     if (!warn && team.error) { txt = '⚠ チーム員'; warn = true; }
     el.saveBadge.textContent = txt;
     el.saveBadge.classList.toggle('warn', warn);
