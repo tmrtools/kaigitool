@@ -41,6 +41,9 @@
     background: rgba(255,255,255,.14); color: #fff; white-space: nowrap;
   }
   header button:hover:not(:disabled) { background: rgba(255,255,255,.26); }
+  /* 保存の状態は「表示」なので、ボタンに見えないよう枠線だけの控えめな見た目に（エラー時だけ目立たせる） */
+  header .save-badge { background: transparent; border: 1px solid rgba(255,255,255,.35); color: #e3edf0; font-weight: 400; }
+  header .save-badge:hover:not(:disabled) { background: rgba(255,255,255,.1); }
   header .save-badge.warn { background: #f3d7d5; color: var(--over); font-weight: 700; }
   header .save-badge.warn:hover:not(:disabled) { background: #fbe5e3; }
   header .menu-btn { border-radius: 10px; font-size: 1.25rem; padding: 2px 14px; min-width: 48px; min-height: 44px; }
@@ -144,6 +147,70 @@
   .next-keep { margin: 12px 0; padding: 8px 12px; background: #f7f8f6; border-radius: 8px; font-size: .85rem; color: var(--muted); }
   .next-keep b { color: var(--text); }
   .modal-foot { display: flex; justify-content: flex-end; gap: 8px; }
+  .modal-foot.split { justify-content: space-between; flex-wrap: wrap; margin-top: 12px; }
+  .pref-row { display: flex; flex-direction: column; gap: 4px; font-size: .9rem; }
+  .pref-row select { font: inherit; min-height: 40px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  .modal.wide { width: min(600px, calc(100vw - 24px)); }
+
+  /* ① 前回までの TODO 確認 */
+  .rv-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; font-size: .8rem; }
+  .rv-chips span { border-radius: 999px; padding: 2px 10px; background: #e7ebe8; color: var(--muted); font-weight: 600; }
+  .rv-chips .r { background: var(--over-bg); color: var(--over); }
+  .rv-chips .g { background: #e8f1ea; color: var(--ok); }
+  .rv-todos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .rv-todos li { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: #fff; }
+  .rv-todos li.overdue { border-left: 4px solid var(--over); }
+  .rv-todos li.done { background: #f3f7f4; }
+  .rv-todos li.done .t { text-decoration: line-through; color: var(--muted); }
+  .rv-todos input[type=checkbox] { width: 22px; height: 22px; margin: 2px 0 0; accent-color: var(--ok); flex: 0 0 auto; }
+  .rv-todos .body { flex: 1 1 auto; min-width: 0; word-break: break-word; }
+  .rv-todos .meta { display: block; font-size: .8rem; color: var(--muted); }
+  .rv-todos .meta b { color: var(--accent-dark); }
+  .rv-todos .meta .over { color: var(--over); font-weight: 700; }
+  .rv-todos label.due { display: flex; flex-direction: column; font-size: .72rem; color: var(--muted); flex: 0 0 auto; }
+  .rv-todos input[type=date] { font: inherit; font-size: .85rem; padding: 4px 6px; border: 1px solid var(--line); border-radius: 8px; width: 140px; }
+  .rv-note { font-size: .8rem; color: var(--muted); margin: 8px 0 0; }
+
+  /* ③ 会議の振り返り */
+  .rv-sec { display: flex; justify-content: space-between; align-items: baseline; font-weight: 700; color: var(--accent-dark); margin: 14px 0 6px; font-size: .95rem; }
+  .rv-sec small { font-weight: 400; color: var(--muted); font-size: .8rem; }
+  .rv-box { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin-bottom: 6px; background: #fff; font-size: .92rem; word-break: break-word; }
+  .rv-box .h { font-weight: 700; }
+  .rv-box .d { white-space: pre-wrap; }
+  .rv-box .d.none { color: var(--muted); }
+  .rv-box.skipped { background: #f5f5f3; color: var(--muted); }
+  .warnchip { display: inline-block; font-size: .75rem; background: var(--warn-bg); color: #7a5a06; border-radius: 999px; padding: 0 8px; font-weight: 700; margin-left: 6px; white-space: nowrap; }
+  .rv-empty { color: var(--muted); font-size: .88rem; margin: 0 0 6px; }
+
+  /* ② あとで話す */
+  .controls .park-btn { background: #fff3d6; color: #7a5a06; border-color: #ecd28a; font-weight: 700; }
+  .park { margin-top: 12px; border: 1px dashed #d6b34a; background: #fffaf0; border-radius: 10px; padding: 10px 12px; }
+  .park-head { display: flex; justify-content: space-between; align-items: center; color: #7a5a06; font-weight: 700; margin-bottom: 8px; }
+  .park-head small { font-weight: 400; }
+  .park-form { display: flex; gap: 6px; }
+  .park-form input { flex: 1 1 auto; min-width: 0; font: inherit; font-size: 1rem; min-height: 42px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  .park-form input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .park-form button { flex: 0 0 auto; white-space: nowrap; }
+  .park-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .park-list li { display: flex; gap: 8px; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 4px 4px 4px 10px; word-break: break-word; }
+  .park-list li .t { flex: 1 1 auto; min-width: 0; }
+  .park-list li button.icon { width: 34px; min-height: 34px; flex: 0 0 auto; }
+  .park-dest { display: flex; flex: 0 0 auto; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .park-dest button { min-height: 32px; padding: 2px 10px; font-size: .8rem; border: none; border-left: 1px solid var(--line); border-radius: 0; background: #fff; color: var(--muted); }
+  .park-dest button:first-child { border-left: none; }
+  .park-dest button.on { background: var(--accent); color: #fff; font-weight: 700; }
+  .park-result { margin: 18px 0 0; }
+  .park-result .park-list li, .rv-park li { flex-wrap: wrap; padding: 6px 6px 6px 10px; }
+  .rv-park { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .rv-park li { display: flex; gap: 8px; align-items: center; border: 1px solid var(--line); border-radius: 10px; background: #fff; word-break: break-word; }
+  .rv-park li .t { flex: 1 1 auto; min-width: 0; }
+
+  /* ④ この議題で決めること（タイマーの中） */
+  .timer-goal { margin: 10px auto 0; max-width: 640px; text-align: left; background: #fff; border-left: 5px solid var(--accent); border-radius: 10px; padding: 8px 14px; }
+  .timer-goal .k { display: block; font-size: .8rem; color: var(--muted); font-weight: 600; }
+  .timer-goal .v { display: block; font-size: clamp(1.05rem, 2.6vw, 1.35rem); font-weight: 700; color: var(--accent-dark); word-break: break-word; }
+  .timer-goal.report { border-left-color: #8a7bb0; }
+  .timer-goal.report .v { color: #5b4f86; }
   .info-bar {
     max-width: 1100px; margin: 8px auto 0; padding: 10px 16px; border-radius: var(--radius);
     background: #e8f1ea; border: 1px solid #b9d5c1; color: var(--ok); font-weight: 600;
@@ -500,8 +567,22 @@
   }
   .todo-row input[type=checkbox] { align-self: flex-start; margin-top: 11px !important; }
   .todo-row button[data-todo-del] { order: 1; align-self: flex-start; }
-  .todo-row .whobtn { order: 2; }
-  .todo-row input[data-tf=due] { order: 3; flex: 0 0 auto; width: 150px; }
+  .todo-row .whobtn { order: 2; flex-basis: calc(100% - 30px) !important; }
+  .todo-row .tdate { order: 3; display: inline-flex; align-items: center; gap: 4px; font-size: .78rem; color: var(--muted); flex: 0 0 auto; }
+  .todo-row .tdate:first-of-type { margin-left: 30px; }
+  .todo-row .tdate input[type=date] { width: 140px; }
+  .todo-row .toolsel { order: 4; flex: 0 0 auto; margin-left: 30px; }
+  .toolsel {
+    font: inherit; font-size: .85rem; min-height: 40px; padding: 4px 6px; border-radius: 8px; font-weight: 600;
+    border: 1px dashed var(--line); background: #fff; color: var(--muted);
+  }
+  .toolsel.t-need { border: 1px solid #e0b64a; background: #fff6dc; color: #7a5a06; }
+  .toolsel.t-done { border: 1px solid #9cc5a8; background: #e8f1ea; color: var(--ok); }
+  .toolsel.t-none { border-style: solid; }
+  .toolchip { display: inline-block; font-size: .75rem; border-radius: 999px; padding: 1px 9px; font-weight: 700; white-space: nowrap; background: #eef0ee; color: var(--muted); }
+  .toolchip.t-need { background: #fff6dc; color: #7a5a06; }
+  .toolchip.t-done { background: #e8f1ea; color: var(--ok); }
+  .later-chip { display: inline-block; font-size: .75rem; border-radius: 999px; padding: 0 8px; background: #eef0ee; color: var(--muted); }
   .todo-row button.icon { flex: 0 0 auto; }
   .todo-row input[type=checkbox], .todo-board input[type=checkbox] { width: 22px; height: 22px; margin: 0; accent-color: var(--ok); flex: 0 0 auto; }
   .todo-row.done textarea[data-tf=text] { text-decoration: line-through; color: var(--muted); }
@@ -592,6 +673,69 @@
   .todo-board .who { font-weight: 600; color: var(--accent-dark); }
   .todo-board .due.overdue { color: var(--over); font-weight: 700; }
   .todo-board .due.today { color: var(--warn); font-weight: 700; }
+  .todo-board .side { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; flex: 0 0 auto; }
+  .todo-board .side button { min-height: 34px; padding: 4px 10px; font-size: .82rem; white-space: nowrap; }
+  .todo-board li.later { opacity: .8; }
+  .tool-sum { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+  .tool-sum button { min-height: 30px; padding: 2px 10px; font-size: .8rem; border-radius: 999px; border: 1px solid transparent; font-weight: 700; background: #eef0ee; color: var(--muted); }
+  .tool-sum button.t-need { background: #fff6dc; color: #7a5a06; }
+  .tool-sum button.t-done { background: #e8f1ea; color: var(--ok); }
+  .tool-sum button.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .park-list li .pa-btn { min-height: 32px; padding: 2px 10px; font-size: .8rem; white-space: nowrap; flex: 0 0 auto; }
+  .park-list li { flex-wrap: wrap; }
+  .park-add { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 6px 4px 2px; border-top: 1px dashed var(--line); font-size: .85rem; }
+  .park-add input, .park-add select { font: inherit; font-size: .95rem; min-height: 36px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  .park-add input { width: 70px; }
+  .park-add .sp { flex: 1 1 auto; }
+  .park-add button { min-height: 36px; padding: 4px 12px; font-size: .88rem; }
+  .badge.park { background: #c9a73c; }
+  /* ⑤ 資料のリンク */
+  .lnk { display: inline-flex; align-items: center; gap: 2px; max-width: 100%; font-size: .78rem; font-weight: 600; color: var(--accent-dark); background: #e3edf0; border-radius: 999px; padding: 1px 9px; margin: 3px 4px 0 0; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
+  .lnk:hover { background: #d3e3e8; text-decoration: underline; }
+  .agenda .links { display: block; }
+  .timer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 10px; }
+  .timer-links a { display: inline-flex; align-items: center; min-height: 40px; padding: 6px 14px; border-radius: 10px; background: #fff; border: 1px solid var(--line); color: var(--accent-dark); font-weight: 600; text-decoration: none; font-size: .92rem; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .timer-links a:hover { background: #f1f6f8; }
+  .links-ed { display: flex; flex-direction: column; gap: 6px; }
+  .links-ed .lab { font-size: .8rem; color: var(--muted); font-weight: 600; }
+  .links-ed .lrow { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .links-ed .lrow .lnk { flex: 1 1 auto; margin: 0; font-size: .85rem; padding: 4px 10px; }
+  .links-ed .lrow input { flex: 1 1 140px; }
+  .links-ed .lrow input[data-el=name] { flex: 0 1 140px; }
+  .links-ed button { min-height: 38px; padding: 4px 12px; flex: 0 0 auto; }
+  .links-ed button.icon { width: 38px; padding: 0; }
+  /* ⑦ 会議の振り返りの数字 */
+  .stats-range { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .stats-range button { min-height: 34px; padding: 2px 14px; border-radius: 999px; font-size: .88rem; background: #fff; color: var(--muted); border: 1px solid var(--line); }
+  .stats-range button.on { background: var(--accent-dark); color: #fff; border-color: var(--accent-dark); font-weight: 700; }
+  .stat-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; margin-bottom: 14px; }
+  .stat-tile { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: #fff; text-align: left; color: var(--text); font: inherit; }
+  button.stat-tile { cursor: pointer; min-height: 0; }
+  button.stat-tile:hover { background: #f6f9fa; }
+  .stat-tile .k { display: block; font-size: .8rem; color: var(--muted); font-weight: 600; }
+  .stat-tile .v { display: block; font-size: 1.8rem; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .stat-tile .v small { font-size: .85rem; color: var(--muted); font-weight: 600; }
+  .stat-tile .s { display: block; font-size: .78rem; color: var(--muted); }
+  .stat-h { font-size: .95rem; color: var(--accent-dark); margin: 12px 0 8px; }
+  .stat-bars { display: flex; flex-direction: column; gap: 6px; font-size: .88rem; }
+  .stat-bar { display: grid; grid-template-columns: minmax(80px, 200px) 1fr 64px; gap: 10px; align-items: center; }
+  .stat-bar .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .stat-bar .tr { height: 12px; background: #eef1ef; border-radius: 4px; position: relative; }
+  .stat-bar .fl { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 0 4px 4px 0; min-width: 2px; }
+  .stat-bar .vl { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .stat-empty { color: var(--muted); font-size: .9rem; }
+  /* あとで話す → TODO：担当と期間 */
+  .pt-box { flex-basis: 100%; display: flex; flex-direction: column; gap: 6px; padding: 8px 4px 4px; border-top: 1px dashed var(--line); font-size: .85rem; }
+  .pt-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .pt-k { font-weight: 700; color: var(--muted); min-width: 2.6em; }
+  .pt-box .pchip { border: 1px solid var(--line); background: #fff; color: var(--text); border-radius: 999px; padding: 3px 11px; font-size: .88rem; min-height: 32px; }
+  .pt-box .pchip.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .pt-box .pchip.on::before { content: "✓ "; }
+  .pt-box input[type=text], .pt-box input[type=date] { font: inherit; font-size: .9rem; min-height: 34px; padding: 3px 8px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  .pt-box input[type=text] { flex: 1 1 140px; min-width: 0; }
+  .pt-box input[type=date] { width: 140px; }
+  .pt-box label { display: inline-flex; gap: 4px; align-items: center; color: var(--muted); }
+  .pt-box .toolsel { min-height: 34px; font-size: .82rem; }
 
   .hidden { display: none !important; }
 
@@ -605,14 +749,17 @@
     .controls button { flex-basis: calc(50% - 10px); font-size: 1rem; padding: 10px 12px; }
     .add-form button { flex: 1 1 auto; }
     th, td { padding: 8px 5px; font-size: .9rem; }
-    .todo-row input[data-tf=due] { width: 136px; }
+    .todo-row .tdate input[type=date] { width: 132px; }
+    .todo-row .tdate:first-of-type { margin-left: 30px; }
+    .todo-row .tdate + .tdate { margin-left: 30px; }
+    .todo-row .toolsel { margin-left: 30px; }
   }
 </style>
 </head>
 <body>
 <header>
   <h1>会議タイマー＆アジェンダ進行表</h1>
-  <button type="button" id="saveBadge" class="save-badge" title="保存の状態（押すとメニューを開きます）"></button>
+  <button type="button" id="saveBadge" class="save-badge" title="いまの保存先と保存の状態です（押すとメニューで保存先を変えられます）"></button>
   <button type="button" id="btnMenu" class="menu-btn" aria-label="メニュー" aria-expanded="false" aria-controls="drawer">☰</button>
 </header>
 
@@ -643,6 +790,32 @@
   </div>
 </div>
 
+<!-- ① 前回までの TODO を確認（開始前） -->
+<div id="todoRvDim" class="drawer-dim hidden"></div>
+<div id="todoRvModal" class="modal wide hidden" role="dialog" aria-modal="true" aria-labelledby="todoRvTitle">
+  <h3 id="todoRvTitle">📋 前回までの TODO を確認</h3>
+  <p class="modal-lead">会議を始める前に、やると決めたことの進み具合を確認しましょう。</p>
+  <div id="todoRvChips" class="rv-chips"></div>
+  <ul id="todoRvList" class="rv-todos"></ul>
+  <p class="rv-note">チェックを付けると完了、期限もここで変えられます（すぐ保存され、TODO一覧・会議履歴にも反映）。</p>
+  <div class="modal-foot split">
+    <button type="button" id="btnTodoRvCancel" class="secondary">キャンセル</button>
+    <button type="button" id="btnTodoRvGo">確認して ▶ 開始</button>
+  </div>
+</div>
+
+<!-- ③ 会議の振り返り（終了前） -->
+<div id="reviewDim" class="drawer-dim hidden"></div>
+<div id="reviewModal" class="modal wide hidden" role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
+  <h3 id="reviewTitle">🔁 会議の振り返り</h3>
+  <p class="modal-lead">読み上げて全員で確認しましょう。直したいところは「記録に戻る」で直せます。「会議を終了」で議事録になります。</p>
+  <div id="reviewBody"></div>
+  <div class="modal-foot split">
+    <button type="button" id="btnReviewBack" class="secondary">記録に戻る</button>
+    <button type="button" id="btnReviewEnd">⏹ 会議を終了</button>
+  </div>
+</div>
+
 <!-- 使い方ガイド -->
 <div id="helpDim" class="drawer-dim hidden"></div>
 <div id="helpModal" class="modal help-modal hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
@@ -662,6 +835,7 @@
         <li>アジェンダの「＋ 議題を追加」で、議題名・持ち時間（分）・担当者・種類を入れて「追加」を押します。</li>
         <li>種類は <b>🎯 決める</b>（決めることを書く）か <b>📢 報告</b>（報告内容の要約を書く）を選びます。</li>
         <li>▲▼ で並べ替え、✕ で削除できます（会議の開始前のみ）。</li>
+        <li><b>📎 資料のリンク</b>：✏ 編集の一番下に、OneDrive・SharePoint・Teams などの資料の URL を貼って「＋ 追加」（1議題に10件まで）。アジェンダの 📎 や、会議中はタイマーの「📎 ○○ を開く」で資料が開きます。貼り付け欄でも、行の最後に URL を書けば取り込まれます。</li>
         <li>✏ で議題名・持ち時間・担当者・種類・決めること（報告の議題では報告内容の要約）を直せます。会議中は今の議題とこれからの議題を（持ち時間は −／＋ で）、会議後は「決まった事の記録」の「✏ 議題を編集」から議題名・担当者・決めることを直せます。</li>
       </ul>
       <h4>まとめて貼り付ける</h4>
@@ -685,10 +859,14 @@
       <summary>② 会議の進行（タイマー）</summary>
       <ul>
         <li><b>▶ 開始</b>：1つ目の議題からタイマーが動きます。残り1分で黄色、時間を過ぎると赤になり、音でお知らせします。</li>
+        <li>未完了の TODO があるときは、開始の前に<b>「📋 前回までの TODO を確認」</b>が出ます。チェックで完了、期限の変更もその場でできます。</li>
+        <li>タイマーの中に<b>「🎯 この議題で決めること」</b>を大きく表示します。決まったら次の議題へ進む目安にしてください。</li>
         <li><b>⏸ 一時停止</b>／<b>▶ 再開</b>、<b>⏭ 次の議題へ</b>（最後の議題では「⏹ 会議を終了」）。</li>
+        <li><b>🅿 あとで話す</b>：脱線した話題をメモに逃がして本題に戻ります（タイマーは止まりません）。メモの「＋ 今回の議題に」で、持ち時間と位置（今の議題の次／最後）を選んで今回の議題にもできます。残ったメモは会議の最後に行き先を決めます。</li>
+        <li>「⏹ 会議を終了」を押すと、終わる前に<b>「🔁 会議の振り返り」</b>が出ます。決まった事・TODO を読み上げて確認し、担当や期限が抜けている TODO（⚠）はその場で決めましょう。「記録に戻る」で直せます。</li>
         <li>緑または赤の帯に、予定の終了時刻と今のペースでの終了見込みが出ます。</li>
         <li><b>⏱ 時間の調整</b>を開くと：今の議題 +1分／+5分、<b>⚖ 残りを自動調整</b>（遅れた分を残りの議題から削ります。報告の議題から先に短くします）。</li>
-        <li>まだ始まっていない議題は、アジェンダで −／＋ で時間を変えたり、<b>次回へ</b> で今回は話さずに回したりできます。</li>
+        <li>まだ始まっていない議題は、アジェンダで −／＋ で時間を変えたり、▲▼ で順番を入れ替えたり、<b>次回へ</b> で今回は話さずに回したりできます。</li>
         <li>会議中も「＋ 議題を追加」で議題を足せます（今の議題の次／最後を選べます）。</li>
         <li><b>🗗 ミニタイマー</b>：資料の上に重ねて表示できる小さなタイマーです。</li>
         <li><b>リセット</b>：会議を途中でやめて、会議前の状態に戻します。</li>
@@ -701,7 +879,8 @@
         <li>会議中は、タイマーの下に今の議題の記録欄が出ます。</li>
         <li><b>決める議題</b>：「決まった事」を書き、結論（決定／保留／持ち越し）を押します。</li>
         <li><b>報告の議題</b>：「報告の要点」と「質疑・補足」を書き、報告済み／持ち越し を押します。</li>
-        <li><b>TODO</b>：「＋ TODOを追加」で、やること・担当・期限を入れます。やることの欄で <b>Enter</b> を押すと次の TODO が増えます。</li>
+        <li><b>TODO</b>：「＋ TODOを追加」で、やること・担当・<b>開始日〜期限</b>を入れます（開始日が空なら「すぐ」）。やることの欄で <b>Enter</b> を押すと次の TODO が増えます。</li>
+        <li><b>🗂 ツール</b>：課のタスク管理ツールへの登録を「未設定／不要／要・未登録／登録済み」から選びます。新しい TODO の初期値は ☰ メニューの「⚙ 設定」で変えられます。</li>
         <li>担当欄を押すと選択パネルが開き、チーム員・参加者を押して選べます（複数可）。「出席者を全員選ぶ」や、名簿にない人の手入力もできます。</li>
         <li>書いた内容は自動で保存されます。会議の後でも議事録の画面で直せます。</li>
       </ul>
@@ -712,8 +891,12 @@
       <ul>
         <li>会議を終えると「会議結果・議事録」が表示され、<b>会議履歴に自動で保存</b>されます。</li>
         <li><b>📋 議事録をテキストでコピー</b>：メールやチャットに貼り付けられる形でコピーします。</li>
+        <li><b>✉ メールで送る</b>：件名と本文を入れた状態でメールソフト（Outlook など）を開きます。宛先はご自身で入力してください（本文が長いときは本文をコピーするので、貼り付けてください）。</li>
+        <li><b>💬 Teams 用にコピー</b>：Teams のチャットに貼り付けると、見出し・番号付きの一覧・資料のリンクがそのまま表示されます。</li>
         <li><b>➡ 次の会議を準備</b>：議題を「持ち越し・保留だけ残す／同じ議題を使う／空にする」から選んで、次の会議の準備画面に切り替えます。参加者・司会・書記・TODO・履歴はそのまま引き継ぎます。</li>
-        <li><b>📝 TODO一覧</b>：これまでの会議の TODO を期限の近い順に表示します。担当で絞り込み、チェックで完了にできます。「未完了のTODOをコピー」で次の会議の冒頭の確認にも使えます。</li>
+        <li><b>🅿 あとで話す</b>の行き先は、会議結果でも変えられます。「TODO」を選ぶと、その場で担当（出席者から選ぶ・手入力）と期間（開始〜期限）、ツール登録を決められます。「次回の議題」にしたものは次の会議の議題に追加され、「TODO」にしたものはメモした議題の TODO になります。</li>
+        <li><b>📝 TODO一覧</b>：これまでの会議の TODO を期限の近い順に表示します。担当・時期（着手中／開始前）・ツールで絞り込み、チェックで完了にできます。「🗂 ツール未登録 ○件」を押すと未登録だけになり、「📋 表示中のTODOをコピー」でタスク管理ツールへの入力に使えます。入力したら「✓ 登録済みにする」を押します。</li>
+        <li><b>📊 会議の振り返り</b>：会議履歴から、時間内に終わった割合・TODO の完了率・よく延びる議題・担当者別の TODO などを計算します（直近5回／10回／すべて）。「ツール未登録の TODO」を押すと TODO 一覧がその条件で絞り込まれます。</li>
         <li><b>🗂 会議履歴</b>：過去の議事録を開いたり、言葉で検索したりできます。持ち越し・保留の議題を貼り付け欄に戻すこともできます。</li>
       </ul>
     </details>
@@ -723,7 +906,7 @@
       <h4>共有ファイル（会議データ）</h4>
       <ul>
         <li>☰ メニュー →「☁ 共有ファイル」で、OneDrive の<b>同期フォルダ</b>にある会議データ（.json）を開くか、新規作成します。</li>
-        <li>以後は変更のたびに自動で保存され、他の PC の変更も数秒ごとに読み込みます。ヘッダーの「☁ 保存済み」で状態がわかります。</li>
+        <li>以後は変更のたびに自動で保存され、他の PC の変更も数秒ごとに読み込みます。ヘッダー右上の「☁ 保存先：共有ファイル」で状態がわかります（保存中は「☁ 共有ファイルに保存中…」、問題があると「⚠」）。</li>
         <li>同時に編集して重なったときは、画面上の案内で「共有ファイルの内容を読み込む」か「この端末の内容で上書き」を選びます。</li>
         <li>共有ファイルを使わない場合、データはこの PC のブラウザにだけ保存されます。「💾 バックアップ」で書き出し・読み込みができます。</li>
       </ul>
@@ -821,6 +1004,13 @@
       </div>
     </section>
     <section class="dsec">
+      <h3>⚙ 設定</h3>
+      <label class="pref-row">新しい TODO のツール登録の初期値
+        <select id="prefToolDefault"><option value="">未設定</option><option value="need">要・未登録</option><option value="none">不要</option></select>
+      </label>
+      <p class="note">課のタスク管理ツールに入力が必要な TODO が多いときは「要・未登録」にすると、毎回選ぶ手間が減ります（この端末に保存）。</p>
+    </section>
+    <section class="dsec">
       <h3>💾 バックアップ</h3>
       <div class="share-btns">
         <button type="button" id="btnExport" class="secondary">⬇ 書き出し</button>
@@ -841,6 +1031,8 @@
       <div class="presenter" id="timerPresenter"></div>
       <div class="time" id="timerTime">--:--</div>
       <div class="sub" id="timerSub">&nbsp;</div>
+      <div id="timerGoal" class="timer-goal hidden"><span class="k" id="timerGoalK"></span><span class="v" id="timerGoalV"></span></div>
+      <div id="timerLinks" class="timer-links hidden"></div>
       <div id="pausedBadge" class="paused-badge hidden">一時停止中</div>
     </div>
 
@@ -850,6 +1042,17 @@
       <button id="btnNext" class="secondary" disabled>⏭ 次の議題へ</button>
       <button id="btnReset" class="danger" disabled>リセット</button>
       <button id="btnMini" class="secondary" title="資料の上に小さく表示するタイマー">🗗 ミニタイマー</button>
+      <button id="btnPark" class="secondary park-btn hidden" title="脱線した話題をメモして本題に戻る（タイマーは止まりません）">🅿 あとで話す</button>
+    </div>
+
+    <!-- あとで話す（脱線した話題のメモ・会議中のみ） -->
+    <div id="parkPanel" class="park hidden">
+      <div class="park-head"><span>🅿 あとで話す</span><small id="parkCount"></small></div>
+      <form id="parkForm" class="park-form" autocomplete="off">
+        <input id="parkText" type="text" maxlength="200" placeholder="脱線した話題をメモ（Enter で追加）" aria-label="あとで話す話題">
+        <button type="submit" class="small">追加</button>
+      </form>
+      <ul id="parkList" class="park-list"></ul>
     </div>
 
     <!-- 時間調整（進行中のみ表示） -->
@@ -939,7 +1142,7 @@
       <button type="button" id="btnClearAgenda" class="danger">すべて削除</button>
       <span id="agendaMsg" class="copied hidden"></span>
     </div>
-    <div id="lockNote" class="note hidden">※ 進行中は議題の<b>追加</b>と、未着手の議題の時間調整・「次回へ」、今とこれからの議題の ✏ 編集ができます。並べ替え・削除はリセット後にできます。</div>
+    <div id="lockNote" class="note hidden">※ 進行中は議題の<b>追加</b>と、未着手の議題の時間調整・▲▼ の並べ替え・「次回へ」、今とこれからの議題の ✏ 編集ができます。議題の削除と、今の議題・終わった議題の並べ替えはリセット後にできます。</div>
 
     <!-- 参加者 -->
     <details id="peopleFold" class="people fold" open>
@@ -976,8 +1179,11 @@
     <button type="button" id="btnNextMeeting" class="next-btn">➡ 次の会議を準備</button>
     <h3 class="notes-title">決まった事の記録（あとから修正できます）</h3>
     <div id="resultNotes"></div>
+    <div id="parkResult" class="park park-result hidden"></div>
     <div class="result-actions">
       <button id="btnCopy">📋 議事録をテキストでコピー</button>
+      <button id="btnMail" class="secondary" title="件名・本文を入れた状態でメールソフト（Outlook など）を開きます。宛先はご自身で入力してください">✉ メールで送る</button>
+      <button id="btnTeams" class="secondary" title="Teams のチャットに貼り付けたとき、見出しや箇条書きが崩れない形でコピーします">💬 Teams 用にコピー</button>
       <button id="btnCopyCarry" class="secondary">↪ 持ち越し・保留を次回用にコピー</button>
       <span id="copied" class="copied hidden">コピーしました</span>
     </div>
@@ -987,14 +1193,28 @@
     <summary><h2>📝 TODO一覧</h2><span id="todoCount" class="note"></span></summary>
     <div class="todo-tools">
       <label>担当<select id="todoWho"></select></label>
+      <label>時期<select id="todoPhase" title="着手中＝開始日を過ぎた・開始日なし／開始前＝開始日がまだ先"><option value="">すべて</option><option value="now">着手中</option><option value="later">開始前（まだ先）</option></select></label>
+      <label>ツール<select id="todoTool"><option value="">すべて</option><option value="need">要・未登録</option><option value="done">登録済み</option><option value="none">不要</option><option value="unset">要否 未設定</option></select></label>
       <label><input type="checkbox" id="todoShowDone"> 完了したものも表示</label>
-      <button type="button" id="btnCopyTodos" class="secondary small">📋 未完了のTODOをコピー</button>
+      <button type="button" id="btnCopyTodos" class="secondary small" title="絞り込んだ未完了の TODO を「やること（担当／期間）」の形でコピー（タスク管理ツールへの入力に）">📋 表示中のTODOをコピー</button>
       <span id="todoMsg" class="copied hidden"></span>
     </div>
+    <div id="todoToolSum" class="tool-sum"></div>
     <ul id="todoBoard" class="todo-board"></ul>
     <p class="note">これまでの会議で記録したTODOをまとめて表示します（期限の近い順）。チェックを付けると完了になり、議事録にも反映されます。次回の会議の冒頭で確認すると便利です。</p>
   </details>
   <!-- 会議履歴 -->
+  <!-- 会議の振り返りの数字 -->
+  <details id="statsFold" class="card full fold-card">
+    <summary><h2>📊 会議の振り返り</h2><span id="statsNote" class="note"></span></summary>
+    <div class="stats-range" role="group" aria-label="集計する範囲">
+      <button type="button" data-range="5">直近5回</button>
+      <button type="button" data-range="10" class="on">直近10回</button>
+      <button type="button" data-range="0">すべて</button>
+    </div>
+    <div id="statsBody"></div>
+    <p class="note">数字はすべて会議履歴から計算します（共有ファイルを使っているときはチームの履歴）。</p>
+  </details>
   <details id="historyFold" class="card full fold-card">
     <summary><h2>🗂 会議履歴</h2><span id="historyCount" class="note"></span></summary>
     <div class="history-tools">
@@ -1060,6 +1280,8 @@
       n.todos.forEach(t => {  // 担当1人（who）→ 複数（whos）
         if (!Array.isArray(t.whos)) t.whos = t.who ? [String(t.who)] : [];
         delete t.who;
+        if (typeof t.start !== 'string') t.start = '';               // いつからやるか（空＝すぐ）
+        if (!TOOL_STATES.includes(t.tool)) t.tool = '';              // 課のタスク管理ツール：''未設定／none不要／need要・未登録／done登録済み
       });
       n.todo = legacyTodo(n.todos);
     });
@@ -1069,6 +1291,35 @@
     return (todos || []).filter(t => t.text.trim()).map(t =>
       (t.done ? '［済］' : '') + (t.whos.length ? t.whos.join('・') + ' ' : '') + t.text + (t.due ? `（${fmtDue(t.due)}まで）` : '')).join('\n');
   }
+  const PARK_DESTS = ['next', 'todo', 'none'];
+  // ⑤ 資料のリンク：items[].links = [{url, name}]（http/https だけ）
+  const URL_RE = /https?:\/\/[^\s<>"'　、]+/gi;
+  const okUrl = u => /^https?:\/\/[^\s]+$/i.test(u || '');
+  function normLinks(list) {
+    (list || []).forEach(x => {
+      if (!x) return;
+      x.links = (Array.isArray(x.links) ? x.links : []).filter(l => l && okUrl(l.url))
+        .map(l => ({ url: String(l.url).slice(0, 2000), name: String(l.name || '').slice(0, 80) })).slice(0, 10);
+    });
+  }
+  // 表示名：指定がなければ URL のファイル名（なければサイト名）
+  function linkName(l) {
+    if (l.name) return l.name;
+    try {
+      const u = new URL(l.url);
+      const last = decodeURIComponent(u.pathname.split('/').filter(Boolean).pop() || '');
+      return last && last.length <= 60 ? last : u.hostname;
+    } catch (e) { return l.url.slice(0, 40); }
+  }
+  const linkA = (l, cls) => `<a class="${cls || 'lnk'}" href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(l.url)}">📎 ${escapeHtml(linkName(l))}</a>`;
+  const linksOf = item => (item && Array.isArray(item.links) ? item.links : []);
+  const TOOL_STATES = ['', 'none', 'need', 'done'];
+  const TOOL_LABEL = { '': '要否 未設定', none: 'ツール不要', need: 'ツール要・未登録', done: 'ツール登録済み' };
+  const PREF_KEY = 'meetingTimer.prefs';
+  function toolDefault() {
+    try { const v = (JSON.parse(localStorage.getItem(PREF_KEY)) || {}).toolDefault; return TOOL_STATES.includes(v) && v !== 'done' ? v : ''; } catch (e) { return ''; }
+  }
+  const newTodo = text => ({ id: newId(), text: text || '', whos: [], start: '', due: '', done: false, tool: toolDefault() });
   function normRun(r, items, names) {
     const n = items.length;
     if (!r || !Array.isArray(r.elapsed) || r.elapsed.length !== n || r.idx > n) return null;
@@ -1082,6 +1333,10 @@
     r.people = normPeople(r.people);
     r.roles = normRoles(r.roles);
     normNotes(r.notes, names, r.meetingStart);
+    // あとで話す：[{id, text, itemId（メモした時の議題）, dest: 'next'|'todo'|'none', todoId}]
+    r.parked = (Array.isArray(r.parked) ? r.parked : []).filter(x => x && typeof x.text === 'string' && x.text.trim())
+      .map(x => ({ id: String(x.id || Math.random().toString(36).slice(2)), text: x.text.slice(0, 200), itemId: String(x.itemId || ''),
+        dest: PARK_DESTS.includes(x.dest) ? x.dest : 'next', todoId: String(x.todoId || '') }));
     return r;
   }
   // 保存データを現在の形式にそろえる（古いデータ・共有ファイルの読み込み時）
@@ -1096,6 +1351,7 @@
     // 担当者として使われている名前（旧TODOの「佐藤 ○○」から担当者を取り出すため）
     const names = new Set(st.people.map(p => p.name));
     [st.items, ...st.history.map(h => (h && h.items) || [])].forEach(list => list.forEach(x => x && x.presenter && names.add(x.presenter)));
+    [st.items, ...st.history.map(h => (h && h.items) || [])].forEach(normLinks);
     st.run = normRun(st.run, st.items, names);
     st.history = st.history.filter(h => h && Array.isArray(h.items) && h.run)
       .map(h => ({ ...h, run: normRun(h.run, h.items, names) })).filter(h => h.run);
@@ -1144,10 +1400,12 @@
     copyAgenda: $('btnCopyAgenda'), clearAgenda: $('btnClearAgenda'), agendaMsg: $('agendaMsg'),
     agenda: $('agenda'), total: $('totalTime'), end: $('endTime'), lockNote: $('lockNote'),
     resultCard: $('resultCard'), resultBody: $('resultBody'), resultFoot: $('resultFoot'),
-    copy: $('btnCopy'), copied: $('copied'),
+    copy: $('btnCopy'), copied: $('copied'), mail: $('btnMail'), teams: $('btnTeams'),
+    statsFold: $('statsFold'), statsBody: $('statsBody'), statsNote: $('statsNote'),
     peoplePick: $('btnPeoplePick'), peoplePicker: $('peoplePicker'), peopleForm: $('peopleForm'), personName: $('personName'), peopleChips: $('peopleChips'), peopleCount: $('peopleCount'),
     roleChair: $('roleChair'), roleScribe: $('roleScribe'), peopleNote: $('peopleNote'), peopleList: $('peopleList'),
     todoBoard: $('todoBoard'), todoWho: $('todoWho'), todoShowDone: $('todoShowDone'), todoCount: $('todoCount'),
+    todoPhase: $('todoPhase'), todoTool: $('todoTool'), todoToolSum: $('todoToolSum'), prefToolDefault: $('prefToolDefault'),
     copyTodos: $('btnCopyTodos'), todoMsg: $('todoMsg'),
     teamStatus: $('teamStatus'), teamOpen: $('btnTeamOpen'), teamImport: $('lblTeamImport'), teamFile: $('teamFile'),
     teamReload: $('btnTeamReload'), teamClear: $('btnTeamClear'), teamEdit: $('btnTeamEdit'), teamEditor: $('teamEditor'),
@@ -1162,6 +1420,10 @@
     nextLead: $('nextLead'), nextOpts: $('nextOpts'), nextKeep: $('nextKeep'), nextCancel: $('btnNextCancel'), nextGo: $('btnNextGo'),
     infoBar: $('infoBar'), guide: $('btnGuide'), helpModal: $('helpModal'), helpDim: $('helpDim'), helpClose: $('btnHelpClose'),
     roleWarn: $('roleWarn'), roleWarnText: $('roleWarnText'), roleSet: $('btnRoleSet'), roleSkip: $('btnRoleSkip'),
+    timerGoal: $('timerGoal'), timerLinks: $('timerLinks'), timerGoalK: $('timerGoalK'), timerGoalV: $('timerGoalV'),
+    park: $('btnPark'), parkPanel: $('parkPanel'), parkForm: $('parkForm'), parkText: $('parkText'), parkList: $('parkList'), parkCount: $('parkCount'), parkResult: $('parkResult'),
+    todoRvModal: $('todoRvModal'), todoRvDim: $('todoRvDim'), todoRvChips: $('todoRvChips'), todoRvList: $('todoRvList'), todoRvCancel: $('btnTodoRvCancel'), todoRvGo: $('btnTodoRvGo'),
+    reviewModal: $('reviewModal'), reviewDim: $('reviewDim'), reviewBody: $('reviewBody'), reviewBack: $('btnReviewBack'), reviewEnd: $('btnReviewEnd'),
   };
 
   // ---------- ユーティリティ ----------
@@ -1271,9 +1533,16 @@
       ? LOSE_MSG + action
       : 'この会議の議事録は会議履歴に保存されています（あとから見たり、コピーしたりできます）。\n\n' + action;
   }
-  function start() {
+  // 「▶ 開始」：未完了の TODO があれば、先に確認画面を出す
+  function requestStart() {
     if (!state.items.length) { el.title.focus(); return; }
     if (state.run && state.run.status === 'done' && !confirm(doneCloseMsg('同じ議題で新しく会議を始めますか？'))) return;
+    if (collectTodos().some(x => !x.t.done)) openTodoReview();
+    else start(true);
+  }
+  function start(confirmed) {
+    if (!state.items.length) { el.title.focus(); return; }
+    if (!confirmed && state.run && state.run.status === 'done' && !confirm(doneCloseMsg('同じ議題で新しく会議を始めますか？'))) return;
     ensureAudio();
     const now = Date.now();
     state.run = {
@@ -1287,6 +1556,7 @@
       added: state.items.map(() => false),           // 会議中に追加した議題
       people: clone(state.people),                   // この会議の参加者（名簿から写す）
       roles: clone(state.roles),
+      parked: [],                                    // あとで話す
     };
     beep();
     save(); render();
@@ -1306,13 +1576,15 @@
     }
     save(); render();
   }
-  function next() {
+  // 最後の議題で押したときは、終了の前に振り返り画面を出す（force=true で終了）
+  function next(force) {
     const r = state.run;
     if (!r || r.status === 'done') return;
+    const ni = nextActive(r.idx + 1);
+    if (ni === -1 && force !== true) { openReview(); return; }
     ensureAudio();
     const now = Date.now();
     if (r.status === 'running') r.elapsed[r.idx] += now - r.startedAt;
-    const ni = nextActive(r.idx + 1);
     r.idx = ni === -1 ? state.items.length : ni;
     if (r.idx >= state.items.length) {
       r.status = 'done';
@@ -1419,9 +1691,11 @@
       opt('empty', '議題を空にする', 'まったく別の会議を始めるとき', '', false);
     const roles = [state.roles.chair && `司会 ${state.roles.chair}`, state.roles.scribe && `書記 ${state.roles.scribe}`].filter(Boolean).join('・');
     const openTodos = collectTodos().filter(x => !x.t.done).length;
+    const pk = parkedNext();
     el.nextKeep.innerHTML = 'そのまま引き継ぐもの：<b>' + [
       `参加者（${state.people.length}名）`, roles, `TODO（未完了${openTodos}件）`, '会議履歴',
-    ].filter(Boolean).map(escapeHtml).join('・') + '</b>';
+    ].filter(Boolean).map(escapeHtml).join('・') + '</b>' +
+      (pk.length ? `<br>🅿「あとで話す」から次回の議題にした <b>${pk.length}件</b>（${pk.map(x => escapeHtml(x.text)).join('・')}）は、「持ち越し・保留」「同じ議題」のどちらでも議題に追加します。` : '');
     el.nextModal.classList.remove('hidden'); el.nextDim.classList.remove('hidden');
     const first = el.nextOpts.querySelector('input:checked');
     if (first) first.focus();
@@ -1436,7 +1710,7 @@
     if (!r || r.status !== 'done') return;
     const mode = (el.nextOpts.querySelector('input:checked') || {}).value || 'same';
     // 持ち時間は当初の値に戻す（会議中の調整は今回だけのもの）
-    const fresh = item => ({ id: newId(), title: item.title, minutes: item.minutes, presenter: item.presenter || '', goal: item.goal || '', kind: item.kind });
+    const fresh = item => ({ id: newId(), title: item.title, minutes: item.minutes, presenter: item.presenter || '', goal: item.goal || '', kind: item.kind, links: clone(linksOf(item)) });
     let items, msg;
     if (mode === 'carry') {
       const carry = carryItems();
@@ -1448,6 +1722,12 @@
     } else {
       items = state.items.map(fresh);
       msg = `次の会議の準備ができました（同じ議題 ${items.length}件）`;
+    }
+    // 「あとで話す」で次回の議題にしたもの
+    const pk = mode === 'empty' ? [] : parkedNext();
+    if (pk.length) {
+      items = items.concat(pk.map(x => ({ id: newId(), title: x.text.slice(0, 100), minutes: DEFAULT_MINUTES, presenter: '', goal: '', kind: 'decide', carry: 'あとで' })));
+      msg += `・あとで話す ${pk.length}件`;
     }
     state.items = items;
     state.run = null;
@@ -1466,6 +1746,305 @@
     el.infoBar._t = setTimeout(() => el.infoBar.classList.add('hidden'), 8000);
   }
 
+  // ---------- ① 前回までの TODO を確認（開始前） ----------
+  let todoRvIds = [], todoRvDoneNow = 0;
+  const todoRvOpen = () => !el.todoRvModal.classList.contains('hidden');
+  function openTodoReview() {
+    const open = sortTodos(collectTodos().filter(x => !x.t.done));
+    todoRvIds = open.map(x => x.t.id);
+    todoRvDoneNow = 0;
+    renderTodoReview();
+    el.todoRvModal.classList.remove('hidden'); el.todoRvDim.classList.remove('hidden');
+    el.todoRvGo.focus();
+  }
+  function renderTodoReview() {
+    const map = new Map(collectTodos().map(x => [x.t.id, x]));
+    const list = todoRvIds.map(id => map.get(id)).filter(Boolean);
+    const open = list.filter(x => !x.t.done);
+    const over = open.filter(x => dueClass(x.t) === 'overdue').length;
+    todoRvDoneNow = list.length - open.length;
+    el.todoRvChips.innerHTML = (over ? `<span class="r">期限切れ ${over}件</span>` : '') + `<span>未完了 ${open.length}件</span>` +
+      (todoRvDoneNow ? `<span class="g">今回 完了 ${todoRvDoneNow}件</span>` : '');
+    el.todoRvList.innerHTML = list.map(({ t, item, run }) => {
+      const dc = dueClass(t);
+      const days = dc === 'overdue' ? Math.round((new Date(todayStr()) - new Date(t.due)) / 86400000) : 0;
+      const due = t.due ? (dc === 'overdue' ? `<span class="over">期限 ${fmtDue(t.due)}（${days}日過ぎ）</span>` : `期限 ${fmtDue(t.due)}${dc === 'today' ? '（今日まで）' : ''}`) : '期限なし';
+      return `<li class="${t.done ? 'done' : dc}" data-tid="${t.id}">
+        <input type="checkbox" data-rv-done ${t.done ? 'checked' : ''} aria-label="完了">
+        <span class="body"><span class="t">${escapeHtml(t.text)}</span>
+          <span class="meta">${t.whos.length ? `<b>${escapeHtml(whoShort(t.whos))}</b>・` : '担当なし・'}${t.start ? (isLater(t) ? `<span class="later-chip">${fmtDue(t.start)} から開始</span>・` : `${fmtDue(t.start)}〜・`) : ''}${due}・${dateLabel(run.meetingStart)}の会議「${escapeHtml(item.title)}」 ${toolChip(t)}</span></span>
+        <label class="due">期限<input type="date" data-rv-due value="${escapeHtml(t.due)}"></label>
+      </li>`;
+    }).join('');
+  }
+  function onTodoReviewChange(e) {
+    const li = e.target.closest('li[data-tid]');
+    if (!li) return;
+    const x = collectTodos().find(x => x.t.id === li.dataset.tid);
+    if (!x) return;
+    if (e.target.matches('[data-rv-done]')) x.t.done = e.target.checked;
+    else if (e.target.matches('[data-rv-due]')) x.t.due = e.target.value;
+    else return;
+    notesPanelKey = '';
+    save();
+    const f = e.target.matches('[data-rv-due]') ? li.dataset.tid : '';
+    renderTodoReview();
+    renderTodoBoard();
+    if (f) { const d = el.todoRvList.querySelector(`li[data-tid="${f}"] [data-rv-due]`); if (d) d.focus(); }
+  }
+  function closeTodoReview(go) {
+    if (!todoRvOpen()) return;
+    el.todoRvModal.classList.add('hidden'); el.todoRvDim.classList.add('hidden');
+    if (go) start(true);
+    else { render(); el.start.focus(); }
+  }
+
+  // ---------- ② あとで話す ----------
+  const PARK_LABEL = { next: '次回の議題', todo: 'TODO', none: 'なし' };
+  let parkOpen = false, parkAddId = '';
+  // 「あとで話す」を今回の会議の議題にする（あとで話すからは消す）
+  function parkToAgenda(id, minutes, where) {
+    const r = state.run;
+    const k = runActive() ? r.parked.findIndex(p => p.id === id) : -1;
+    if (k < 0) return false;
+    const x = r.parked[k];
+    dropParkTodo(x);
+    r.parked.splice(k, 1);
+    parkAddId = '';
+    notesPanelKey = '';
+    addItems([{ title: x.text.slice(0, 100), minutes: Math.min(600, Math.max(1, Math.round(minutes) || DEFAULT_MINUTES)), presenter: '', goal: '', kind: 'decide', fromPark: true }], where);
+    const late = Math.round((projectedEnd() - r.plannedEnd) / 60000);
+    showInfo(`✓ 「${x.text}」を今回の議題に追加しました（終了見込み ${clock(projectedEnd())}${late > 0 ? `・予定より +${late}分` : ''}）`);
+    return true;
+  }
+  const parkedNext = () => (state.run && state.run.parked || []).filter(x => x.dest === 'next');
+  function openPark() {
+    if (!runActive()) return;
+    parkOpen = true;
+    renderPark();
+    el.parkText.focus();
+  }
+  function addPark(text) {
+    const r = state.run;
+    if (!runActive() || !text.trim()) return;
+    text.split(/[\r\n]+/).map(x => x.trim()).filter(Boolean).forEach(t => {
+      r.parked.push({ id: newId(), text: t.slice(0, 200), itemId: (state.items[r.idx] || {}).id || '', dest: 'next', todoId: '' });
+    });
+    save(); renderPark();
+  }
+  // TODO にした「あとで話す」は、メモした時の議題の TODO として記録する
+  function parkTodoHome(x) {
+    const r = state.run;
+    let i = state.items.findIndex(it => it.id === x.itemId);
+    if (i < 0) i = Math.min(r.idx, state.items.length - 1);
+    return i;
+  }
+  function dropParkTodo(x) {
+    if (!x.todoId) return;
+    state.run.notes.forEach(n => { n.todos = n.todos.filter(t => t.id !== x.todoId); });
+    x.todoId = '';
+  }
+  function setParkDest(id, dest) {
+    const r = state.run;
+    const x = r && r.parked.find(p => p.id === id);
+    if (!x || !PARK_DESTS.includes(dest) || x.dest === dest) return;
+    if (x.dest === 'todo') dropParkTodo(x);
+    x.dest = dest;
+    if (dest === 'todo') {
+      const i = parkTodoHome(x);
+      if (i >= 0) {
+        const t = newTodo(x.text);
+        r.notes[i].todos.push(t);
+        x.todoId = t.id;
+      }
+    }
+    notesPanelKey = '';
+    save(); render();
+    if (r.status === 'done') { renderResultNotes(); renderPark(true); }
+    if (reviewOpen()) renderReview();
+    // TODO にしたら、続けて担当を選べるように
+    if (dest === 'todo') {
+      const root = reviewOpen() ? el.reviewBody : el.parkResult;
+      const f = root.querySelector(`li[data-pid="${id}"] [data-pt] .pchip, li[data-pid="${id}"] [data-pt-free]`);
+      if (f) f.focus();
+    }
+  }
+  function delPark(id) {
+    const r = state.run;
+    const k = r ? r.parked.findIndex(p => p.id === id) : -1;
+    if (k < 0) return;
+    dropParkTodo(r.parked[k]);
+    r.parked.splice(k, 1);
+    notesPanelKey = '';
+    save(); render();
+    if (r.status === 'done') renderResultNotes();
+  }
+  const destHTML = x => `<span class="park-dest" role="group" aria-label="「${escapeHtml(x.text)}」の行き先">${PARK_DESTS.map(d =>
+    `<button type="button" data-park-dest="${d}" class="${x.dest === d ? 'on' : ''}" aria-pressed="${x.dest === d}">${PARK_LABEL[d]}</button>`).join('')}</span>`;
+  let parkKey = '';
+  function renderPark(force) {
+    const r = state.run, active = runActive();
+    const list = (r && r.parked) || [];
+    el.park.classList.toggle('hidden', !active);
+    if (!active) parkOpen = false;
+    el.parkPanel.classList.toggle('hidden', !active || (!parkOpen && !list.length));
+    el.parkCount.textContent = list.length ? `${list.length}件` : '';
+    if (parkAddId && !list.some(x => x.id === parkAddId)) parkAddId = '';
+    const key = JSON.stringify([active, list, parkAddId]);
+    if (key !== parkKey) {
+      parkKey = key;
+      el.parkList.innerHTML = list.map(x => `<li data-pid="${x.id}"><span class="t">${escapeHtml(x.text)}</span>
+        ${parkAddId === x.id ? '' : '<button type="button" class="small pa-btn" data-park-agenda title="今回の会議の議題に追加">＋ 今回の議題に</button>'}
+        <button type="button" class="danger icon" data-park-del aria-label="このメモを削除" title="削除">✕</button>
+        ${parkAddId === x.id ? `<div class="park-add" data-park-add>
+          <label>持ち時間 <input type="number" data-pa-min min="1" max="600" step="1" value="${DEFAULT_MINUTES}" aria-label="持ち時間（分）"> 分</label>
+          <select data-pa-pos aria-label="入れる位置"><option value="next">今の議題の次に</option><option value="end">最後に</option></select>
+          <button type="button" class="secondary" data-pa-cancel>キャンセル</button>
+          <button type="button" data-pa-go>追加する</button>
+        </div>` : ''}</li>`).join('');
+    }
+    // 会議後：行き先を選ぶ
+    const done = !!r && r.status === 'done' && list.length > 0;
+    el.parkResult.classList.toggle('hidden', !done);
+    if (done && !force && el.parkResult.contains(document.activeElement)) return;  // 入力中は描き直さない
+    if (done) {
+      el.parkResult.innerHTML = `<div class="park-head"><span>🅿 あとで話す（${list.length}件）の行き先</span><small>次回の議題＝「次の会議を準備」で議題に追加</small></div>
+        <ul class="park-list">${list.map(x => `<li data-pid="${x.id}"><span class="t">${escapeHtml(x.text)}</span>${destHTML(x)}
+          <button type="button" class="danger icon" data-park-del aria-label="このメモを削除" title="削除">✕</button>${parkTodoHTML(x)}</li>`).join('')}</ul>`;
+    } else el.parkResult.innerHTML = '';
+  }
+  function onParkClick(e) {
+    const li = e.target.closest('li[data-pid]');
+    if (!li) return;
+    const id = li.dataset.pid;
+    const who = e.target.closest('button[data-pt-who]');
+    if (who) {
+      const n = who.dataset.ptWho;
+      parkTodoUpdate(li, t => { t.whos = t.whos.includes(n) ? t.whos.filter(x => x !== n) : orderNames([...t.whos, n]); }, `[data-pt-who="${CSS.escape(n)}"]`);
+      return;
+    }
+    if (e.target.closest('button[data-park-agenda]')) {
+      if (reviewOpen()) {  // 振り返り画面から：最後に追加して会議を続ける
+        if (parkToAgenda(id, DEFAULT_MINUTES, 'end')) closeReview(false);
+        return;
+      }
+      parkAddId = id; renderPark();
+      const m = el.parkList.querySelector('[data-pa-min]'); if (m) { m.focus(); m.select(); }
+      return;
+    }
+    if (e.target.closest('button[data-pa-cancel]')) { parkAddId = ''; renderPark(); return; }
+    if (e.target.closest('button[data-pa-go]')) { parkGo(li); return; }
+    const d = e.target.closest('button[data-park-dest]');
+    if (d) { setParkDest(li.dataset.pid, d.dataset.parkDest); return; }
+    if (e.target.closest('button[data-park-del]')) delPark(li.dataset.pid);
+  }
+
+  // 「TODO」にした「あとで話す」の TODO を探す
+  function parkTodo(x) {
+    if (!x || x.dest !== 'todo' || !x.todoId || !state.run) return null;
+    for (const n of state.run.notes) { const t = n.todos.find(t => t.id === x.todoId); if (t) return t; }
+    return null;
+  }
+  // 担当（出席者から選ぶ＋手入力）と期間（開始〜期限）・ツール登録
+  function parkTodoHTML(x) {
+    const t = parkTodo(x);
+    if (!t) return '';
+    const r = state.run, present = r.people.filter(p => p.present).map(p => p.name);
+    const base = present.length ? present : team.members.map(m => m.name);
+    const cands = [...new Set([...base, ...t.whos])];  // 並びは固定（押しても位置が変わらない）
+    return `<div class="pt-box" data-pt>
+      <div class="pt-row"><span class="pt-k">担当</span>${cands.map(n => `<button type="button" class="pchip ${t.whos.includes(n) ? 'on' : ''}" data-pt-who="${escapeHtml(n)}" aria-pressed="${t.whos.includes(n)}">${escapeHtml(n)}</button>`).join('')}
+        <input type="text" data-pt-free list="peopleList" maxlength="200" placeholder="${cands.length ? 'ほかの人' : '担当の名前'}（Enter・「、」区切りで複数可）" aria-label="担当の名前を入力"></div>
+      <div class="pt-row"><span class="pt-k">期間</span>
+        <label>開始<input type="date" data-pt-start value="${escapeHtml(t.start)}" aria-label="開始日（空ならすぐ）"></label>
+        <label>〜 期限<input type="date" data-pt-due value="${escapeHtml(t.due)}" aria-label="期限"></label>
+        <select data-pt-tool class="toolsel t-${t.tool || 'unset'}" aria-label="課のタスク管理ツールへの登録">${TOOL_STATES.map(v => `<option value="${v}" ${t.tool === v ? 'selected' : ''}>${toolOpt(v)}</option>`).join('')}</select></div>
+    </div>`;
+  }
+  // 入力を TODO に反映して、表示を合わせ直す（フォーカスは同じ欄に戻す）
+  function parkTodoUpdate(li, fn, focusSel) {
+    const r = state.run;
+    const x = r && r.parked.find(p => p.id === li.dataset.pid);
+    const t = parkTodo(x);
+    if (!t) return;
+    fn(t);
+    notesPanelKey = '';
+    save();
+    const inReview = reviewOpen();
+    if (inReview) renderReview();
+    render();
+    if (!inReview) { renderPark(true); if (r.status === 'done') renderResultNotes(); }
+    const root = inReview ? el.reviewBody : el.parkResult;
+    const f = focusSel && root.querySelector(`li[data-pid="${x.id}"] ${focusSel}`);
+    if (f) f.focus();
+  }
+  function ptAddFree(li) {
+    const inp = li.querySelector('[data-pt-free]');
+    const names = inp ? inp.value.split(/[、,，\n\t]+|　/).map(n => n.trim().slice(0, 40)).filter(Boolean) : [];
+    if (!names.length) return;
+    parkTodoUpdate(li, t => { t.whos = orderNames([...new Set([...t.whos, ...names])]); }, '[data-pt-free]');
+  }
+  function onParkChange(e) {
+    const li = e.target.closest('li[data-pid]');
+    if (!li || !e.target.closest('[data-pt]')) return;
+    if (e.target.matches('[data-pt-start]')) parkTodoUpdate(li, t => { t.start = e.target.value; }, '[data-pt-start]');
+    else if (e.target.matches('[data-pt-due]')) parkTodoUpdate(li, t => { t.due = e.target.value; }, '[data-pt-due]');
+    else if (e.target.matches('[data-pt-tool]')) parkTodoUpdate(li, t => { t.tool = TOOL_STATES.includes(e.target.value) ? e.target.value : ''; }, '[data-pt-tool]');
+    else if (e.target.matches('[data-pt-free]')) ptAddFree(li);
+  }
+  function onParkKey(e) {
+    if (e.key !== 'Enter' || e.isComposing || !e.target.matches('[data-pt-free]')) return;
+    e.preventDefault();
+    ptAddFree(e.target.closest('li[data-pid]'));
+  }
+  function parkGo(li) {
+    const m = li.querySelector('[data-pa-min]'), w = li.querySelector('[data-pa-pos]');
+    const min = Math.round(Number(m && m.value));
+    if (!(min >= 1 && min <= 600)) { if (m) m.focus(); return; }
+    parkToAgenda(li.dataset.pid, min, w ? w.value : 'next');
+  }
+
+  // ---------- ③ 会議の振り返り（終了前） ----------
+  const reviewOpen = () => !el.reviewModal.classList.contains('hidden');
+  function openReview() {
+    if (!runActive()) return;
+    renderReview();
+    el.reviewModal.classList.remove('hidden'); el.reviewDim.classList.remove('hidden');
+    el.reviewModal.scrollTop = 0;
+    el.reviewEnd.focus();
+  }
+  function renderReview() {
+    const r = state.run;
+    const items = state.items.map((item, i) => {
+      const n = r.notes[i];
+      if (r.skipped[i]) return `<div class="rv-box skipped"><div class="h">${i + 1}. ${escapeHtml(item.title)}<span class="badge 持ち越し">次回へ</span></div><div class="d">今回は話さずに次回へ</div></div>`;
+      const dec = n.decision.trim();
+      const st = n.status ? `<span class="badge ${n.status}">${n.status}</span>` : '<span class="warnchip">⚠ 結論が未選択</span>';
+      return `<div class="rv-box"><div class="h">${i + 1}. ${isReport(item) ? '📢 ' : ''}${escapeHtml(item.title)}${st}</div>
+        <div class="d ${dec ? '' : 'none'}">${dec ? escapeHtml(dec) : '（記録なし）'}</div></div>`;
+    }).join('');
+    const todos = [];
+    r.notes.forEach((n, i) => n.todos.forEach(t => { if (t.text.trim()) todos.push({ t, i }); }));
+    const todoHTML = todos.length ? todos.map(({ t }) => `<div class="rv-box">${t.done ? '✓ ' : ''}${escapeHtml(t.text)}　` +
+      (t.whos.length ? `<b>${escapeHtml(whoShort(t.whos))}</b>` : '<span class="warnchip">⚠ 担当なし</span>') +
+      (t.start ? `・${periodText(t)}` : t.due ? `・${fmtDue(t.due)}` : '') + (t.due ? '' : '<span class="warnchip">⚠ 期限なし</span>') + ' ' + toolChip(t) + '</div>').join('')
+      : '<p class="rv-empty">TODO はありません</p>';
+    const decided = r.notes.filter((n, i) => !r.skipped[i] && n.status === '決定' && !n.todos.some(t => t.text.trim())).length;
+    const pk = r.parked;
+    el.reviewBody.innerHTML = `
+      <div class="rv-sec"><span>決まった事</span><small>${state.items.length}議題</small></div>${items}
+      <div class="rv-sec"><span>TODO（${todos.length}件）</span>${decided ? `<small>「決定」で TODO がない議題 ${decided}件</small>` : ''}</div>${todoHTML}
+      ${pk.length ? `<div class="rv-sec"><span>🅿 あとで話す（${pk.length}件）の行き先</span></div>
+        <ul class="rv-park">${pk.map(x => `<li data-pid="${x.id}"><span class="t">${escapeHtml(x.text)}</span>${destHTML(x)}<button type="button" class="small pa-btn" data-park-agenda title="今回の会議の最後に議題として追加して、会議を続けます">＋ 今回の議題に</button>${parkTodoHTML(x)}</li>`).join('')}</ul>` : ''}`;
+  }
+  function closeReview(end) {
+    if (!reviewOpen()) return;
+    el.reviewModal.classList.add('hidden'); el.reviewDim.classList.add('hidden');
+    if (end) { next(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    else { notesPanelKey = ''; render(); const f = el.notesPanel.querySelector('textarea'); (f || el.next).focus(); }
+  }
+  const anyModalOpen = () => todoRvOpen() || reviewOpen();
+
   function reset() {
     if (!state.run) return;
     const msg = state.run.status === 'done'
@@ -1483,11 +2062,11 @@
     addItems([{ title, minutes, presenter: presenter || '', goal: goal || '', kind: report ? 'report' : 'decide' }]);
   }
   // 会議前は末尾に追加。進行中は「今の議題の次」または「最後」に追加し、進行データも合わせて広げる
-  function addItems(list) {
+  function addItems(list, where) {
     const items = list.map(x => ({ id: newId(), ...x }));
     const r = state.run;
     if (r && r.status !== 'done') {
-      let pos = el.addPos.value === 'next' ? r.idx + 1 : state.items.length;
+      let pos = (where || el.addPos.value) === 'next' ? r.idx + 1 : state.items.length;
       items.forEach(item => {
         state.items.splice(pos, 0, item);
         r.elapsed.splice(pos, 0, 0);
@@ -1502,6 +2081,17 @@
     }
     save(); render();
     return items.length;
+  }
+  // 会議中：まだ始まっていない議題どうしで順番を入れ替える（今の議題・終わった議題は動かさない）
+  function moveRunItem(i, dir) {
+    const r = state.run, j = i + dir;
+    if (!runActive() || i <= r.idx || j <= r.idx || j >= state.items.length) return;
+    [state.items, r.elapsed, r.notes, r.plan, r.skipped, r.added].forEach(a => { [a[i], a[j]] = [a[j], a[i]]; });
+    save(); render();
+    // 続けて押せるよう、動かした議題の同じボタンにフォーカスを戻す
+    const b = el.agenda.querySelector(`li[data-i="${j}"] button[data-act="${dir < 0 ? 'rup' : 'rdown'}"]`);
+    const alt = el.agenda.querySelector(`li[data-i="${j}"] button[data-act="${dir < 0 ? 'rdown' : 'rup'}"]`);
+    ((b && !b.disabled) ? b : alt || el.agenda).focus();
   }
   // 会議中に追加した未着手の議題を取り消す
   function removeAdded(i) {
@@ -1580,7 +2170,13 @@
     return { kind: 'decide', goal: g };
   }
   function parseBulk(text) {
-    return text.split(/\r?\n/).map(parseLine).filter(Boolean)
+    return text.split(/\r?\n/).map(raw => {
+      // URL は区切り文字「/」を含むので、先に取り出して資料のリンクにする
+      const urls = raw.match(URL_RE) || [];
+      const x = parseLine(urls.length ? raw.replace(URL_RE, ' ').replace(/[\s📎]+$/u, '') : raw);
+      if (x) x.links = urls.slice(0, 10).map(url => ({ url, name: '' }));
+      return x;
+    }).filter(Boolean)
       .map(x => {
         const k = splitReport(x.goal);
         return {
@@ -1628,6 +2224,7 @@
     const tail = isReport(x) ? (x.goal ? `報告：${x.goal}` : '報告') : x.goal;
     if (x.presenter || tail) s += ` / ${x.presenter || ''}`;
     if (tail) s += ` / ${tail}`;
+    linksOf(x).forEach(l => { s += ` ${l.url}`; });
     return s;
   }
 
@@ -1683,8 +2280,10 @@
     renderPeople();
     renderTodoBoard();
     renderHistory();
+    renderStats();
     renderFolds();
     renderRoleWarn();
+    renderPark();
     updateMini();
   }
 
@@ -1741,9 +2340,9 @@
     if (share.handle) {
       if (share.error) { txt = '⚠ 保存エラー'; warn = true; }
       else if (share.conflict) { txt = '⚠ 要確認'; warn = true; }
-      else if (share.saving || isDirty()) txt = '☁ 保存中…';
-      else txt = '☁ 保存済み';
-    } else txt = IS_MOBILE ? '📱 この端末に保存' : '💻 この PC に保存';
+      else if (share.saving || isDirty()) txt = '☁ 共有ファイルに保存中…';
+      else txt = '☁ 保存先：共有ファイル';
+    } else txt = IS_MOBILE ? '💾 保存先：この端末' : '💾 保存先：この PC';
     if (!warn && team.error) { txt = '⚠ チーム員'; warn = true; }
     el.saveBadge.textContent = txt;
     el.saveBadge.classList.toggle('warn', warn);
@@ -1893,7 +2492,7 @@
     const who = el.todoWho.value, showDone = el.todoShowDone.checked;
     const names = [...new Set(all.flatMap(x => x.t.whos))].sort((a, b) => a.localeCompare(b, 'ja'));
     const hasNoWho = all.some(x => !x.t.whos.length);
-    const key = JSON.stringify([all.map(x => [x.t, x.item.title, x.run.meetingStart]), who, showDone, todayStr()]);
+    const key = JSON.stringify([all.map(x => [x.t, x.item.title, x.run.meetingStart]), who, showDone, el.todoPhase.value, el.todoTool.value, todayStr(), runActive()]);
     if (key === todoKey) return;
     todoKey = key;
     if (document.activeElement !== el.todoWho) {
@@ -1903,6 +2502,10 @@
     }
     const open = all.filter(x => !x.t.done);
     const over = open.filter(x => dueClass(x.t) === 'overdue').length;
+    const tc = v => open.filter(x => (x.t.tool || '') === v).length;
+    const sums = [['need', 'ツール未登録'], ['done', 'ツール登録済み'], ['none', 'ツール不要'], ['unset', '要否 未設定']]
+      .map(([v, l]) => [v, l, tc(v === 'unset' ? '' : v)]).filter(x => x[2]);
+    el.todoToolSum.innerHTML = sums.length ? sums.map(([v, l, n]) => `<button type="button" class="t-${v} ${el.todoTool.value === v ? 'on' : ''}" data-tool-filter="${v}" title="この状態だけ表示（もう一度押すと解除）">🗂 ${l} ${n}件</button>`).join('') : '';
     el.todoCount.textContent = all.length ? `未完了 ${open.length}件${over ? `（期限切れ ${over}件）` : ''}` : 'まだありません';
     el.todoCount.classList.toggle('alert', over > 0);
     const list = sortTodos(filterTodos(all));
@@ -1910,11 +2513,13 @@
     if (!list.length) { el.todoBoard.innerHTML = `<li class="empty" style="border:none;justify-content:center">${showDone ? '該当するTODOはありません' : '未完了のTODOはありません 🎉'}</li>`; return; }
     el.todoBoard.innerHTML = list.map(({ t, item, run }) => {
       const dc = dueClass(t);
-      const dueText = t.due ? `<span class="due ${dc}">期限 ${fmtDue(t.due)}${dc === 'overdue' ? '（期限切れ）' : dc === 'today' ? '（今日まで）' : ''}</span>` : '<span>期限なし</span>';
-      return `<li class="${t.done ? 'done' : dc}">
+      const dueText = (t.start ? (isLater(t) ? `<span class="later-chip">${fmtDue(t.start)} から開始（まだ先）</span>・` : `<span>${fmtDue(t.start)}〜</span>`) : '') +
+        (t.due ? `<span class="due ${dc}">期限 ${fmtDue(t.due)}${dc === 'overdue' ? '（期限切れ）' : dc === 'today' ? '（今日まで）' : ''}</span>` : '<span>期限なし</span>');
+      return `<li class="${t.done ? 'done' : dc}${isLater(t) ? ' later' : ''}">
         <input type="checkbox" data-todo-done="${t.id}" ${t.done ? 'checked' : ''} aria-label="完了">
         <span class="body"><span class="t">${escapeHtml(t.text)}</span>
           <span class="meta">${t.whos.length ? `<span class="who" title="${escapeHtml(t.whos.join('・'))}">${escapeHtml(whoShort(t.whos))}</span>・` : ''}${dueText}・${dateLabel(run.meetingStart)}の会議「${escapeHtml(item.title)}」${run === state.run && runActive() ? '（進行中）' : ''}</span></span>
+        <span class="side">${toolChip(t)}${t.tool === 'need' && !t.done ? `<button type="button" class="small" data-tool-done="${t.id}">✓ 登録済みにする</button>` : ''}</span>
       </li>`;
     }).join('');
   }
@@ -1922,7 +2527,20 @@
   const whoShort = (whos, max = 3) => whos.slice(0, max).join('・') + (whos.length > max ? ` ほか${whos.length - max}名` : '');
   function filterTodos(all) {
     const who = el.todoWho.value, showDone = el.todoShowDone.checked;
-    return all.filter(x => (showDone || !x.t.done) && (!who || (who === '\u0000' ? !x.t.whos.length : x.t.whos.includes(who))));
+    const phase = el.todoPhase.value, tool = el.todoTool.value;
+    return all.filter(x => (showDone || !x.t.done) && (!who || (who === '\u0000' ? !x.t.whos.length : x.t.whos.includes(who))) &&
+      (!phase || (phase === 'later') === isLater(x.t)) &&
+      (!tool || (tool === 'unset' ? !x.t.tool : x.t.tool === tool)));
+  }
+  function onTodoBoardClick(e) {
+    const b = e.target.closest('button[data-tool-done]');
+    if (!b) return;
+    const x = collectTodos().find(x => x.t.id === b.dataset.toolDone);
+    if (!x) return;
+    x.t.tool = 'done';
+    notesPanelKey = '';
+    save(); render();
+    if (state.run && state.run.status === 'done') renderResultNotes();
   }
   function onTodoBoardChange(e) {
     const cb = e.target.closest('input[data-todo-done]');
@@ -1937,10 +2555,11 @@
     const list = sortTodos(filterTodos(collectTodos()).filter(x => !x.t.done));
     if (!list.length) return '';
     const who = el.todoWho.value;
-    const lines = [`【未完了のTODO】${dateLabel(Date.now())}時点・${list.length}件` + (who && who !== '\u0000' ? `（担当：${who}）` : '')];
+    const cond = [who && who !== '\u0000' ? `担当：${who}` : '', el.todoPhase.value ? el.todoPhase.selectedOptions[0].text : '', el.todoTool.value ? `ツール：${el.todoTool.selectedOptions[0].text}` : ''].filter(Boolean).join('・');
+    const lines = [`【未完了のTODO】${dateLabel(Date.now())}時点・${list.length}件` + (cond ? `（${cond}）` : '')];
     list.forEach(({ t, item, run }) => {
       const dc = dueClass(t);
-      lines.push(`・${todoLine(t)}${dc === 'overdue' ? '［期限切れ］' : dc === 'today' ? '［今日まで］' : ''}　← ${dateLabel(run.meetingStart)}「${item.title}」`);
+      lines.push(`・${todoLine(t)}${dc === 'overdue' ? '［期限切れ］' : dc === 'today' ? '［今日まで］' : ''}${isLater(t) ? '［開始前］' : ''}　← ${dateLabel(run.meetingStart)}「${item.title}」`);
     });
     return lines.join('\n');
   }
@@ -2002,7 +2621,7 @@
         return `<li class="${st}${ed ? ' editing' : ''}" data-i="${i}">
           <span class="status">${labels[st]}</span>
           <span class="num">${i + 1}.</span>
-          <span class="name">${escapeHtml(item.title)}${isAdded(i) ? '<span class="badge 追加">追加</span>' : ''}${carryBadge(item)}${statusBadge(i)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}${goalLineHTML(item)}</span>
+          <span class="name">${escapeHtml(item.title)}${isAdded(i) ? (item.fromPark ? '<span class="badge park">あとで話すから</span>' : '<span class="badge 追加">追加</span>') : ''}${carryBadge(item)}${statusBadge(i)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}${goalLineHTML(item)}${linksOf(item).length ? `<span class="links">${linksOf(item).map(l => linkA(l)).join('')}</span>` : ''}</span>
           <span class="br"></span>
           <span class="mins">${st === 'skipped' ? '—' : effMin(i) + '分'}${isChanged(i) || st === 'skipped' ? `<small>当初${item.minutes}分</small>` : ''}<small class="at hidden" data-at="${i}" title="開始の見込み時刻"></small></span>
           <span class="ops">${opsHTML(i, st, active, dis)}</span>
@@ -2028,8 +2647,10 @@
     if (!active) return '';
     // 進行中：今の議題とこれからの議題は名前・担当などを直せる（持ち時間は −／＋）
     if (st === 'current') return ed;
-    // 進行中：未着手の議題だけ時間調整・次回へ回すことができる
-    if (st === 'todo') return ed + (state.run.added[i] ? `
+    // 進行中：未着手の議題だけ時間調整・並べ替え・次回へ回すことができる
+    if (st === 'todo') return ed + `
+            <button class="secondary icon" data-act="rup" ${i - 1 <= state.run.idx ? 'disabled' : ''} aria-label="上へ" title="上へ（まだ始まっていない議題の中で）">▲</button>
+            <button class="secondary icon" data-act="rdown" ${i === state.items.length - 1 ? 'disabled' : ''} aria-label="下へ" title="下へ">▼</button>` + (state.run.added[i] ? `
             <button class="danger icon" data-act="unadd" aria-label="追加を取り消す" title="追加を取り消す">✕</button>` : '') + `
             <button class="secondary icon" data-act="minus" ${state.run.plan[i] <= 1 ? 'disabled' : ''} aria-label="1分減らす" title="1分減らす">−</button>
             <button class="secondary icon" data-act="plus" aria-label="1分増やす" title="1分増やす">＋</button>
@@ -2058,6 +2679,15 @@
       ${withMinutes ? `<label>持ち時間（分）<input type="number" data-ef="minutes" min="1" max="600" step="1" value="${escapeHtml(String(d.minutes))}"></label>` : ''}
       ${afterMeeting ? '' : `<label class="${withMinutes ? '' : 'full'}">種類<select data-ef="kind"><option value="decide"${report ? '' : ' selected'}>🎯 決める議題</option><option value="report"${report ? ' selected' : ''}>📢 報告の議題</option></select></label>`}
       <label class="full"><span data-goal-label>${goalLabel(report)}</span><input type="text" data-ef="goal" value="${escapeHtml(d.goal)}" maxlength="200" placeholder="${report ? '例）10月の売上は前年比105%（任意）' : '（任意）'}"></label>
+      <div class="full links-ed" data-links>
+        <span class="lab">📎 資料のリンク（OneDrive・SharePoint・Teams などの URL）</span>
+        ${(editing.links || linksOf(item)).map((l, k) => `<div class="lrow">${linkA(l)}<button type="button" class="danger icon" data-act="link-del" data-k="${k}" aria-label="このリンクを外す" title="外す">✕</button></div>`).join('')}
+        <div class="lrow">
+          <input type="url" data-el="url" value="${escapeHtml((editing.linkDraft || {}).url || '')}" maxlength="2000" placeholder="URL を貼り付け（https://…）" aria-label="資料の URL">
+          <input type="text" data-el="name" value="${escapeHtml((editing.linkDraft || {}).name || '')}" maxlength="80" placeholder="表示名（任意）" aria-label="表示名">
+          <button type="button" class="secondary" data-act="link-add">＋ 追加</button>
+        </div>
+      </div>
       ${err ? `<div class="err" role="alert">${escapeHtml(err)}</div>` : ''}
       <div class="acts">
         <span class="note">${withMinutes ? 'Enter で保存・Esc で取り消し' : afterMeeting ? '予定・実際の時間は記録のため変えられません' : '持ち時間は −／＋ で変えます'}</span>
@@ -2076,15 +2706,51 @@
     const form = root.querySelector('[data-edit]');
     if (!form || !editing.id) return null;
     editing.draft = { ...(editing.draft || {}), ...readEdit(form) };
+    editing.linkDraft = readLinkDraft(form);
     const a = document.activeElement;
-    return a && form.contains(a) && a.dataset.ef ? { f: a.dataset.ef, s: a.selectionStart, e: a.selectionEnd } : null;
+    return a && form.contains(a) && (a.dataset.ef || a.dataset.el) ? { f: a.dataset.ef, el: a.dataset.el, s: a.selectionStart, e: a.selectionEnd } : null;
   }
   function restoreEdit(root, foc) {
     if (!foc) return;
-    const f = root.querySelector(`[data-edit] [data-ef="${foc.f}"]`);
+    const f = root.querySelector(foc.el ? `[data-edit] [data-el="${foc.el}"]` : `[data-edit] [data-ef="${foc.f}"]`);
     if (!f) return;
     f.focus();
     try { if (foc.s !== null && foc.s !== undefined) f.setSelectionRange(foc.s, foc.e); } catch (e) { /* number */ }
+  }
+  function readLinkDraft(form) {
+    const u = form.querySelector('[data-el=url]'), n = form.querySelector('[data-el=name]');
+    return { url: u ? u.value : '', name: n ? n.value : '' };
+  }
+  // 入力欄の URL を一覧に加える（空なら何もしない・形式が違えば理由を返す）
+  function takeLink(form) {
+    const d = readLinkDraft(form);
+    const url = d.url.trim();
+    if (!url) return null;
+    if (!okUrl(url)) return 'URL は https:// から始まる形で入力してください（OneDrive などの「リンクをコピー」で取れます）';
+    if ((editing.links || []).length >= 10) return 'リンクは1議題に10件までです';
+    editing.links = [...(editing.links || []), { url, name: d.name.trim().slice(0, 80) }];
+    editing.linkDraft = null;
+    const u = form.querySelector('[data-el=url]'), n = form.querySelector('[data-el=name]');
+    if (u) u.value = ''; if (n) n.value = '';
+    return null;
+  }
+  // 編集欄の「＋ 追加」「✕」（root：アジェンダ or 記録欄のカード）
+  function onLinkAct(act, btn, root, redraw) {
+    const form = btn.closest('[data-edit]');
+    if (!form) return;
+    editing.draft = { ...(editing.draft || {}), ...readEdit(form) };
+    if (act === 'link-add') {
+      const err = takeLink(form);
+      editing.err = err || '';
+      if (err) editing.linkDraft = readLinkDraft(form);
+    } else {
+      editing.linkDraft = readLinkDraft(form);
+      editing.links = (editing.links || []).filter((_, k) => k !== Number(btn.dataset.k));
+      editing.err = '';
+    }
+    redraw();
+    const f = root().querySelector('[data-edit] [data-el=url]');
+    if (f) f.focus();
   }
   function focusEdit(root) {
     const f = root.querySelector('[data-edit] [data-ef="title"]');
@@ -2093,12 +2759,13 @@
   function openEdit(i) {
     if (!editableNow(i)) return;
     editing.id = state.items[i].id; editing.draft = null; editing.err = '';
+    editing.links = clone(linksOf(state.items[i])); editing.linkDraft = null;
     renderAgenda();
     focusEdit(el.agenda);
   }
   function closeEdit(refocus) {
     const id = editing.id;
-    editing.id = ''; editing.draft = null; editing.err = '';
+    editing.id = ''; editing.draft = null; editing.err = ''; editing.links = null; editing.linkDraft = null;
     renderAgenda();
     if (refocus) {
       const i = state.items.findIndex(x => x.id === id);
@@ -2122,6 +2789,7 @@
     item.presenter = (d.presenter || '').trim();
     item.kind = kind;
     if (d.goal !== undefined) item.goal = d.goal.trim();
+    if (editing.links) item.links = clone(editing.links);
     // 種類を変えたら、合わない結論（決定⇔報告済み）は外す
     const n = state.run && state.run.notes && state.run.notes[i];
     if (n && n.status && !(kind === 'report' ? REPORT_STATUSES : STATUSES).includes(n.status)) n.status = '';
@@ -2132,15 +2800,17 @@
     const i = state.items.findIndex(x => x.id === editing.id);
     const form = el.agenda.querySelector('[data-edit]');
     if (i < 0 || !form || !editableNow(i)) return closeEdit(false);
-    const res = applyEdit(i, readEdit(form), !state.run);
+    const lerr = takeLink(form);  // 「＋ 追加」を押し忘れた URL も取り込む
+    const res = lerr ? { err: lerr, f: '' } : applyEdit(i, readEdit(form), !state.run);
     if (res) {
       editing.draft = readEdit(form); editing.err = res.err;
+      if (lerr) editing.linkDraft = readLinkDraft(form);
       renderAgenda();
-      const f = el.agenda.querySelector(`[data-edit] [data-ef="${res.f}"]`);
+      const f = el.agenda.querySelector(res.f ? `[data-edit] [data-ef="${res.f}"]` : '[data-edit] [data-el=url]');
       if (f) f.focus();
       return;
     }
-    editing.id = ''; editing.draft = null; editing.err = '';
+    editing.id = ''; editing.draft = null; editing.err = ''; editing.links = null; editing.linkDraft = null;
     save(); render();
     const b = el.agenda.querySelector(`li[data-i="${i}"] button[data-act="edit"]`);
     if (b) b.focus();
@@ -2159,12 +2829,12 @@
   function noteEditOpen(i) {
     const item = state.items[i];
     noteEdit.id = item.id; noteEdit.err = '';
-    editing.draft = null;
+    editing.draft = null; editing.err = ''; editing.links = clone(linksOf(item)); editing.linkDraft = null;
     renderResultNotes();
     focusEdit(el.resultNotes.querySelector(`.note-card[data-i="${i}"]`));
   }
   function noteEditClose(i) {
-    noteEdit.id = ''; noteEdit.err = '';
+    noteEdit.id = ''; noteEdit.err = ''; editing.links = null; editing.linkDraft = null; editing.err = '';
     renderResultNotes();
     const b = el.resultNotes.querySelector(`.note-card[data-i="${i}"] button[data-act="note-edit"]`);
     if (b) b.focus();
@@ -2172,13 +2842,15 @@
   function noteEditSave(i, card) {
     const form = card.querySelector('[data-edit]');
     if (!form) return;
-    const res = applyEdit(i, readEdit(form), false);
+    const lerr = takeLink(form);
+    const res = lerr ? { err: lerr, f: '' } : applyEdit(i, readEdit(form), false);
     if (res) {
       noteEdit.err = res.err;
       editing.draft = readEdit(form);
+      if (lerr) editing.linkDraft = readLinkDraft(form);
       renderResultNotes();
       editing.draft = null;
-      const f = el.resultNotes.querySelector(`.note-card[data-i="${i}"] [data-ef="${res.f}"]`);
+      const f = el.resultNotes.querySelector(`.note-card[data-i="${i}"] ${res.f ? `[data-ef="${res.f}"]` : '[data-el=url]'}`);
       if (f) f.focus();
       return;
     }
@@ -2197,7 +2869,7 @@
 
   // 前回の会議から残した議題の目印
   function carryBadge(item) {
-    return item.carry ? `<span class="badge carry">${item.carry === '保留' ? '前回は保留' : '前回から持ち越し'}</span>` : '';
+    return item.carry ? `<span class="badge carry">${item.carry === '保留' ? '前回は保留' : item.carry === 'あとで' ? '前回の「あとで話す」' : '前回から持ち越し'}</span>` : '';
   }
   function statusBadge(i) {
     const n = state.run && state.run.notes && state.run.notes[i];
@@ -2213,7 +2885,7 @@
     const done = state.run.status === 'done';
     const editingNote = done && noteEdit.id === item.id;
     const h3 = `<h3>${i + 1}. ${escapeHtml(item.title)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}${done && !editingNote ? '<button type="button" class="secondary small edit" data-act="note-edit" title="議題名・担当者・決めることを直す">✏ 議題を編集</button>' : ''}</h3>`;
-    const form = editingNote ? itemEditHTML(item, false, true, noteEdit.err) : '';
+    const form = editingNote ? itemEditHTML(item, false, true, noteEdit.err || editing.err) : '';
     if (isReport(item)) return `<div class="note-card" data-i="${i}">
       ${h3}${form}
       ${editingNote ? '' : `<div class="goal report"><span class="k">📢 報告内容の要約</span>${item.goal ? escapeHtml(item.goal) : '（未登録）'}</div>`}
@@ -2251,10 +2923,21 @@
         <input type="checkbox" data-tf="done" ${t.done ? 'checked' : ''} aria-label="完了" title="完了">
         <textarea data-tf="text" rows="1" maxlength="200" placeholder="やること（例：${example}）" aria-label="やること">${escapeHtml(t.text)}</textarea>
         <button type="button" class="whobtn ${picker.tid === t.id ? 'open' : ''}" data-who-open aria-expanded="${picker.tid === t.id}" title="${t.whos.length ? '担当：' + escapeHtml(t.whos.join('・')) : '担当を選ぶ'}">${whoTagsHTML(t.whos)}</button>
-        <input type="date" data-tf="due" value="${escapeHtml(t.due)}" aria-label="期限" title="期限">
+        <label class="tdate">開始<input type="date" data-tf="start" value="${escapeHtml(t.start)}" aria-label="開始日（空ならすぐ）" title="いつからやるか（空ならすぐ）"></label>
+        <label class="tdate">〜 期限<input type="date" data-tf="due" value="${escapeHtml(t.due)}" aria-label="期限" title="期限"></label>
+        <select data-tf="tool" class="toolsel t-${t.tool || 'unset'}" aria-label="課のタスク管理ツールへの登録" title="課のタスク管理ツールへの登録">${TOOL_STATES.map(v => `<option value="${v}" ${t.tool === v ? 'selected' : ''}>${toolOpt(v)}</option>`).join('')}</select>
         <button type="button" class="danger icon" data-todo-del aria-label="このTODOを削除" title="削除">✕</button>
       </div>${picker.tid === t.id ? pickerHTML(t) : ''}`).join('');
   }
+  const toolOpt = v => ({ '': '🗂 ツール：未設定', none: '🚫 ツール：不要', need: '⚠ ツール：要・未登録', done: '✅ ツール：登録済み' })[v];
+  const toolChip = t => `<span class="toolchip t-${t.tool || 'unset'}">🗂 ${TOOL_LABEL[t.tool || '']}</span>`;
+  // 「11/10〜11/20」「11/10〜」「〜11/20」
+  function periodText(t) {
+    if (t.start && t.due) return `${fmtDue(t.start)}〜${fmtDue(t.due)}`;
+    if (t.start) return `${fmtDue(t.start)}〜`;
+    return t.due ? `〜${fmtDue(t.due)}` : '';
+  }
+  const isLater = t => !t.done && !!t.start && t.start > todayStr();
   function whoTagsHTML(whos) {
     if (!whos.length) return '<span class="add">＋ 担当を選ぶ</span>';
     // 欄に収まる人数だけタグで表示（フルネームなら1人、短い名前なら2人）＋残りは「+N」
@@ -2366,7 +3049,7 @@
   }
   function addTodo(card, i) {
     const n = state.run.notes[i];
-    const t = { id: newId(), text: '', whos: state.items[i].presenter ? [state.items[i].presenter] : [], due: '', done: false };
+    const t = { ...newTodo(''), whos: state.items[i].presenter ? [state.items[i].presenter] : [] };
     n.todos.push(t);
     save();
     card.querySelector('.todo-list').innerHTML = todoRowsHTML(i);
@@ -2407,6 +3090,7 @@
       const t = state.run.notes[Number(card.dataset.i)].todos.find(x => x.id === row.dataset.tid);
       if (!t) return;
       if (f.dataset.tf === 'done') { t.done = f.checked; row.classList.toggle('done', t.done); }
+      else if (f.dataset.tf === 'tool') { t.tool = TOOL_STATES.includes(f.value) ? f.value : ''; f.className = `toolsel t-${t.tool || 'unset'}`; }
       else t[f.dataset.tf] = f.value.slice(0, 200);
       save();
       renderTodoBoard();
@@ -2424,6 +3108,7 @@
     if (e.target.closest('[data-edit]')) {
       const card = e.target.closest('.note-card'), i = Number(card.dataset.i);
       if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); noteEditClose(i); }
+      else if (e.key === 'Enter' && !e.isComposing && e.target.matches('[data-el]')) { e.preventDefault(); onLinkAct('link-add', e.target, () => el.resultNotes.querySelector(`.note-card[data-i="${i}"]`), renderResultNotes); }
       else if (e.key === 'Enter' && !e.isComposing && e.target.matches('input')) { e.preventDefault(); noteEditSave(i, card); }
       return;
     }
@@ -2448,10 +3133,11 @@
   }
   function onNoteClick(e) {
     if (!state.run) return;
-    const eb = e.target.closest('button[data-act^="note-edit"], [data-edit] button[data-act^="edit-"]');
+    const eb = e.target.closest('button[data-act^="note-edit"], [data-edit] button[data-act^="edit-"], [data-edit] button[data-act^="link-"]');
     if (eb) {
       const card = eb.closest('.note-card'), i = Number(card.dataset.i);
       if (state.run.status !== 'done') return;
+      if (eb.dataset.act.startsWith('link-')) return onLinkAct(eb.dataset.act, eb, () => el.resultNotes.querySelector(`.note-card[data-i="${i}"]`), renderResultNotes);
       if (eb.dataset.act === 'note-edit') return noteEditOpen(i);
       if (eb.dataset.act === 'edit-save') return noteEditSave(i, card);
       return noteEditClose(i);
@@ -2532,6 +3218,7 @@
 
     el.timer.classList.remove('warn', 'over');
     el.timerPresenter.textContent = '';
+    setTimerGoal(!r ? state.items[0] : r.status === 'done' ? null : state.items[r.idx]);
 
     if (!r) {
       el.label.textContent = '待機中';
@@ -2554,6 +3241,26 @@
     tick();
   }
 
+  // ④ この議題で決めること（決まったら次へ進む目安）／報告の議題は報告内容
+  let timerLinksKey = '';
+  function setTimerGoal(item) {
+    // 📎 資料を開く（議題が変わったときだけ描き直す）
+    const ls = linksOf(item), lk = JSON.stringify(ls);
+    if (lk !== timerLinksKey) {
+      timerLinksKey = lk;
+      el.timerLinks.innerHTML = ls.map(l => `<a href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(l.url)}">📎 ${escapeHtml(linkName(l))} を開く</a>`).join('');
+      el.timerLinks.classList.toggle('hidden', !ls.length);
+    }
+    const show = !!item && !!item.goal;
+    el.timerGoal.classList.toggle('hidden', !show);
+    if (!show) return;
+    const rep = isReport(item);
+    el.timerGoal.classList.toggle('report', rep);
+    const k = rep ? '📢 報告内容' : '🎯 この議題で決めること（決まったら次へ）';
+    if (el.timerGoalK.textContent !== k) el.timerGoalK.textContent = k;
+    if (el.timerGoalV.textContent !== item.goal) el.timerGoalV.textContent = item.goal;
+  }
+
   // 毎フレーム更新する部分
   function tick() {
     const r = state.run;
@@ -2564,6 +3271,7 @@
 
     el.label.textContent = `議題 ${r.idx + 1} / ${state.items.length}`;
     el.topic.textContent = item.title;
+    setTimerGoal(item);
     el.timerPresenter.textContent = presenterLine(item);
     if (remain >= 0) {
       // 切り上げで表示（残り0.4秒→00:01）
@@ -2663,7 +3371,7 @@
       const p = effMs(i), a = r.elapsed[i] || 0;
       const n = r.notes[i];
       tp += p; ta += a;
-      const head = `${i + 1}. ${item.carry ? (item.carry === '保留' ? '［前回保留］' : '［前回持ち越し］') : ''}${isAdded(i) ? '［追加］' : ''}${isReport(item) ? '［報告］' : ''}${item.title}` + (item.presenter ? `（担当：${item.presenter}）` : '');
+      const head = `${i + 1}. ${item.carry ? (item.carry === '保留' ? '［前回保留］' : item.carry === 'あとで' ? '［前回のあとで話す］' : '［前回持ち越し］') : ''}${isAdded(i) ? '［追加］' : ''}${isReport(item) ? '［報告］' : ''}${item.title}` + (item.presenter ? `（担当：${item.presenter}）` : '');
       if (r.skipped[i]) {
         lines.push(`${head}　［次回へ］当初${fmt(orig)}・今回は実施せず`);
       } else {
@@ -2680,6 +3388,7 @@
         if (item.goal) lines.push(`   ■決めること：${item.goal}`);
         lines.push(`   ■決まった事：${dec ? indentLines(dec, '     ') : '（記録なし）'}${tag}`);
       }
+      linksOf(item).forEach(l => lines.push(`   ■資料：${linkName(l)} ${l.url}`));
       const todos = n.todos.filter(t => t.text.trim());
       if (todos.length) {
         lines.push('   ■TODO：');
@@ -2691,6 +3400,11 @@
     lines.push(`合計：当初予定 ${fmt(ot)}` + (ot !== tp ? ` ／ 調整後 ${fmt(tp)}` : '') + ` ／ 実際 ${fmt(ta)}（当初比 ${fmtSigned(ta - ot)}）`);
     const sumBy = rep => state.items.reduce((a, x, i) => isReport(x) === rep ? a + (r.elapsed[i] || 0) : a, 0);
     if (state.items.some(isReport)) lines.push(`　内訳（実際）：決定 ${fmt(sumBy(false))} ／ 報告 ${fmt(sumBy(true))}`);
+    if (r.parked && r.parked.length) {
+      lines.push('');
+      lines.push('【あとで話す】');
+      r.parked.forEach(x => lines.push(`・${x.text}（→ ${PARK_LABEL[x.dest]}）`));
+    }
     const carry = carryOverLines();
     if (carry.length) {
       lines.push('');
@@ -2701,8 +3415,10 @@
   }
   // 「告知文の作成（担当：佐藤／期限：11/12）［完了］」
   function todoLine(t) {
-    const meta = [t.whos.length ? `担当：${t.whos.join('・')}` : '', t.due ? `期限：${fmtDue(t.due)}` : ''].filter(Boolean).join('／');
-    return t.text.trim() + (meta ? `（${meta}）` : '') + (t.done ? '［完了］' : '');
+    const per = t.start && t.due ? `期間：${fmtDue(t.start)}〜${fmtDue(t.due)}` : t.start ? `開始：${fmtDue(t.start)}〜` : t.due ? `期限：${fmtDue(t.due)}` : '';
+    const meta = [t.whos.length ? `担当：${t.whos.join('・')}` : '', per].filter(Boolean).join('／');
+    return t.text.trim() + (meta ? `（${meta}）` : '') + (t.done ? '［完了］' : '') +
+      (t.tool === 'need' ? '［ツール未登録］' : t.tool === 'done' ? '［ツール登録済み］' : '');
   }
   // 「出席：佐藤（司会）、鈴木（書記）、高橋／欠席：田中」
   function peopleLine(people, roles) {
@@ -2721,20 +3437,174 @@
     return state.items
       .map((item, i) => ({ item, n: r.notes[i] }))
       .filter(x => x.n.status === '保留' || x.n.status === '持ち越し')
-      .map(x => '・' + itemLine(x.item));
+      .map(x => '・' + itemLine(x.item))
+      .concat((r.parked || []).filter(x => x.dest === 'next').map(x => `・${x.text} / ${DEFAULT_MINUTES}分`));
   }
 
   async function copyCarry() {
     if (!state.run || state.run.status !== 'done') return;
     const lines = carryOverLines();
-    if (!lines.length) { flash(el.copied, '「保留」「持ち越し」の議題はありません'); return; }
+    if (!lines.length) { flash(el.copied, '「保留」「持ち越し」の議題・次回に回す「あとで話す」はありません'); return; }
     const ok = await copyText(lines.join('\n'));
     flash(el.copied, ok ? `${lines.length}件をコピーしました（次回の貼り付け欄へ）` : 'コピーできませんでした');
+  }
+
+  // ---------- ⑥ メール・Teams で送る ----------
+  const WD = ['日', '月', '火', '水', '木', '金', '土'];
+  function mailSubject() {
+    const r = state.run, d = new Date(r.meetingStart);
+    const first = state.items[0] ? state.items[0].title : '';
+    return `【議事録】${dateLabel(r.meetingStart)}（${WD[d.getDay()]}）${clock(r.meetingStart)}〜${clock(r.meetingEnd)}` +
+      (first ? ` ${first}${state.items.length > 1 ? ` ほか${state.items.length - 1}件` : ''}` : '');
+  }
+  function openUrl(url) {
+    const a = document.createElement('a');
+    a.href = url; a.style.display = 'none';
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  async function sendMail() {
+    if (!state.run || state.run.status !== 'done') return;
+    const subject = mailSubject(), body = resultText();
+    const full = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    // メールソフトによっては長い本文を受け取れないため、長いときは本文をコピーして貼り付けてもらう
+    if (full.length <= 1900) { openUrl(full); flash(el.copied, 'メールソフトを開きました（宛先を入力して送信してください）'); return; }
+    const ok = await copyText(body);
+    openUrl(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(ok ? '（議事録の本文をコピーしました。ここに貼り付けてください）\n\n' : '')}`);
+    flash(el.copied, ok ? '本文が長いためコピーしました。開いたメールに貼り付けてください' : 'メールソフトを開きました。「議事録をテキストでコピー」で本文をコピーしてください');
+  }
+  // Teams に貼り付けたとき見出し・箇条書きになる HTML
+  function teamsHTML() {
+    const r = state.run, e = escapeHtml;
+    const out = [`<p><b>${e(mailSubject())}</b></p>`];
+    const pl = peopleLine(r.people, r.roles);
+    if (pl) out.push(`<p>${e(pl)}</p>`);
+    out.push('<p><b>■ 決まった事</b></p><ol>');
+    state.items.forEach((item, i) => {
+      const n = r.notes[i];
+      const head = `<b>${e(item.title)}</b>${item.presenter ? `（担当：${e(item.presenter)}）` : ''}` +
+        (r.skipped[i] ? '【次回へ】' : n.status ? `【${e(n.status)}】` : '');
+      const dec = n.decision.trim(), qa = (n.qa || '').trim();
+      const links = linksOf(item).map(l => `<a href="${e(l.url)}">📎 ${e(linkName(l))}</a>`).join('　');
+      out.push(`<li>${head}${dec ? `<br>${e(dec).replace(/\n/g, '<br>')}` : ''}${qa ? `<br>質疑：${e(qa).replace(/\n/g, '<br>')}` : ''}${links ? `<br>${links}` : ''}</li>`);
+    });
+    out.push('</ol>');
+    const todos = [];
+    r.notes.forEach(n => n.todos.forEach(t => { if (t.text.trim()) todos.push(t); }));
+    if (todos.length) out.push('<p><b>■ TODO</b></p><ul>' + todos.map(t => `<li>${e(todoLine(t))}</li>`).join('') + '</ul>');
+    if (r.parked && r.parked.length) out.push('<p><b>■ あとで話す</b></p><ul>' + r.parked.map(x => `<li>${e(x.text)}（→ ${PARK_LABEL[x.dest]}）</li>`).join('') + '</ul>');
+    const carry = carryOverLines();
+    if (carry.length) out.push('<p><b>■ 持ち越し・保留</b></p><ul>' + carry.map(l => `<li>${e(l.replace(/^・/, ''))}</li>`).join('') + '</ul>');
+    return out.join('');
+  }
+  // 書式付きでコピー（使えないブラウザでは、選択してコピーする方法に切り替え）
+  async function copyRich(html, plain) {
+    try {
+      if (navigator.clipboard && window.ClipboardItem && window.isSecureContext) {
+        await navigator.clipboard.write([new ClipboardItem({
+          'text/html': new Blob([html], { type: 'text/html' }),
+          'text/plain': new Blob([plain], { type: 'text/plain' }),
+        })]);
+        return true;
+      }
+    } catch (e) { /* fallback */ }
+    const box = document.createElement('div');
+    box.innerHTML = html;
+    box.style.cssText = 'position:fixed;left:-9999px;top:0;white-space:normal';
+    document.body.appendChild(box);
+    const sel = window.getSelection(), range = document.createRange();
+    range.selectNodeContents(box);
+    sel.removeAllRanges(); sel.addRange(range);
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    sel.removeAllRanges(); box.remove();
+    return ok || copyText(plain);
+  }
+  async function copyTeams() {
+    if (!state.run || state.run.status !== 'done') return;
+    const ok = await copyRich(teamsHTML(), resultText());
+    flash(el.copied, ok ? 'Teams 用にコピーしました（チャットに貼り付けてください）' : 'コピーできませんでした');
   }
 
   async function copyResult() {
     const ok = await copyText(resultText());
     flash(el.copied, ok ? 'コピーしました' : 'コピーできませんでした');
+  }
+
+  // ---------- ⑦ 会議の振り返りの数字 ----------
+  let statsRange = 10, statsKey = '';
+  function renderStats() {
+    const all = state.history.slice().sort((a, b) => b.run.meetingStart - a.run.meetingStart);
+    el.statsNote.textContent = all.length ? `会議 ${all.length}回分` : 'まだありません';
+    if (!el.statsFold.open) return;
+    const recs = statsRange ? all.slice(0, statsRange) : all;
+    const key = JSON.stringify([statsRange, todayStr(), recs.map(h => [h.id, h.run.meetingEnd, h.items.map(x => x.title), h.run.notes.map(n => [n.status, n.todos.map(t => [t.done, t.tool, t.due, t.whos])])])]);
+    if (key === statsKey) return;
+    statsKey = key;
+    el.statsFold.querySelectorAll('[data-range]').forEach(b => b.classList.toggle('on', Number(b.dataset.range) === statsRange));
+    if (!recs.length) { el.statsBody.innerHTML = '<p class="stat-empty">会議を終えると、ここに集計が出ます。</p>'; return; }
+    const n = recs.length, today = todayStr();
+    const m = v => Math.round(v / 60000);
+    // 時間内に終わった会議（予定終了から1分以内）
+    const overs = recs.map(h => h.run.meetingEnd - h.run.plannedEnd);
+    const inTime = overs.filter(d => d <= 60000).length;
+    const late = overs.filter(d => d > 60000);
+    // TODO
+    const todos = [];
+    recs.forEach(h => h.run.notes.forEach(nt => nt.todos.forEach(t => { if (t.text.trim()) todos.push(t); })));
+    const done = todos.filter(t => t.done).length;
+    const overdue = todos.filter(t => !t.done && t.due && t.due < today).length;
+    const toolNeed = todos.filter(t => !t.done && t.tool === 'need').length;
+    // 議題
+    let itemsN = 0, carryN = 0, durSum = 0;
+    recs.forEach(h => {
+      itemsN += h.items.length; durSum += h.run.meetingEnd - h.run.meetingStart;
+      h.run.notes.forEach((nt, i) => { if (h.run.skipped[i] || nt.status === '持ち越し' || nt.status === '保留') carryN++; });
+    });
+    // あとで話す（今回の議題にしたものは議題側に目印が残る）
+    let parkN = 0, parkToAgenda = 0;
+    recs.forEach(h => { const a = h.items.filter(x => x.fromPark).length; parkToAgenda += a; parkN += a + (h.run.parked || []).length; });
+    const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+    const tile = (k, v, unit, sub, attr) => `<${attr ? 'button type="button" ' + attr : 'div'} class="stat-tile"><span class="k">${k}</span><span class="v">${v}<small> ${unit}</small></span><span class="s">${sub}</span></${attr ? 'button' : 'div'}>`;
+    const tiles = [
+      tile('時間内に終わった会議', inTime, `/ ${n}回`, late.length ? `超過した${late.length}回の平均 +${m(late.reduce((a, b) => a + b, 0) / late.length)}分` : 'すべて時間内'),
+      tile('TODO の完了率', todos.length ? pct(done, todos.length) : '—', todos.length ? '%' : '', todos.length ? `${done} / ${todos.length}件・期限切れ ${overdue}件` : 'TODO はまだありません'),
+      tile('1回あたりの議題数', (itemsN / n).toFixed(1), '件', `会議の長さ 平均 ${m(durSum / n)}分`),
+      tile('持ち越し・保留', pct(carryN, itemsN), '%', `全議題 ${itemsN}件のうち ${carryN}件（次回へを含む）`),
+      tile('ツール未登録の TODO', toolNeed, '件', toolNeed ? '押すと TODO 一覧で絞り込み' : 'ありません', toolNeed ? 'data-stat-tool' : ''),
+      tile('「あとで話す」', (parkN / n).toFixed(1), '件/回', parkN ? `うち今回の議題にした ${pct(parkToAgenda, parkN)}%` : 'まだありません'),
+    ].join('');
+    // よく延びる議題（同じ議題名で集計・実施した回だけ）
+    const by = new Map();
+    recs.forEach(h => h.items.forEach((x, i) => {
+      if (h.run.skipped[i]) return;
+      const plan = (h.run.plan && h.run.plan[i] || x.minutes) * 60000, d = (h.run.elapsed[i] || 0) - plan;
+      const g = by.get(x.title) || { sum: 0, c: 0 };
+      g.sum += d; g.c++; by.set(x.title, g);
+    }));
+    const longest = [...by].map(([t, g]) => ({ t, v: m(g.sum / g.c), c: g.c })).filter(x => x.v >= 1).sort((a, b) => b.v - a.v).slice(0, 5);
+    const maxV = Math.max(1, ...longest.map(x => x.v));
+    const bar = (name, w, val, tip) => `<div class="stat-bar" title="${escapeHtml(tip)}"><span class="nm">${escapeHtml(name)}</span><span class="tr"><span class="fl" style="width:${w > 0 ? Math.max(1, Math.round(w * 100)) : 0}%;${w > 0 ? "" : "min-width:0"}"></span></span><span class="vl">${val}</span></div>`;
+    const longHTML = longest.length ? longest.map(x => bar(x.t, x.v / maxV, `+${x.v}分`, `${x.t}：${x.c}回の平均で予定より ${x.v}分長い`)).join('')
+      : '<p class="stat-empty">予定より延びた議題はありません 🎉</p>';
+    // 担当者別の TODO
+    const who = new Map();
+    todos.forEach(t => t.whos.forEach(w => { const g = who.get(w) || { d: 0, c: 0 }; g.c++; if (t.done) g.d++; who.set(w, g); }));
+    const people = orderNames([...who.keys()]).map(w => ({ w, ...who.get(w) })).sort((a, b) => b.c - a.c).slice(0, 8);
+    const whoHTML = people.length ? people.map(x => bar(x.w, x.d / x.c, `${x.d}/${x.c}`, `${x.w}：${x.c}件中 ${x.d}件完了`)).join('')
+      : '<p class="stat-empty">担当の決まった TODO はまだありません</p>';
+    el.statsBody.innerHTML = `<div class="stat-tiles">${tiles}</div>
+      <h3 class="stat-h">よく延びる議題（予定より平均 何分長いか）</h3><div class="stat-bars">${longHTML}</div>
+      <h3 class="stat-h">担当者別の TODO（完了 / 全件）</h3><div class="stat-bars">${whoHTML}</div>`;
+  }
+  function onStatsClick(e) {
+    const r = e.target.closest('button[data-range]');
+    if (r) { statsRange = Number(r.dataset.range); statsKey = ''; saveUi(); renderStats(); return; }
+    if (e.target.closest('button[data-stat-tool]')) {
+      el.todoFold.open = true;
+      el.todoWho.value = ''; el.todoPhase.value = ''; el.todoTool.value = 'need'; el.todoShowDone.checked = false;
+      todoKey = ''; renderTodoBoard();
+      el.todoFold.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   // ---------- 会議履歴 ----------
@@ -3399,7 +4269,7 @@
     d.body.innerHTML = `<div id="mLabel"></div><div id="mTopic"></div><div id="mTime"></div><div id="mDelay"></div>
       <div class="b"><button id="mPause" class="s"></button><button id="mNext"></button></div>`;
     d.getElementById('mPause').addEventListener('click', () => { if (state.run) togglePause(); else start(); });
-    d.getElementById('mNext').addEventListener('click', next);
+    d.getElementById('mNext').addEventListener('click', () => { next(); if (reviewOpen()) window.focus(); });
     mini = w;
     w.addEventListener('pagehide', () => { if (mini === w) mini = null; });
     updateMini();
@@ -3451,11 +4321,13 @@
     if (act === 'edit') return openEdit(i);
     if (act === 'edit-save') return saveEdit();
     if (act === 'edit-cancel') return closeEdit(true);
+    if (act === 'link-add' || act === 'link-del') return onLinkAct(act, btn, () => el.agenda, renderAgenda);
     if (act === 'minus') return adjustPlan(i, -1);
     if (act === 'plus') return adjustPlan(i, 1);
     if (act === 'skip') return setSkipped(i, true);
     if (act === 'unskip') return setSkipped(i, false);
     if (act === 'unadd') return removeAdded(i);
+    if (act === 'rup' || act === 'rdown') return moveRunItem(i, act === 'rup' ? -1 : 1);
     if (isLocked()) return;
     if (btn.dataset.act === 'up') moveItem(i, -1);
     else if (btn.dataset.act === 'down') moveItem(i, 1);
@@ -3468,14 +4340,43 @@
   el.agenda.addEventListener('keydown', e => {
     if (!e.target.closest('[data-edit]')) return;
     if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeEdit(true); }
+    else if (e.key === 'Enter' && !e.isComposing && e.target.matches('[data-el]')) { e.preventDefault(); onLinkAct('link-add', e.target, () => el.agenda, renderAgenda); }
     else if (e.key === 'Enter' && !e.isComposing && e.target.matches('input')) { e.preventDefault(); saveEdit(); }
   });
 
-  el.start.addEventListener('click', start);
+  el.start.addEventListener('click', requestStart);
+  el.park.addEventListener('click', openPark);
+  el.parkForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const v = el.parkText.value;
+    if (!v.trim()) { el.parkText.focus(); return; }
+    addPark(v);
+    el.parkText.value = '';
+    el.parkText.focus();
+  });
+  el.parkList.addEventListener('click', onParkClick);
+  el.parkList.addEventListener('keydown', e => {
+    const box = e.target.closest('[data-park-add]');
+    if (!box) return;
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); parkAddId = ''; renderPark(); }
+    else if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); parkGo(box.closest('li')); }
+  });
+  el.parkResult.addEventListener('click', onParkClick);
+  el.reviewBody.addEventListener('click', onParkClick);
+  [el.parkResult, el.reviewBody].forEach(c => { c.addEventListener('change', onParkChange); c.addEventListener('keydown', onParkKey); });
+  el.todoRvList.addEventListener('change', onTodoReviewChange);
+  el.todoRvGo.addEventListener('click', () => closeTodoReview(true));
+  el.todoRvCancel.addEventListener('click', () => closeTodoReview(false));
+  el.todoRvDim.addEventListener('click', () => closeTodoReview(false));
+  el.reviewEnd.addEventListener('click', () => closeReview(true));
+  el.reviewBack.addEventListener('click', () => closeReview(false));
+  el.reviewDim.addEventListener('click', () => closeReview(false));
   el.pause.addEventListener('click', togglePause);
   el.next.addEventListener('click', next);
   el.reset.addEventListener('click', reset);
   el.copy.addEventListener('click', copyResult);
+  el.mail.addEventListener('click', sendMail);
+  el.teams.addEventListener('click', copyTeams);
   el.copyCarry.addEventListener('click', copyCarry);
   el.autoAdjust.addEventListener('click', autoAdjust);
   el.mini.addEventListener('click', openMini);
@@ -3573,7 +4474,9 @@
   // Esc：開いているダイアログ・メニューを閉じる（フォーカスがどこにあっても）
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    if (guideOpen()) { e.preventDefault(); closeGuide(); }
+    if (todoRvOpen()) { e.preventDefault(); closeTodoReview(false); }
+    else if (reviewOpen()) { e.preventDefault(); closeReview(false); }
+    else if (guideOpen()) { e.preventDefault(); closeGuide(); }
     else if (!el.nextModal.classList.contains('hidden')) { e.preventDefault(); closeNextMeeting(); }
     else if (menuOpen()) { e.preventDefault(); closeMenu(); }
   });
@@ -3596,11 +4499,15 @@
   const UI_KEY = 'meetingTimer.ui';
   try {
     const ui = JSON.parse(localStorage.getItem(UI_KEY)) || {};
-    el.todoFold.open = !!ui.todo; el.historyFold.open = !!ui.history;
+    el.todoFold.open = !!ui.todo; el.historyFold.open = !!ui.history; el.statsFold.open = !!ui.stats;
+    if ([0, 5, 10].includes(ui.statsRange)) statsRange = ui.statsRange;
   } catch (e) { /* ignore */ }
-  [el.todoFold, el.historyFold].forEach(d => d.addEventListener('toggle', () => {
-    try { localStorage.setItem(UI_KEY, JSON.stringify({ todo: el.todoFold.open, history: el.historyFold.open })); } catch (e) { /* ignore */ }
-  }));
+  function saveUi() {
+    try { localStorage.setItem(UI_KEY, JSON.stringify({ todo: el.todoFold.open, history: el.historyFold.open, stats: el.statsFold.open, statsRange })); } catch (e) { /* ignore */ }
+  }
+  [el.todoFold, el.historyFold, el.statsFold].forEach(d => d.addEventListener('toggle', saveUi));
+  el.statsFold.addEventListener('toggle', () => { statsKey = ''; renderStats(); });
+  el.statsFold.addEventListener('click', onStatsClick);
   el.peoplePick.addEventListener('click', () => {
     peoplePickerOpen = !peoplePickerOpen; renderPeoplePicker();
     const f = peoplePickerOpen && el.peoplePicker.querySelector('.pchip, button');
@@ -3651,11 +4558,24 @@
     catch (e) { alert('チーム員ファイルを読み込めませんでした：' + (e.message || e.name)); }
   });
   el.todoBoard.addEventListener('change', onTodoBoardChange);
+  el.todoBoard.addEventListener('click', onTodoBoardClick);
+  el.todoToolSum.addEventListener('click', e => {
+    const b = e.target.closest('button[data-tool-filter]');
+    if (!b) return;
+    el.todoTool.value = el.todoTool.value === b.dataset.toolFilter ? '' : b.dataset.toolFilter;
+    todoKey = ''; renderTodoBoard();
+  });
+  [el.todoPhase, el.todoTool].forEach(x => x.addEventListener('change', () => { todoKey = ''; renderTodoBoard(); }));
+  try { el.prefToolDefault.value = toolDefault(); } catch (e) { /* ignore */ }
+  el.prefToolDefault.addEventListener('change', () => {
+    try { localStorage.setItem(PREF_KEY, JSON.stringify({ toolDefault: el.prefToolDefault.value })); } catch (e) { /* ignore */ }
+    showInfo('✓ 新しい TODO のツール登録の初期値を「' + el.prefToolDefault.selectedOptions[0].text + '」にしました');
+  });
   el.todoWho.addEventListener('change', () => { todoKey = ''; renderTodoBoard(); });
   el.todoShowDone.addEventListener('change', () => { todoKey = ''; renderTodoBoard(); });
   el.copyTodos.addEventListener('click', async () => {
     const text = todosText();
-    if (!text) { flash(el.todoMsg, '未完了のTODOはありません'); return; }
+    if (!text) { flash(el.todoMsg, '該当する未完了のTODOはありません'); return; }
     flash(el.todoMsg, (await copyText(text)) ? 'コピーしました' : 'コピーできませんでした');
   });
   el.bulkText.addEventListener('input', renderBulkPreview);
@@ -3675,7 +4595,7 @@
 
   // キーボード操作：Space=一時停止/再開、→ / N = 次へ（入力中は無効）
   document.addEventListener('keydown', e => {
-    if (e.target.matches('input, textarea, select') || menuOpen() || guideOpen() || !el.nextModal.classList.contains('hidden')) return;
+    if (e.target.matches('input, textarea, select') || menuOpen() || guideOpen() || anyModalOpen() || !el.nextModal.classList.contains('hidden')) return;
     if (!state.run || state.run.status === 'done') return;
     if (e.code === 'Space') { e.preventDefault(); togglePause(); }
     else if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'n') { e.preventDefault(); next(); }
