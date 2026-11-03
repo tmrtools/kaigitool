@@ -815,7 +815,7 @@
         <li>「⏹ 会議を終了」を押すと、終わる前に<b>「🔁 会議の振り返り」</b>が出ます。決まった事・TODO を読み上げて確認し、担当や期限が抜けている TODO（⚠）はその場で決めましょう。「記録に戻る」で直せます。</li>
         <li>緑または赤の帯に、予定の終了時刻と今のペースでの終了見込みが出ます。</li>
         <li><b>⏱ 時間の調整</b>を開くと：今の議題 +1分／+5分、<b>⚖ 残りを自動調整</b>（遅れた分を残りの議題から削ります。報告の議題から先に短くします）。</li>
-        <li>まだ始まっていない議題は、アジェンダで −／＋ で時間を変えたり、<b>次回へ</b> で今回は話さずに回したりできます。</li>
+        <li>まだ始まっていない議題は、アジェンダで −／＋ で時間を変えたり、▲▼ で順番を入れ替えたり、<b>次回へ</b> で今回は話さずに回したりできます。</li>
         <li>会議中も「＋ 議題を追加」で議題を足せます（今の議題の次／最後を選べます）。</li>
         <li><b>🗗 ミニタイマー</b>：資料の上に重ねて表示できる小さなタイマーです。</li>
         <li><b>リセット</b>：会議を途中でやめて、会議前の状態に戻します。</li>
@@ -1087,7 +1087,7 @@
       <button type="button" id="btnClearAgenda" class="danger">すべて削除</button>
       <span id="agendaMsg" class="copied hidden"></span>
     </div>
-    <div id="lockNote" class="note hidden">※ 進行中は議題の<b>追加</b>と、未着手の議題の時間調整・「次回へ」、今とこれからの議題の ✏ 編集ができます。並べ替え・削除はリセット後にできます。</div>
+    <div id="lockNote" class="note hidden">※ 進行中は議題の<b>追加</b>と、未着手の議題の時間調整・▲▼ の並べ替え・「次回へ」、今とこれからの議題の ✏ 編集ができます。議題の削除と、今の議題・終わった議題の並べ替えはリセット後にできます。</div>
 
     <!-- 参加者 -->
     <details id="peopleFold" class="people fold" open>
@@ -1920,6 +1920,17 @@
     save(); render();
     return items.length;
   }
+  // 会議中：まだ始まっていない議題どうしで順番を入れ替える（今の議題・終わった議題は動かさない）
+  function moveRunItem(i, dir) {
+    const r = state.run, j = i + dir;
+    if (!runActive() || i <= r.idx || j <= r.idx || j >= state.items.length) return;
+    [state.items, r.elapsed, r.notes, r.plan, r.skipped, r.added].forEach(a => { [a[i], a[j]] = [a[j], a[i]]; });
+    save(); render();
+    // 続けて押せるよう、動かした議題の同じボタンにフォーカスを戻す
+    const b = el.agenda.querySelector(`li[data-i="${j}"] button[data-act="${dir < 0 ? 'rup' : 'rdown'}"]`);
+    const alt = el.agenda.querySelector(`li[data-i="${j}"] button[data-act="${dir < 0 ? 'rdown' : 'rup'}"]`);
+    ((b && !b.disabled) ? b : alt || el.agenda).focus();
+  }
   // 会議中に追加した未着手の議題を取り消す
   function removeAdded(i) {
     const r = state.run;
@@ -2466,8 +2477,10 @@
     if (!active) return '';
     // 進行中：今の議題とこれからの議題は名前・担当などを直せる（持ち時間は −／＋）
     if (st === 'current') return ed;
-    // 進行中：未着手の議題だけ時間調整・次回へ回すことができる
-    if (st === 'todo') return ed + (state.run.added[i] ? `
+    // 進行中：未着手の議題だけ時間調整・並べ替え・次回へ回すことができる
+    if (st === 'todo') return ed + `
+            <button class="secondary icon" data-act="rup" ${i - 1 <= state.run.idx ? 'disabled' : ''} aria-label="上へ" title="上へ（まだ始まっていない議題の中で）">▲</button>
+            <button class="secondary icon" data-act="rdown" ${i === state.items.length - 1 ? 'disabled' : ''} aria-label="下へ" title="下へ">▼</button>` + (state.run.added[i] ? `
             <button class="danger icon" data-act="unadd" aria-label="追加を取り消す" title="追加を取り消す">✕</button>` : '') + `
             <button class="secondary icon" data-act="minus" ${state.run.plan[i] <= 1 ? 'disabled' : ''} aria-label="1分減らす" title="1分減らす">−</button>
             <button class="secondary icon" data-act="plus" aria-label="1分増やす" title="1分増やす">＋</button>
@@ -3928,6 +3941,7 @@
     if (act === 'skip') return setSkipped(i, true);
     if (act === 'unskip') return setSkipped(i, false);
     if (act === 'unadd') return removeAdded(i);
+    if (act === 'rup' || act === 'rdown') return moveRunItem(i, act === 'rup' ? -1 : 1);
     if (isLocked()) return;
     if (btn.dataset.act === 'up') moveItem(i, -1);
     else if (btn.dataset.act === 'down') moveItem(i, 1);
