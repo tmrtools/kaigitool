@@ -313,6 +313,7 @@
   .note-card textarea {
     width: 100%; font: inherit; font-size: .95rem; padding: 8px 10px; margin: 2px 0 10px;
     border: 1px solid var(--line); border-radius: 8px; resize: vertical; color: var(--text); background: #fff;
+    line-height: 1.5; overflow-y: hidden;  /* 高さは書いた量に合わせて自動で伸びる（autoGrow） */
   }
   .note-card textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
   .status-btns { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 10px; }
@@ -483,23 +484,33 @@
 
   /* TODO（議題ごとの入力欄） */
   .todo-list { display: flex; flex-direction: column; gap: 6px; margin: 2px 0 8px; }
-  .todo-row { display: flex; flex-wrap: nowrap; gap: 6px; align-items: center; }
-  .todo-row input[type=text], .todo-row input[type=date] {
+  /* 1件を2段に：1段目＝完了・やること・削除／2段目＝担当・期限 */
+  .todo-row {
+    display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center;
+    padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: #fafbfa;
+  }
+  .todo-row textarea[data-tf=text], .todo-row input[type=date] {
     font: inherit; font-size: .92rem; padding: 6px 8px; min-height: 40px;
     border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--text);
   }
   .todo-row input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
-  .todo-row input[data-tf=text] { flex: 1 1 auto; min-width: 0; }
-  .todo-row input[data-tf=due] { flex: 0 0 auto; width: 136px; }
+  .note-card .todo-row textarea[data-tf=text] {
+    flex: 1 1 calc(100% - 90px); min-width: 0; width: auto; margin: 0; resize: none;
+    font-size: 1rem; line-height: 1.5; padding: 8px 10px; min-height: 44px;
+  }
+  .todo-row input[type=checkbox] { align-self: flex-start; margin-top: 11px !important; }
+  .todo-row button[data-todo-del] { order: 1; align-self: flex-start; }
+  .todo-row .whobtn { order: 2; }
+  .todo-row input[data-tf=due] { order: 3; flex: 0 0 auto; width: 150px; }
   .todo-row button.icon { flex: 0 0 auto; }
   .todo-row input[type=checkbox], .todo-board input[type=checkbox] { width: 22px; height: 22px; margin: 0; accent-color: var(--ok); flex: 0 0 auto; }
-  .todo-row.done input[data-tf=text] { text-decoration: line-through; color: var(--muted); }
+  .todo-row.done textarea[data-tf=text] { text-decoration: line-through; color: var(--muted); }
   .todo-row button.icon { width: 40px; min-height: 40px; font-size: .95rem; }
   button.small { min-height: 40px; padding: 6px 12px; font-size: .9rem; }
 
   /* 担当ボタン・選択パネル */
   .todo-row .whobtn {
-    flex: 0 0 186px; min-width: 0; min-height: 40px; padding: 4px 6px; border-radius: 8px;
+    flex: 1 1 0; min-width: 0; margin-left: 30px; min-height: 40px; padding: 4px 6px; border-radius: 8px;
     border: 1px solid var(--line); background: #fff; color: var(--text);
     display: flex; flex-wrap: nowrap; gap: 4px; align-items: center; justify-content: flex-start; text-align: left; overflow: hidden;
   }
@@ -594,11 +605,7 @@
     .controls button { flex-basis: calc(50% - 10px); font-size: 1rem; padding: 10px 12px; }
     .add-form button { flex: 1 1 auto; }
     th, td { padding: 8px 5px; font-size: .9rem; }
-    /* スマホ：やること を1行目、担当・期限・削除を2行目に */
-    .todo-row { flex-wrap: wrap; padding-bottom: 6px; border-bottom: 1px dashed var(--line); }
-    .todo-row input[data-tf=text] { flex: 1 1 calc(100% - 40px); }
-    .todo-row .whobtn { flex: 1 1 80px; }
-    .todo-row input[data-tf=due] { width: 128px; }
+    .todo-row input[data-tf=due] { width: 136px; }
   }
 </style>
 </head>
@@ -2242,7 +2249,7 @@
     const example = isReport(state.items[i]) ? '内訳資料の作成' : '告知文の作成';
     return state.run.notes[i].todos.map(t => `<div class="todo-row ${t.done ? 'done' : ''}" data-tid="${t.id}">
         <input type="checkbox" data-tf="done" ${t.done ? 'checked' : ''} aria-label="完了" title="完了">
-        <input type="text" data-tf="text" value="${escapeHtml(t.text)}" maxlength="200" placeholder="やること（例：${example}）" aria-label="やること">
+        <textarea data-tf="text" rows="1" maxlength="200" placeholder="やること（例：${example}）" aria-label="やること">${escapeHtml(t.text)}</textarea>
         <button type="button" class="whobtn ${picker.tid === t.id ? 'open' : ''}" data-who-open aria-expanded="${picker.tid === t.id}" title="${t.whos.length ? '担当：' + escapeHtml(t.whos.join('・')) : '担当を選ぶ'}">${whoTagsHTML(t.whos)}</button>
         <input type="date" data-tf="due" value="${escapeHtml(t.due)}" aria-label="期限" title="期限">
         <button type="button" class="danger icon" data-todo-del aria-label="このTODOを削除" title="削除">✕</button>
@@ -2363,7 +2370,7 @@
     n.todos.push(t);
     save();
     card.querySelector('.todo-list').innerHTML = todoRowsHTML(i);
-    const row = card.querySelector(`.todo-row[data-tid="${t.id}"] input[data-tf=text]`);
+    const row = card.querySelector(`.todo-row[data-tid="${t.id}"] [data-tf=text]`);
     if (row) row.focus();
     renderTodoBoard();
   }
@@ -2379,13 +2386,23 @@
     notesPanelKey = key;
     el.notesPanel.innerHTML = noteEditorHTML(r.idx);
   }
+  // 記録欄の文字欄（決まった事・報告の要点・質疑・TODO のやること）は、書いた量に合わせて高さを伸ばす
+  function autoGrow(ta) {
+    if (!ta.offsetParent) return;  // 非表示のときは測れない（表示されたときにもう一度）
+    const b = parseFloat(getComputedStyle(ta).borderTopWidth) * 2 || 0;
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + b + 'px';
+  }
+  const growAll = root => root.querySelectorAll('textarea').forEach(autoGrow);
   function renderResultNotes() {
     el.resultNotes.innerHTML = state.items.map((_, i) => noteEditorHTML(i)).join('');
   }
   function onNoteInput(e) {
     if (!state.run) return;
-    const f = e.target.closest('input[data-tf]');
+    const f = e.target.closest('[data-tf]');
     if (f) {
+      // やることは1行の文（貼り付けた改行は空白に）
+      if (f.dataset.tf === 'text' && /[\r\n]/.test(f.value)) { const p = f.selectionStart; f.value = f.value.replace(/\r?\n/g, ' '); f.setSelectionRange(p, p); }
       const card = f.closest('.note-card'), row = f.closest('.todo-row');
       const t = state.run.notes[Number(card.dataset.i)].todos.find(x => x.id === row.dataset.tid);
       if (!t) return;
@@ -2424,7 +2441,7 @@
       redrawTodos(card, i, { dataset: { pickAdd: '' } });
       return;
     }
-    const f = e.target.closest('input[data-tf=text]');
+    const f = e.target.closest('[data-tf=text]');
     if (!f || e.key !== 'Enter' || e.isComposing || !state.run) return;
     e.preventDefault();
     addTodo(card, Number(card.dataset.i));
@@ -3491,10 +3508,16 @@
   }
   el.kind.addEventListener('change', syncKind);
   [el.notesPanel, el.resultNotes].forEach(c => {
+    // 中身を描き直したら（議題の切り替え・TODO の追加など）高さを合わせ直す
+    new MutationObserver(() => growAll(c)).observe(c, { childList: true, subtree: true });
+    c.addEventListener('input', e => { if (e.target.matches('textarea')) autoGrow(e.target); });
     c.addEventListener('input', onNoteInput);
     c.addEventListener('click', onNoteClick);
     c.addEventListener('keydown', onNoteKey);
   });
+  // 画面の幅が変わると折り返しが変わるので合わせ直す
+  let growTimer = 0;
+  window.addEventListener('resize', () => { clearTimeout(growTimer); growTimer = setTimeout(() => { growAll(el.notesPanel); growAll(el.resultNotes); }, 150); });
   el.peopleForm.addEventListener('submit', e => {
     e.preventDefault();
     const v = el.personName.value.trim();
