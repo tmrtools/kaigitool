@@ -145,6 +145,8 @@
   .next-keep b { color: var(--text); }
   .modal-foot { display: flex; justify-content: flex-end; gap: 8px; }
   .modal-foot.split { justify-content: space-between; flex-wrap: wrap; margin-top: 12px; }
+  .pref-row { display: flex; flex-direction: column; gap: 4px; font-size: .9rem; }
+  .pref-row select { font: inherit; min-height: 40px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
   .modal.wide { width: min(600px, calc(100vw - 24px)); }
 
   /* ① 前回までの TODO 確認 */
@@ -562,8 +564,22 @@
   }
   .todo-row input[type=checkbox] { align-self: flex-start; margin-top: 11px !important; }
   .todo-row button[data-todo-del] { order: 1; align-self: flex-start; }
-  .todo-row .whobtn { order: 2; }
-  .todo-row input[data-tf=due] { order: 3; flex: 0 0 auto; width: 150px; }
+  .todo-row .whobtn { order: 2; flex-basis: calc(100% - 30px) !important; }
+  .todo-row .tdate { order: 3; display: inline-flex; align-items: center; gap: 4px; font-size: .78rem; color: var(--muted); flex: 0 0 auto; }
+  .todo-row .tdate:first-of-type { margin-left: 30px; }
+  .todo-row .tdate input[type=date] { width: 140px; }
+  .todo-row .toolsel { order: 4; flex: 0 0 auto; margin-left: 30px; }
+  .toolsel {
+    font: inherit; font-size: .85rem; min-height: 40px; padding: 4px 6px; border-radius: 8px; font-weight: 600;
+    border: 1px dashed var(--line); background: #fff; color: var(--muted);
+  }
+  .toolsel.t-need { border: 1px solid #e0b64a; background: #fff6dc; color: #7a5a06; }
+  .toolsel.t-done { border: 1px solid #9cc5a8; background: #e8f1ea; color: var(--ok); }
+  .toolsel.t-none { border-style: solid; }
+  .toolchip { display: inline-block; font-size: .75rem; border-radius: 999px; padding: 1px 9px; font-weight: 700; white-space: nowrap; background: #eef0ee; color: var(--muted); }
+  .toolchip.t-need { background: #fff6dc; color: #7a5a06; }
+  .toolchip.t-done { background: #e8f1ea; color: var(--ok); }
+  .later-chip { display: inline-block; font-size: .75rem; border-radius: 999px; padding: 0 8px; background: #eef0ee; color: var(--muted); }
   .todo-row button.icon { flex: 0 0 auto; }
   .todo-row input[type=checkbox], .todo-board input[type=checkbox] { width: 22px; height: 22px; margin: 0; accent-color: var(--ok); flex: 0 0 auto; }
   .todo-row.done textarea[data-tf=text] { text-decoration: line-through; color: var(--muted); }
@@ -654,6 +670,22 @@
   .todo-board .who { font-weight: 600; color: var(--accent-dark); }
   .todo-board .due.overdue { color: var(--over); font-weight: 700; }
   .todo-board .due.today { color: var(--warn); font-weight: 700; }
+  .todo-board .side { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; flex: 0 0 auto; }
+  .todo-board .side button { min-height: 34px; padding: 4px 10px; font-size: .82rem; white-space: nowrap; }
+  .todo-board li.later { opacity: .8; }
+  .tool-sum { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+  .tool-sum button { min-height: 30px; padding: 2px 10px; font-size: .8rem; border-radius: 999px; border: 1px solid transparent; font-weight: 700; background: #eef0ee; color: var(--muted); }
+  .tool-sum button.t-need { background: #fff6dc; color: #7a5a06; }
+  .tool-sum button.t-done { background: #e8f1ea; color: var(--ok); }
+  .tool-sum button.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .park-list li .pa-btn { min-height: 32px; padding: 2px 10px; font-size: .8rem; white-space: nowrap; flex: 0 0 auto; }
+  .park-list li { flex-wrap: wrap; }
+  .park-add { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 6px 4px 2px; border-top: 1px dashed var(--line); font-size: .85rem; }
+  .park-add input, .park-add select { font: inherit; font-size: .95rem; min-height: 36px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  .park-add input { width: 70px; }
+  .park-add .sp { flex: 1 1 auto; }
+  .park-add button { min-height: 36px; padding: 4px 12px; font-size: .88rem; }
+  .badge.park { background: #c9a73c; }
 
   .hidden { display: none !important; }
 
@@ -667,7 +699,10 @@
     .controls button { flex-basis: calc(50% - 10px); font-size: 1rem; padding: 10px 12px; }
     .add-form button { flex: 1 1 auto; }
     th, td { padding: 8px 5px; font-size: .9rem; }
-    .todo-row input[data-tf=due] { width: 136px; }
+    .todo-row .tdate input[type=date] { width: 132px; }
+    .todo-row .tdate:first-of-type { margin-left: 30px; }
+    .todo-row .tdate + .tdate { margin-left: 30px; }
+    .todo-row .toolsel { margin-left: 30px; }
   }
 </style>
 </head>
@@ -776,7 +811,7 @@
         <li>未完了の TODO があるときは、開始の前に<b>「📋 前回までの TODO を確認」</b>が出ます。チェックで完了、期限の変更もその場でできます。</li>
         <li>タイマーの中に<b>「🎯 この議題で決めること」</b>を大きく表示します。決まったら次の議題へ進む目安にしてください。</li>
         <li><b>⏸ 一時停止</b>／<b>▶ 再開</b>、<b>⏭ 次の議題へ</b>（最後の議題では「⏹ 会議を終了」）。</li>
-        <li><b>🅿 あとで話す</b>：脱線した話題をメモに逃がして本題に戻ります（タイマーは止まりません）。メモは会議の最後に行き先を決めます。</li>
+        <li><b>🅿 あとで話す</b>：脱線した話題をメモに逃がして本題に戻ります（タイマーは止まりません）。メモの「＋ 今回の議題に」で、持ち時間と位置（今の議題の次／最後）を選んで今回の議題にもできます。残ったメモは会議の最後に行き先を決めます。</li>
         <li>「⏹ 会議を終了」を押すと、終わる前に<b>「🔁 会議の振り返り」</b>が出ます。決まった事・TODO を読み上げて確認し、担当や期限が抜けている TODO（⚠）はその場で決めましょう。「記録に戻る」で直せます。</li>
         <li>緑または赤の帯に、予定の終了時刻と今のペースでの終了見込みが出ます。</li>
         <li><b>⏱ 時間の調整</b>を開くと：今の議題 +1分／+5分、<b>⚖ 残りを自動調整</b>（遅れた分を残りの議題から削ります。報告の議題から先に短くします）。</li>
@@ -793,7 +828,8 @@
         <li>会議中は、タイマーの下に今の議題の記録欄が出ます。</li>
         <li><b>決める議題</b>：「決まった事」を書き、結論（決定／保留／持ち越し）を押します。</li>
         <li><b>報告の議題</b>：「報告の要点」と「質疑・補足」を書き、報告済み／持ち越し を押します。</li>
-        <li><b>TODO</b>：「＋ TODOを追加」で、やること・担当・期限を入れます。やることの欄で <b>Enter</b> を押すと次の TODO が増えます。</li>
+        <li><b>TODO</b>：「＋ TODOを追加」で、やること・担当・<b>開始日〜期限</b>を入れます（開始日が空なら「すぐ」）。やることの欄で <b>Enter</b> を押すと次の TODO が増えます。</li>
+        <li><b>🗂 ツール</b>：課のタスク管理ツールへの登録を「未設定／不要／要・未登録／登録済み」から選びます。新しい TODO の初期値は ☰ メニューの「⚙ 設定」で変えられます。</li>
         <li>担当欄を押すと選択パネルが開き、チーム員・参加者を押して選べます（複数可）。「出席者を全員選ぶ」や、名簿にない人の手入力もできます。</li>
         <li>書いた内容は自動で保存されます。会議の後でも議事録の画面で直せます。</li>
       </ul>
@@ -806,7 +842,7 @@
         <li><b>📋 議事録をテキストでコピー</b>：メールやチャットに貼り付けられる形でコピーします。</li>
         <li><b>➡ 次の会議を準備</b>：議題を「持ち越し・保留だけ残す／同じ議題を使う／空にする」から選んで、次の会議の準備画面に切り替えます。参加者・司会・書記・TODO・履歴はそのまま引き継ぎます。</li>
         <li><b>🅿 あとで話す</b>の行き先は、会議結果でも変えられます。「次回の議題」にしたものは次の会議の議題に追加され、「TODO」にしたものはメモした議題の TODO になります。</li>
-        <li><b>📝 TODO一覧</b>：これまでの会議の TODO を期限の近い順に表示します。担当で絞り込み、チェックで完了にできます。「未完了のTODOをコピー」で次の会議の冒頭の確認にも使えます。</li>
+        <li><b>📝 TODO一覧</b>：これまでの会議の TODO を期限の近い順に表示します。担当・時期（着手中／開始前）・ツールで絞り込み、チェックで完了にできます。「🗂 ツール未登録 ○件」を押すと未登録だけになり、「📋 表示中のTODOをコピー」でタスク管理ツールへの入力に使えます。入力したら「✓ 登録済みにする」を押します。</li>
         <li><b>🗂 会議履歴</b>：過去の議事録を開いたり、言葉で検索したりできます。持ち越し・保留の議題を貼り付け欄に戻すこともできます。</li>
       </ul>
     </details>
@@ -912,6 +948,13 @@
           ・チーム員の登録・編集は、パソコンの Edge・Chrome で行うのがおすすめです。</div>
         <p id="teamNote" class="note">「ファイルに保存」で OneDrive などの非公開フォルダに保存しておくと、他の PC でもそのファイルを開いて同じチーム員を使えます。保存後は、画面で編集するたびに自動でファイルに保存されます。</p>
       </div>
+    </section>
+    <section class="dsec">
+      <h3>⚙ 設定</h3>
+      <label class="pref-row">新しい TODO のツール登録の初期値
+        <select id="prefToolDefault"><option value="">未設定</option><option value="need">要・未登録</option><option value="none">不要</option></select>
+      </label>
+      <p class="note">課のタスク管理ツールに入力が必要な TODO が多いときは「要・未登録」にすると、毎回選ぶ手間が減ります（この端末に保存）。</p>
     </section>
     <section class="dsec">
       <h3>💾 バックアップ</h3>
@@ -1093,10 +1136,13 @@
     <summary><h2>📝 TODO一覧</h2><span id="todoCount" class="note"></span></summary>
     <div class="todo-tools">
       <label>担当<select id="todoWho"></select></label>
+      <label>時期<select id="todoPhase" title="着手中＝開始日を過ぎた・開始日なし／開始前＝開始日がまだ先"><option value="">すべて</option><option value="now">着手中</option><option value="later">開始前（まだ先）</option></select></label>
+      <label>ツール<select id="todoTool"><option value="">すべて</option><option value="need">要・未登録</option><option value="done">登録済み</option><option value="none">不要</option><option value="unset">要否 未設定</option></select></label>
       <label><input type="checkbox" id="todoShowDone"> 完了したものも表示</label>
-      <button type="button" id="btnCopyTodos" class="secondary small">📋 未完了のTODOをコピー</button>
+      <button type="button" id="btnCopyTodos" class="secondary small" title="絞り込んだ未完了の TODO を「やること（担当／期間）」の形でコピー（タスク管理ツールへの入力に）">📋 表示中のTODOをコピー</button>
       <span id="todoMsg" class="copied hidden"></span>
     </div>
+    <div id="todoToolSum" class="tool-sum"></div>
     <ul id="todoBoard" class="todo-board"></ul>
     <p class="note">これまでの会議で記録したTODOをまとめて表示します（期限の近い順）。チェックを付けると完了になり、議事録にも反映されます。次回の会議の冒頭で確認すると便利です。</p>
   </details>
@@ -1166,6 +1212,8 @@
       n.todos.forEach(t => {  // 担当1人（who）→ 複数（whos）
         if (!Array.isArray(t.whos)) t.whos = t.who ? [String(t.who)] : [];
         delete t.who;
+        if (typeof t.start !== 'string') t.start = '';               // いつからやるか（空＝すぐ）
+        if (!TOOL_STATES.includes(t.tool)) t.tool = '';              // 課のタスク管理ツール：''未設定／none不要／need要・未登録／done登録済み
       });
       n.todo = legacyTodo(n.todos);
     });
@@ -1176,6 +1224,13 @@
       (t.done ? '［済］' : '') + (t.whos.length ? t.whos.join('・') + ' ' : '') + t.text + (t.due ? `（${fmtDue(t.due)}まで）` : '')).join('\n');
   }
   const PARK_DESTS = ['next', 'todo', 'none'];
+  const TOOL_STATES = ['', 'none', 'need', 'done'];
+  const TOOL_LABEL = { '': '要否 未設定', none: 'ツール不要', need: 'ツール要・未登録', done: 'ツール登録済み' };
+  const PREF_KEY = 'meetingTimer.prefs';
+  function toolDefault() {
+    try { const v = (JSON.parse(localStorage.getItem(PREF_KEY)) || {}).toolDefault; return TOOL_STATES.includes(v) && v !== 'done' ? v : ''; } catch (e) { return ''; }
+  }
+  const newTodo = text => ({ id: newId(), text: text || '', whos: [], start: '', due: '', done: false, tool: toolDefault() });
   function normRun(r, items, names) {
     const n = items.length;
     if (!r || !Array.isArray(r.elapsed) || r.elapsed.length !== n || r.idx > n) return null;
@@ -1259,6 +1314,7 @@
     peoplePick: $('btnPeoplePick'), peoplePicker: $('peoplePicker'), peopleForm: $('peopleForm'), personName: $('personName'), peopleChips: $('peopleChips'), peopleCount: $('peopleCount'),
     roleChair: $('roleChair'), roleScribe: $('roleScribe'), peopleNote: $('peopleNote'), peopleList: $('peopleList'),
     todoBoard: $('todoBoard'), todoWho: $('todoWho'), todoShowDone: $('todoShowDone'), todoCount: $('todoCount'),
+    todoPhase: $('todoPhase'), todoTool: $('todoTool'), todoToolSum: $('todoToolSum'), prefToolDefault: $('prefToolDefault'),
     copyTodos: $('btnCopyTodos'), todoMsg: $('todoMsg'),
     teamStatus: $('teamStatus'), teamOpen: $('btnTeamOpen'), teamImport: $('lblTeamImport'), teamFile: $('teamFile'),
     teamReload: $('btnTeamReload'), teamClear: $('btnTeamClear'), teamEdit: $('btnTeamEdit'), teamEditor: $('teamEditor'),
@@ -1625,7 +1681,7 @@
       return `<li class="${t.done ? 'done' : dc}" data-tid="${t.id}">
         <input type="checkbox" data-rv-done ${t.done ? 'checked' : ''} aria-label="完了">
         <span class="body"><span class="t">${escapeHtml(t.text)}</span>
-          <span class="meta">${t.whos.length ? `<b>${escapeHtml(whoShort(t.whos))}</b>・` : '担当なし・'}${due}・${dateLabel(run.meetingStart)}の会議「${escapeHtml(item.title)}」</span></span>
+          <span class="meta">${t.whos.length ? `<b>${escapeHtml(whoShort(t.whos))}</b>・` : '担当なし・'}${t.start ? (isLater(t) ? `<span class="later-chip">${fmtDue(t.start)} から開始</span>・` : `${fmtDue(t.start)}〜・`) : ''}${due}・${dateLabel(run.meetingStart)}の会議「${escapeHtml(item.title)}」 ${toolChip(t)}</span></span>
         <label class="due">期限<input type="date" data-rv-due value="${escapeHtml(t.due)}"></label>
       </li>`;
     }).join('');
@@ -1654,7 +1710,22 @@
 
   // ---------- ② あとで話す ----------
   const PARK_LABEL = { next: '次回の議題', todo: 'TODO', none: 'なし' };
-  let parkOpen = false;
+  let parkOpen = false, parkAddId = '';
+  // 「あとで話す」を今回の会議の議題にする（あとで話すからは消す）
+  function parkToAgenda(id, minutes, where) {
+    const r = state.run;
+    const k = runActive() ? r.parked.findIndex(p => p.id === id) : -1;
+    if (k < 0) return false;
+    const x = r.parked[k];
+    dropParkTodo(x);
+    r.parked.splice(k, 1);
+    parkAddId = '';
+    notesPanelKey = '';
+    addItems([{ title: x.text.slice(0, 100), minutes: Math.min(600, Math.max(1, Math.round(minutes) || DEFAULT_MINUTES)), presenter: '', goal: '', kind: 'decide', fromPark: true }], where);
+    const late = Math.round((projectedEnd() - r.plannedEnd) / 60000);
+    showInfo(`✓ 「${x.text}」を今回の議題に追加しました（終了見込み ${clock(projectedEnd())}${late > 0 ? `・予定より +${late}分` : ''}）`);
+    return true;
+  }
   const parkedNext = () => (state.run && state.run.parked || []).filter(x => x.dest === 'next');
   function openPark() {
     if (!runActive()) return;
@@ -1691,7 +1762,7 @@
     if (dest === 'todo') {
       const i = parkTodoHome(x);
       if (i >= 0) {
-        const t = { id: newId(), text: x.text, whos: [], due: '', done: false };
+        const t = newTodo(x.text);
         r.notes[i].todos.push(t);
         x.todoId = t.id;
       }
@@ -1721,11 +1792,19 @@
     if (!active) parkOpen = false;
     el.parkPanel.classList.toggle('hidden', !active || (!parkOpen && !list.length));
     el.parkCount.textContent = list.length ? `${list.length}件` : '';
-    const key = JSON.stringify([active, list]);
+    if (parkAddId && !list.some(x => x.id === parkAddId)) parkAddId = '';
+    const key = JSON.stringify([active, list, parkAddId]);
     if (key !== parkKey) {
       parkKey = key;
       el.parkList.innerHTML = list.map(x => `<li data-pid="${x.id}"><span class="t">${escapeHtml(x.text)}</span>
-        <button type="button" class="danger icon" data-park-del aria-label="このメモを削除" title="削除">✕</button></li>`).join('');
+        ${parkAddId === x.id ? '' : '<button type="button" class="small pa-btn" data-park-agenda title="今回の会議の議題に追加">＋ 今回の議題に</button>'}
+        <button type="button" class="danger icon" data-park-del aria-label="このメモを削除" title="削除">✕</button>
+        ${parkAddId === x.id ? `<div class="park-add" data-park-add>
+          <label>持ち時間 <input type="number" data-pa-min min="1" max="600" step="1" value="${DEFAULT_MINUTES}" aria-label="持ち時間（分）"> 分</label>
+          <select data-pa-pos aria-label="入れる位置"><option value="next">今の議題の次に</option><option value="end">最後に</option></select>
+          <button type="button" class="secondary" data-pa-cancel>キャンセル</button>
+          <button type="button" data-pa-go>追加する</button>
+        </div>` : ''}</li>`).join('');
     }
     // 会議後：行き先を選ぶ
     const done = !!r && r.status === 'done' && list.length > 0;
@@ -1739,9 +1818,28 @@
   function onParkClick(e) {
     const li = e.target.closest('li[data-pid]');
     if (!li) return;
+    const id = li.dataset.pid;
+    if (e.target.closest('button[data-park-agenda]')) {
+      if (reviewOpen()) {  // 振り返り画面から：最後に追加して会議を続ける
+        if (parkToAgenda(id, DEFAULT_MINUTES, 'end')) closeReview(false);
+        return;
+      }
+      parkAddId = id; renderPark();
+      const m = el.parkList.querySelector('[data-pa-min]'); if (m) { m.focus(); m.select(); }
+      return;
+    }
+    if (e.target.closest('button[data-pa-cancel]')) { parkAddId = ''; renderPark(); return; }
+    if (e.target.closest('button[data-pa-go]')) { parkGo(li); return; }
     const d = e.target.closest('button[data-park-dest]');
     if (d) { setParkDest(li.dataset.pid, d.dataset.parkDest); return; }
     if (e.target.closest('button[data-park-del]')) delPark(li.dataset.pid);
+  }
+
+  function parkGo(li) {
+    const m = li.querySelector('[data-pa-min]'), w = li.querySelector('[data-pa-pos]');
+    const min = Math.round(Number(m && m.value));
+    if (!(min >= 1 && min <= 600)) { if (m) m.focus(); return; }
+    parkToAgenda(li.dataset.pid, min, w ? w.value : 'next');
   }
 
   // ---------- ③ 会議の振り返り（終了前） ----------
@@ -1767,7 +1865,7 @@
     r.notes.forEach((n, i) => n.todos.forEach(t => { if (t.text.trim()) todos.push({ t, i }); }));
     const todoHTML = todos.length ? todos.map(({ t }) => `<div class="rv-box">${t.done ? '✓ ' : ''}${escapeHtml(t.text)}　` +
       (t.whos.length ? `<b>${escapeHtml(whoShort(t.whos))}</b>` : '<span class="warnchip">⚠ 担当なし</span>') +
-      (t.due ? `・${fmtDue(t.due)}` : '<span class="warnchip">⚠ 期限なし</span>') + '</div>').join('')
+      (t.start ? `・${periodText(t)}` : t.due ? `・${fmtDue(t.due)}` : '') + (t.due ? '' : '<span class="warnchip">⚠ 期限なし</span>') + ' ' + toolChip(t) + '</div>').join('')
       : '<p class="rv-empty">TODO はありません</p>';
     const decided = r.notes.filter((n, i) => !r.skipped[i] && n.status === '決定' && !n.todos.some(t => t.text.trim())).length;
     const pk = r.parked;
@@ -1775,7 +1873,7 @@
       <div class="rv-sec"><span>決まった事</span><small>${state.items.length}議題</small></div>${items}
       <div class="rv-sec"><span>TODO（${todos.length}件）</span>${decided ? `<small>「決定」で TODO がない議題 ${decided}件</small>` : ''}</div>${todoHTML}
       ${pk.length ? `<div class="rv-sec"><span>🅿 あとで話す（${pk.length}件）の行き先</span></div>
-        <ul class="rv-park">${pk.map(x => `<li data-pid="${x.id}"><span class="t">${escapeHtml(x.text)}</span>${destHTML(x)}</li>`).join('')}</ul>` : ''}`;
+        <ul class="rv-park">${pk.map(x => `<li data-pid="${x.id}"><span class="t">${escapeHtml(x.text)}</span>${destHTML(x)}<button type="button" class="small pa-btn" data-park-agenda title="今回の会議の最後に議題として追加して、会議を続けます">＋ 今回の議題に</button></li>`).join('')}</ul>` : ''}`;
   }
   function closeReview(end) {
     if (!reviewOpen()) return;
@@ -1802,11 +1900,11 @@
     addItems([{ title, minutes, presenter: presenter || '', goal: goal || '', kind: report ? 'report' : 'decide' }]);
   }
   // 会議前は末尾に追加。進行中は「今の議題の次」または「最後」に追加し、進行データも合わせて広げる
-  function addItems(list) {
+  function addItems(list, where) {
     const items = list.map(x => ({ id: newId(), ...x }));
     const r = state.run;
     if (r && r.status !== 'done') {
-      let pos = el.addPos.value === 'next' ? r.idx + 1 : state.items.length;
+      let pos = (where || el.addPos.value) === 'next' ? r.idx + 1 : state.items.length;
       items.forEach(item => {
         state.items.splice(pos, 0, item);
         r.elapsed.splice(pos, 0, 0);
@@ -2213,7 +2311,7 @@
     const who = el.todoWho.value, showDone = el.todoShowDone.checked;
     const names = [...new Set(all.flatMap(x => x.t.whos))].sort((a, b) => a.localeCompare(b, 'ja'));
     const hasNoWho = all.some(x => !x.t.whos.length);
-    const key = JSON.stringify([all.map(x => [x.t, x.item.title, x.run.meetingStart]), who, showDone, todayStr()]);
+    const key = JSON.stringify([all.map(x => [x.t, x.item.title, x.run.meetingStart]), who, showDone, el.todoPhase.value, el.todoTool.value, todayStr(), runActive()]);
     if (key === todoKey) return;
     todoKey = key;
     if (document.activeElement !== el.todoWho) {
@@ -2223,6 +2321,10 @@
     }
     const open = all.filter(x => !x.t.done);
     const over = open.filter(x => dueClass(x.t) === 'overdue').length;
+    const tc = v => open.filter(x => (x.t.tool || '') === v).length;
+    const sums = [['need', 'ツール未登録'], ['done', 'ツール登録済み'], ['none', 'ツール不要'], ['unset', '要否 未設定']]
+      .map(([v, l]) => [v, l, tc(v === 'unset' ? '' : v)]).filter(x => x[2]);
+    el.todoToolSum.innerHTML = sums.length ? sums.map(([v, l, n]) => `<button type="button" class="t-${v} ${el.todoTool.value === v ? 'on' : ''}" data-tool-filter="${v}" title="この状態だけ表示（もう一度押すと解除）">🗂 ${l} ${n}件</button>`).join('') : '';
     el.todoCount.textContent = all.length ? `未完了 ${open.length}件${over ? `（期限切れ ${over}件）` : ''}` : 'まだありません';
     el.todoCount.classList.toggle('alert', over > 0);
     const list = sortTodos(filterTodos(all));
@@ -2230,11 +2332,13 @@
     if (!list.length) { el.todoBoard.innerHTML = `<li class="empty" style="border:none;justify-content:center">${showDone ? '該当するTODOはありません' : '未完了のTODOはありません 🎉'}</li>`; return; }
     el.todoBoard.innerHTML = list.map(({ t, item, run }) => {
       const dc = dueClass(t);
-      const dueText = t.due ? `<span class="due ${dc}">期限 ${fmtDue(t.due)}${dc === 'overdue' ? '（期限切れ）' : dc === 'today' ? '（今日まで）' : ''}</span>` : '<span>期限なし</span>';
-      return `<li class="${t.done ? 'done' : dc}">
+      const dueText = (t.start ? (isLater(t) ? `<span class="later-chip">${fmtDue(t.start)} から開始（まだ先）</span>・` : `<span>${fmtDue(t.start)}〜</span>`) : '') +
+        (t.due ? `<span class="due ${dc}">期限 ${fmtDue(t.due)}${dc === 'overdue' ? '（期限切れ）' : dc === 'today' ? '（今日まで）' : ''}</span>` : '<span>期限なし</span>');
+      return `<li class="${t.done ? 'done' : dc}${isLater(t) ? ' later' : ''}">
         <input type="checkbox" data-todo-done="${t.id}" ${t.done ? 'checked' : ''} aria-label="完了">
         <span class="body"><span class="t">${escapeHtml(t.text)}</span>
           <span class="meta">${t.whos.length ? `<span class="who" title="${escapeHtml(t.whos.join('・'))}">${escapeHtml(whoShort(t.whos))}</span>・` : ''}${dueText}・${dateLabel(run.meetingStart)}の会議「${escapeHtml(item.title)}」${run === state.run && runActive() ? '（進行中）' : ''}</span></span>
+        <span class="side">${toolChip(t)}${t.tool === 'need' && !t.done ? `<button type="button" class="small" data-tool-done="${t.id}">✓ 登録済みにする</button>` : ''}</span>
       </li>`;
     }).join('');
   }
@@ -2242,7 +2346,20 @@
   const whoShort = (whos, max = 3) => whos.slice(0, max).join('・') + (whos.length > max ? ` ほか${whos.length - max}名` : '');
   function filterTodos(all) {
     const who = el.todoWho.value, showDone = el.todoShowDone.checked;
-    return all.filter(x => (showDone || !x.t.done) && (!who || (who === '\u0000' ? !x.t.whos.length : x.t.whos.includes(who))));
+    const phase = el.todoPhase.value, tool = el.todoTool.value;
+    return all.filter(x => (showDone || !x.t.done) && (!who || (who === '\u0000' ? !x.t.whos.length : x.t.whos.includes(who))) &&
+      (!phase || (phase === 'later') === isLater(x.t)) &&
+      (!tool || (tool === 'unset' ? !x.t.tool : x.t.tool === tool)));
+  }
+  function onTodoBoardClick(e) {
+    const b = e.target.closest('button[data-tool-done]');
+    if (!b) return;
+    const x = collectTodos().find(x => x.t.id === b.dataset.toolDone);
+    if (!x) return;
+    x.t.tool = 'done';
+    notesPanelKey = '';
+    save(); render();
+    if (state.run && state.run.status === 'done') renderResultNotes();
   }
   function onTodoBoardChange(e) {
     const cb = e.target.closest('input[data-todo-done]');
@@ -2257,10 +2374,11 @@
     const list = sortTodos(filterTodos(collectTodos()).filter(x => !x.t.done));
     if (!list.length) return '';
     const who = el.todoWho.value;
-    const lines = [`【未完了のTODO】${dateLabel(Date.now())}時点・${list.length}件` + (who && who !== '\u0000' ? `（担当：${who}）` : '')];
+    const cond = [who && who !== '\u0000' ? `担当：${who}` : '', el.todoPhase.value ? el.todoPhase.selectedOptions[0].text : '', el.todoTool.value ? `ツール：${el.todoTool.selectedOptions[0].text}` : ''].filter(Boolean).join('・');
+    const lines = [`【未完了のTODO】${dateLabel(Date.now())}時点・${list.length}件` + (cond ? `（${cond}）` : '')];
     list.forEach(({ t, item, run }) => {
       const dc = dueClass(t);
-      lines.push(`・${todoLine(t)}${dc === 'overdue' ? '［期限切れ］' : dc === 'today' ? '［今日まで］' : ''}　← ${dateLabel(run.meetingStart)}「${item.title}」`);
+      lines.push(`・${todoLine(t)}${dc === 'overdue' ? '［期限切れ］' : dc === 'today' ? '［今日まで］' : ''}${isLater(t) ? '［開始前］' : ''}　← ${dateLabel(run.meetingStart)}「${item.title}」`);
     });
     return lines.join('\n');
   }
@@ -2322,7 +2440,7 @@
         return `<li class="${st}${ed ? ' editing' : ''}" data-i="${i}">
           <span class="status">${labels[st]}</span>
           <span class="num">${i + 1}.</span>
-          <span class="name">${escapeHtml(item.title)}${isAdded(i) ? '<span class="badge 追加">追加</span>' : ''}${carryBadge(item)}${statusBadge(i)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}${goalLineHTML(item)}</span>
+          <span class="name">${escapeHtml(item.title)}${isAdded(i) ? (item.fromPark ? '<span class="badge park">あとで話すから</span>' : '<span class="badge 追加">追加</span>') : ''}${carryBadge(item)}${statusBadge(i)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}${goalLineHTML(item)}</span>
           <span class="br"></span>
           <span class="mins">${st === 'skipped' ? '—' : effMin(i) + '分'}${isChanged(i) || st === 'skipped' ? `<small>当初${item.minutes}分</small>` : ''}<small class="at hidden" data-at="${i}" title="開始の見込み時刻"></small></span>
           <span class="ops">${opsHTML(i, st, active, dis)}</span>
@@ -2571,10 +2689,21 @@
         <input type="checkbox" data-tf="done" ${t.done ? 'checked' : ''} aria-label="完了" title="完了">
         <textarea data-tf="text" rows="1" maxlength="200" placeholder="やること（例：${example}）" aria-label="やること">${escapeHtml(t.text)}</textarea>
         <button type="button" class="whobtn ${picker.tid === t.id ? 'open' : ''}" data-who-open aria-expanded="${picker.tid === t.id}" title="${t.whos.length ? '担当：' + escapeHtml(t.whos.join('・')) : '担当を選ぶ'}">${whoTagsHTML(t.whos)}</button>
-        <input type="date" data-tf="due" value="${escapeHtml(t.due)}" aria-label="期限" title="期限">
+        <label class="tdate">開始<input type="date" data-tf="start" value="${escapeHtml(t.start)}" aria-label="開始日（空ならすぐ）" title="いつからやるか（空ならすぐ）"></label>
+        <label class="tdate">〜 期限<input type="date" data-tf="due" value="${escapeHtml(t.due)}" aria-label="期限" title="期限"></label>
+        <select data-tf="tool" class="toolsel t-${t.tool || 'unset'}" aria-label="課のタスク管理ツールへの登録" title="課のタスク管理ツールへの登録">${TOOL_STATES.map(v => `<option value="${v}" ${t.tool === v ? 'selected' : ''}>${toolOpt(v)}</option>`).join('')}</select>
         <button type="button" class="danger icon" data-todo-del aria-label="このTODOを削除" title="削除">✕</button>
       </div>${picker.tid === t.id ? pickerHTML(t) : ''}`).join('');
   }
+  const toolOpt = v => ({ '': '🗂 ツール：未設定', none: '🚫 ツール：不要', need: '⚠ ツール：要・未登録', done: '✅ ツール：登録済み' })[v];
+  const toolChip = t => `<span class="toolchip t-${t.tool || 'unset'}">🗂 ${TOOL_LABEL[t.tool || '']}</span>`;
+  // 「11/10〜11/20」「11/10〜」「〜11/20」
+  function periodText(t) {
+    if (t.start && t.due) return `${fmtDue(t.start)}〜${fmtDue(t.due)}`;
+    if (t.start) return `${fmtDue(t.start)}〜`;
+    return t.due ? `〜${fmtDue(t.due)}` : '';
+  }
+  const isLater = t => !t.done && !!t.start && t.start > todayStr();
   function whoTagsHTML(whos) {
     if (!whos.length) return '<span class="add">＋ 担当を選ぶ</span>';
     // 欄に収まる人数だけタグで表示（フルネームなら1人、短い名前なら2人）＋残りは「+N」
@@ -2686,7 +2815,7 @@
   }
   function addTodo(card, i) {
     const n = state.run.notes[i];
-    const t = { id: newId(), text: '', whos: state.items[i].presenter ? [state.items[i].presenter] : [], due: '', done: false };
+    const t = { ...newTodo(''), whos: state.items[i].presenter ? [state.items[i].presenter] : [] };
     n.todos.push(t);
     save();
     card.querySelector('.todo-list').innerHTML = todoRowsHTML(i);
@@ -2727,6 +2856,7 @@
       const t = state.run.notes[Number(card.dataset.i)].todos.find(x => x.id === row.dataset.tid);
       if (!t) return;
       if (f.dataset.tf === 'done') { t.done = f.checked; row.classList.toggle('done', t.done); }
+      else if (f.dataset.tf === 'tool') { t.tool = TOOL_STATES.includes(f.value) ? f.value : ''; f.className = `toolsel t-${t.tool || 'unset'}`; }
       else t[f.dataset.tf] = f.value.slice(0, 200);
       save();
       renderTodoBoard();
@@ -3040,8 +3170,10 @@
   }
   // 「告知文の作成（担当：佐藤／期限：11/12）［完了］」
   function todoLine(t) {
-    const meta = [t.whos.length ? `担当：${t.whos.join('・')}` : '', t.due ? `期限：${fmtDue(t.due)}` : ''].filter(Boolean).join('／');
-    return t.text.trim() + (meta ? `（${meta}）` : '') + (t.done ? '［完了］' : '');
+    const per = t.start && t.due ? `期間：${fmtDue(t.start)}〜${fmtDue(t.due)}` : t.start ? `開始：${fmtDue(t.start)}〜` : t.due ? `期限：${fmtDue(t.due)}` : '';
+    const meta = [t.whos.length ? `担当：${t.whos.join('・')}` : '', per].filter(Boolean).join('／');
+    return t.text.trim() + (meta ? `（${meta}）` : '') + (t.done ? '［完了］' : '') +
+      (t.tool === 'need' ? '［ツール未登録］' : t.tool === 'done' ? '［ツール登録済み］' : '');
   }
   // 「出席：佐藤（司会）、鈴木（書記）、高橋／欠席：田中」
   function peopleLine(people, roles) {
@@ -3822,6 +3954,12 @@
     el.parkText.focus();
   });
   el.parkList.addEventListener('click', onParkClick);
+  el.parkList.addEventListener('keydown', e => {
+    const box = e.target.closest('[data-park-add]');
+    if (!box) return;
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); parkAddId = ''; renderPark(); }
+    else if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); parkGo(box.closest('li')); }
+  });
   el.parkResult.addEventListener('click', onParkClick);
   el.reviewBody.addEventListener('click', onParkClick);
   el.todoRvList.addEventListener('change', onTodoReviewChange);
@@ -4012,11 +4150,24 @@
     catch (e) { alert('チーム員ファイルを読み込めませんでした：' + (e.message || e.name)); }
   });
   el.todoBoard.addEventListener('change', onTodoBoardChange);
+  el.todoBoard.addEventListener('click', onTodoBoardClick);
+  el.todoToolSum.addEventListener('click', e => {
+    const b = e.target.closest('button[data-tool-filter]');
+    if (!b) return;
+    el.todoTool.value = el.todoTool.value === b.dataset.toolFilter ? '' : b.dataset.toolFilter;
+    todoKey = ''; renderTodoBoard();
+  });
+  [el.todoPhase, el.todoTool].forEach(x => x.addEventListener('change', () => { todoKey = ''; renderTodoBoard(); }));
+  try { el.prefToolDefault.value = toolDefault(); } catch (e) { /* ignore */ }
+  el.prefToolDefault.addEventListener('change', () => {
+    try { localStorage.setItem(PREF_KEY, JSON.stringify({ toolDefault: el.prefToolDefault.value })); } catch (e) { /* ignore */ }
+    showInfo('✓ 新しい TODO のツール登録の初期値を「' + el.prefToolDefault.selectedOptions[0].text + '」にしました');
+  });
   el.todoWho.addEventListener('change', () => { todoKey = ''; renderTodoBoard(); });
   el.todoShowDone.addEventListener('change', () => { todoKey = ''; renderTodoBoard(); });
   el.copyTodos.addEventListener('click', async () => {
     const text = todosText();
-    if (!text) { flash(el.todoMsg, '未完了のTODOはありません'); return; }
+    if (!text) { flash(el.todoMsg, '該当する未完了のTODOはありません'); return; }
     flash(el.todoMsg, (await copyText(text)) ? 'コピーしました' : 'コピーできませんでした');
   });
   el.bulkText.addEventListener('input', renderBulkPreview);
