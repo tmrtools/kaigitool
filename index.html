@@ -366,6 +366,24 @@
   .agenda .mins { flex: 0 0 auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .agenda .ops { flex: 0 0 auto; display: flex; gap: 4px; margin-left: auto; }
   .agenda .br { display: none; }
+  .agenda .ops button.edit, .note-card button.edit { color: var(--accent-dark); font-weight: 700; }
+  .agenda li.editing { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(61,107,125,.15); background: #fbfdfd; font-weight: 400; }
+  .item-edit {
+    flex-basis: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px;
+    border-top: 1px dashed var(--line); margin-top: 4px; padding-top: 10px; font-weight: 400;
+  }
+  .note-card .item-edit { border-top: none; margin: 0 0 12px; padding: 10px; background: #f6f9fa; border: 1px solid var(--line); border-radius: 10px; }
+  .item-edit label { display: flex; flex-direction: column; gap: 3px; font-size: .8rem; color: var(--muted); font-weight: 600; }
+  .item-edit .full { grid-column: 1 / -1; }
+  .item-edit input, .item-edit select {
+    font: inherit; font-size: 1rem; font-weight: 400; min-height: 42px; padding: 6px 10px; width: 100%;
+    border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--text);
+  }
+  .item-edit input:disabled { background: #f3f5f3; color: var(--muted); }
+  .item-edit .acts { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; align-items: center; }
+  .item-edit .acts .note { margin-right: auto; font-size: .78rem; color: var(--muted); font-weight: 400; }
+  .item-edit .err { grid-column: 1 / -1; color: var(--over); font-size: .85rem; font-weight: 600; }
+  .note-card h3 .edit { margin-left: 8px; vertical-align: 1px; }
   .empty { color: var(--muted); text-align: center; padding: 20px 0; }
 
   .summary {
@@ -570,6 +588,7 @@
     .agenda .br { display: block; flex-basis: 100%; height: 0; }
     .agenda .mins { padding-left: 4px; }
     .agenda .ops { margin-left: auto; }
+    .item-edit { grid-template-columns: 1fr; }
     .controls button { flex-basis: calc(50% - 10px); font-size: 1rem; padding: 10px 12px; }
     .add-form button { flex: 1 1 auto; }
     th, td { padding: 8px 5px; font-size: .9rem; }
@@ -634,6 +653,7 @@
         <li>アジェンダの「＋ 議題を追加」で、議題名・持ち時間（分）・担当者・種類を入れて「追加」を押します。</li>
         <li>種類は <b>🎯 決める</b>（決めることを書く）か <b>📢 報告</b>（報告だけの議題）を選びます。</li>
         <li>▲▼ で並べ替え、✕ で削除できます（会議の開始前のみ）。</li>
+        <li>✏ で議題名・持ち時間・担当者・種類・決めることを直せます。会議中は今の議題とこれからの議題を（持ち時間は −／＋ で）、会議後は「決まった事の記録」の「✏ 議題を編集」から議題名・担当者・決めることを直せます。</li>
       </ul>
       <h4>まとめて貼り付ける</h4>
       <ul>
@@ -910,7 +930,7 @@
       <button type="button" id="btnClearAgenda" class="danger">すべて削除</button>
       <span id="agendaMsg" class="copied hidden"></span>
     </div>
-    <div id="lockNote" class="note hidden">※ 進行中は議題の<b>追加</b>と、未着手の議題の時間調整・「次回へ」ができます。並べ替え・削除はリセット後にできます。</div>
+    <div id="lockNote" class="note hidden">※ 進行中は議題の<b>追加</b>と、未着手の議題の時間調整・「次回へ」、今とこれからの議題の ✏ 編集ができます。並べ替え・削除はリセット後にできます。</div>
 
     <!-- 参加者 -->
     <details id="peopleFold" class="people fold" open>
@@ -1948,6 +1968,9 @@
     el.clearAgenda.disabled = locked || !state.items.length;
     el.copyAgenda.disabled = !state.items.length;
     renderBulkPreview();
+    // 会議が進んで直せなくなった議題（終わった・次回へ回した・削除された）は編集欄を閉じる
+    if (editing.id && !editableNow(state.items.findIndex(x => x.id === editing.id))) { editing.id = ''; editing.draft = null; editing.err = ''; }
+    const editFocus = captureEdit(el.agenda);
 
     if (!state.items.length) {
       el.agenda.innerHTML = '<li class="empty" style="border:none;justify-content:center">議題がまだありません</li>';
@@ -1957,16 +1980,19 @@
       el.agenda.innerHTML = state.items.map((item, i) => {
         const st = itemState(i);
         const dis = locked ? 'disabled' : '';
-        return `<li class="${st}" data-i="${i}">
+        const ed = editing.id === item.id;
+        return `<li class="${st}${ed ? ' editing' : ''}" data-i="${i}">
           <span class="status">${labels[st]}</span>
           <span class="num">${i + 1}.</span>
           <span class="name">${escapeHtml(item.title)}${isAdded(i) ? '<span class="badge 追加">追加</span>' : ''}${carryBadge(item)}${statusBadge(i)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}${isReport(item) ? '<span class="report-line">📢 報告</span>' : item.goal ? `<span class="goal-line">🎯 ${escapeHtml(item.goal)}</span>` : ''}</span>
           <span class="br"></span>
           <span class="mins">${st === 'skipped' ? '—' : effMin(i) + '分'}${isChanged(i) || st === 'skipped' ? `<small>当初${item.minutes}分</small>` : ''}<small class="at hidden" data-at="${i}" title="開始の見込み時刻"></small></span>
           <span class="ops">${opsHTML(i, st, active, dis)}</span>
+          ${ed ? itemEditHTML(item, !state.run) : ''}
         </li>`;
       }).join('');
     }
+    restoreEdit(el.agenda, editFocus);
     el.total.textContent = formatMinutes(totalMinutes()) + (state.run && totalMinutes() !== origMinutes() ? `（当初${formatMinutes(origMinutes())}）` : '');
     const rep = state.items.reduce((a, x, i) => isReport(x) ? a + effMin(i) : a, 0);
     el.breakdown.textContent = state.items.length ? `（決定 ${formatMinutes(totalMinutes() - rep)}・報告 ${formatMinutes(rep)}）` : '';
@@ -1975,13 +2001,17 @@
   }
 
   function opsHTML(i, st, active, dis) {
-    if (!state.run) return `
+    const ed = editing.id === state.items[i].id ? '' : `
+            <button class="secondary icon edit" data-act="edit" aria-label="この議題を編集" title="編集">✏</button>`;
+    if (!state.run) return ed + `
             <button class="secondary icon" data-act="up" ${i === 0 ? 'disabled' : ''} aria-label="上へ" title="上へ">▲</button>
             <button class="secondary icon" data-act="down" ${i === state.items.length - 1 ? 'disabled' : ''} aria-label="下へ" title="下へ">▼</button>
             <button class="danger icon" data-act="del" aria-label="削除" title="削除">✕</button>`;
     if (!active) return '';
+    // 進行中：今の議題とこれからの議題は名前・担当などを直せる（持ち時間は −／＋）
+    if (st === 'current') return ed;
     // 進行中：未着手の議題だけ時間調整・次回へ回すことができる
-    if (st === 'todo') return (state.run.added[i] ? `
+    if (st === 'todo') return ed + (state.run.added[i] ? `
             <button class="danger icon" data-act="unadd" aria-label="追加を取り消す" title="追加を取り消す">✕</button>` : '') + `
             <button class="secondary icon" data-act="minus" ${state.run.plan[i] <= 1 ? 'disabled' : ''} aria-label="1分減らす" title="1分減らす">−</button>
             <button class="secondary icon" data-act="plus" aria-label="1分増やす" title="1分増やす">＋</button>
@@ -1989,6 +2019,157 @@
     if (st === 'skipped') return `
             <button class="secondary icon text" data-act="unskip" title="今回の議題に戻す">↩ 戻す</button>`;
     return '';
+  }
+
+  // ---------- 議題の編集（✏） ----------
+  // 会議前：すべて／会議中：今とこれからの議題（持ち時間以外）／会議後：議題名・担当・決めること
+  const editing = { id: '', draft: null, err: '' };
+  function editableNow(i) {
+    if (i < 0) return false;
+    if (!state.run) return true;
+    if (state.run.status === 'done') return false;  // 会議後は「決まった事の記録」から
+    const st = itemState(i);
+    return runActive() && (st === 'current' || st === 'todo');
+  }
+  function itemEditHTML(item, withMinutes, afterMeeting, err = editing.err) {
+    const d = { ...{ title: item.title, minutes: item.minutes, presenter: item.presenter || '', kind: item.kind === 'report' ? 'report' : 'decide', goal: item.goal || '' }, ...(editing.draft || {}) };
+    const report = d.kind === 'report';
+    return `<div class="item-edit" data-edit>
+      <label class="${withMinutes ? '' : 'full'}">議題名<input type="text" data-ef="title" value="${escapeHtml(d.title)}" maxlength="100" required></label>
+      ${withMinutes ? `<label>持ち時間（分）<input type="number" data-ef="minutes" min="1" max="600" step="1" value="${escapeHtml(String(d.minutes))}"></label>` : ''}
+      <label class="${afterMeeting ? 'full' : ''}">担当者<input type="text" data-ef="presenter" value="${escapeHtml(d.presenter)}" maxlength="40" list="peopleList" placeholder="（任意）"></label>
+      ${afterMeeting ? '' : `<label>種類<select data-ef="kind"><option value="decide"${report ? '' : ' selected'}>🎯 決める議題</option><option value="report"${report ? ' selected' : ''}>📢 報告の議題</option></select></label>`}
+      ${afterMeeting && report ? '' : `<label class="full">決めること<input type="text" data-ef="goal" value="${report ? '' : escapeHtml(d.goal)}" maxlength="200" placeholder="${report ? '（報告の議題には不要）' : '（任意）'}"${report ? ' disabled' : ''}></label>`}
+      ${err ? `<div class="err" role="alert">${escapeHtml(err)}</div>` : ''}
+      <div class="acts">
+        <span class="note">${withMinutes ? 'Enter で保存・Esc で取り消し' : afterMeeting ? '予定・実際の時間は記録のため変えられません' : '持ち時間は −／＋ で変えます'}</span>
+        <button type="button" class="secondary" data-act="edit-cancel">キャンセル</button>
+        <button type="button" data-act="edit-save">保存</button>
+      </div>
+    </div>`;
+  }
+  function readEdit(form) {
+    const d = {};
+    form.querySelectorAll('[data-ef]').forEach(f => { d[f.dataset.ef] = f.value; });
+    return d;
+  }
+  // 描き直しの前に入力途中の内容とカーソル位置を控える
+  function captureEdit(root) {
+    const form = root.querySelector('[data-edit]');
+    if (!form || !editing.id) return null;
+    editing.draft = { ...(editing.draft || {}), ...readEdit(form) };
+    const a = document.activeElement;
+    return a && form.contains(a) && a.dataset.ef ? { f: a.dataset.ef, s: a.selectionStart, e: a.selectionEnd } : null;
+  }
+  function restoreEdit(root, foc) {
+    if (!foc) return;
+    const f = root.querySelector(`[data-edit] [data-ef="${foc.f}"]`);
+    if (!f) return;
+    f.focus();
+    try { if (foc.s !== null && foc.s !== undefined) f.setSelectionRange(foc.s, foc.e); } catch (e) { /* number */ }
+  }
+  function focusEdit(root) {
+    const f = root.querySelector('[data-edit] [data-ef="title"]');
+    if (f) { f.focus(); f.select(); }
+  }
+  function openEdit(i) {
+    if (!editableNow(i)) return;
+    editing.id = state.items[i].id; editing.draft = null; editing.err = '';
+    renderAgenda();
+    focusEdit(el.agenda);
+  }
+  function closeEdit(refocus) {
+    const id = editing.id;
+    editing.id = ''; editing.draft = null; editing.err = '';
+    renderAgenda();
+    if (refocus) {
+      const i = state.items.findIndex(x => x.id === id);
+      const b = i >= 0 && el.agenda.querySelector(`li[data-i="${i}"] button[data-act="edit"]`);
+      if (b) b.focus();
+    }
+  }
+  // 入力内容を議題に反映（失敗したら理由を返す）
+  function applyEdit(i, d, withMinutes) {
+    const item = state.items[i];
+    const title = (d.title || '').trim();
+    if (!title) return { err: '議題名を入力してください', f: 'title' };
+    let minutes = item.minutes;
+    if (withMinutes) {
+      minutes = Math.round(Number(d.minutes));
+      if (!(minutes >= 1 && minutes <= 600)) return { err: '持ち時間は 1〜600 分で入力してください', f: 'minutes' };
+    }
+    const kind = d.kind === undefined ? item.kind : (d.kind === 'report' ? 'report' : 'decide');
+    item.title = title;
+    item.minutes = minutes;
+    item.presenter = (d.presenter || '').trim();
+    item.kind = kind;
+    if (kind === 'report') item.goal = '';
+    else if (d.goal !== undefined) item.goal = d.goal.trim();
+    // 種類を変えたら、合わない結論（決定⇔報告済み）は外す
+    const n = state.run && state.run.notes && state.run.notes[i];
+    if (n && n.status && !(kind === 'report' ? REPORT_STATUSES : STATUSES).includes(n.status)) n.status = '';
+    notesPanelKey = ''; historyKey = ''; todoKey = '';
+    return null;
+  }
+  function saveEdit() {
+    const i = state.items.findIndex(x => x.id === editing.id);
+    const form = el.agenda.querySelector('[data-edit]');
+    if (i < 0 || !form || !editableNow(i)) return closeEdit(false);
+    const res = applyEdit(i, readEdit(form), !state.run);
+    if (res) {
+      editing.draft = readEdit(form); editing.err = res.err;
+      renderAgenda();
+      const f = el.agenda.querySelector(`[data-edit] [data-ef="${res.f}"]`);
+      if (f) f.focus();
+      return;
+    }
+    editing.id = ''; editing.draft = null; editing.err = '';
+    save(); render();
+    const b = el.agenda.querySelector(`li[data-i="${i}"] button[data-act="edit"]`);
+    if (b) b.focus();
+  }
+  // 種類を「報告」にしたら決めることの欄は使わない
+  function syncEditKind(sel) {
+    const g = sel.closest('[data-edit]').querySelector('[data-ef="goal"]');
+    if (!g) return;
+    const report = sel.value === 'report';
+    g.disabled = report;
+    g.placeholder = report ? '（報告の議題には不要）' : '（任意）';
+    if (report) { g.dataset.keep = g.value; g.value = ''; }
+    else if (g.dataset.keep !== undefined) { g.value = g.dataset.keep; delete g.dataset.keep; }
+  }
+
+  // 会議後：「決まった事の記録」から議題名・担当・決めることを直す
+  const noteEdit = { id: '', err: '' };
+  function noteEditOpen(i) {
+    const item = state.items[i];
+    noteEdit.id = item.id; noteEdit.err = '';
+    editing.draft = null;
+    renderResultNotes();
+    focusEdit(el.resultNotes.querySelector(`.note-card[data-i="${i}"]`));
+  }
+  function noteEditClose(i) {
+    noteEdit.id = ''; noteEdit.err = '';
+    renderResultNotes();
+    const b = el.resultNotes.querySelector(`.note-card[data-i="${i}"] button[data-act="note-edit"]`);
+    if (b) b.focus();
+  }
+  function noteEditSave(i, card) {
+    const form = card.querySelector('[data-edit]');
+    if (!form) return;
+    const res = applyEdit(i, readEdit(form), false);
+    if (res) {
+      noteEdit.err = res.err;
+      editing.draft = readEdit(form);
+      renderResultNotes();
+      editing.draft = null;
+      const f = el.resultNotes.querySelector(`.note-card[data-i="${i}"] [data-ef="${res.f}"]`);
+      if (f) f.focus();
+      return;
+    }
+    noteEdit.id = ''; noteEdit.err = '';
+    save(); render();
+    noteEditClose(i);
   }
 
   // 前回の会議から残した議題の目印
@@ -2006,9 +2187,13 @@
   function noteEditorHTML(i) {
     const item = state.items[i];
     const n = state.run.notes[i];
+    const done = state.run.status === 'done';
+    const editingNote = done && noteEdit.id === item.id;
+    const h3 = `<h3>${i + 1}. ${escapeHtml(item.title)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}${done && !editingNote ? '<button type="button" class="secondary small edit" data-act="note-edit" title="議題名・担当者・決めることを直す">✏ 議題を編集</button>' : ''}</h3>`;
+    const form = editingNote ? itemEditHTML(item, false, true, noteEdit.err) : '';
     if (isReport(item)) return `<div class="note-card" data-i="${i}">
-      <h3>${i + 1}. ${escapeHtml(item.title)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}</h3>
-      <div class="goal report"><span class="k">📢 報告の議題</span>決めることはありません</div>
+      ${h3}${form}
+      ${editingNote ? '' : '<div class="goal report"><span class="k">📢 報告の議題</span>決めることはありません</div>'}
       <label class="field-label" for="dec-${i}">📢 報告の要点</label>
       <textarea id="dec-${i}" data-field="decision" rows="2" placeholder="例）10月の売上は前年比105%">${escapeHtml(n.decision)}</textarea>
       <label class="field-label" for="qa-${i}">💬 質疑・補足（任意）</label>
@@ -2020,8 +2205,8 @@
       ${todoEditorHTML(i)}
     </div>`;
     return `<div class="note-card" data-i="${i}">
-      <h3>${i + 1}. ${escapeHtml(item.title)}${item.presenter ? `<span class="who">担当：${escapeHtml(item.presenter)}</span>` : ''}</h3>
-      <div class="goal ${item.goal ? '' : 'none'}"><span class="k">🎯 決めること</span>${item.goal ? escapeHtml(item.goal) : '（未登録）'}</div>
+      ${h3}${form}
+      ${editingNote ? '' : `<div class="goal ${item.goal ? '' : 'none'}"><span class="k">🎯 決めること</span>${item.goal ? escapeHtml(item.goal) : '（未登録）'}</div>`}
       <label class="field-label" for="dec-${i}">✅ 決まった事</label>
       <textarea id="dec-${i}" data-field="decision" rows="2" placeholder="例）12月第1週にリリースする">${escapeHtml(n.decision)}</textarea>
       <span class="field-label">結論</span>
@@ -2203,6 +2388,12 @@
   // TODOの欄で Enter を押したら次のTODOを追加
   function onNoteKey(e) {
     if (!state.run) return;
+    if (e.target.closest('[data-edit]')) {
+      const card = e.target.closest('.note-card'), i = Number(card.dataset.i);
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); noteEditClose(i); }
+      else if (e.key === 'Enter' && !e.isComposing && e.target.matches('input')) { e.preventDefault(); noteEditSave(i, card); }
+      return;
+    }
     const card = e.target.closest('.note-card');
     if (card && picker.tid && e.key === 'Escape') { e.preventDefault(); return closePicker(card, Number(card.dataset.i), true); }
     const free = e.target.closest('input[data-pick-free]');
@@ -2224,6 +2415,14 @@
   }
   function onNoteClick(e) {
     if (!state.run) return;
+    const eb = e.target.closest('button[data-act^="note-edit"], [data-edit] button[data-act^="edit-"]');
+    if (eb) {
+      const card = eb.closest('.note-card'), i = Number(card.dataset.i);
+      if (state.run.status !== 'done') return;
+      if (eb.dataset.act === 'note-edit') return noteEditOpen(i);
+      if (eb.dataset.act === 'edit-save') return noteEditSave(i, card);
+      return noteEditClose(i);
+    }
     const pcard = e.target.closest('.note-card');
     if (pcard && e.target.closest('.picker') && onPickerClick(e, pcard, Number(pcard.dataset.i))) return;
     const ob = e.target.closest('button[data-who-open]');
@@ -3215,6 +3414,9 @@
     if (!btn) return;
     const i = Number(btn.closest('li').dataset.i);
     const act = btn.dataset.act;
+    if (act === 'edit') return openEdit(i);
+    if (act === 'edit-save') return saveEdit();
+    if (act === 'edit-cancel') return closeEdit(true);
     if (act === 'minus') return adjustPlan(i, -1);
     if (act === 'plus') return adjustPlan(i, 1);
     if (act === 'skip') return setSkipped(i, true);
@@ -3224,6 +3426,15 @@
     if (btn.dataset.act === 'up') moveItem(i, -1);
     else if (btn.dataset.act === 'down') moveItem(i, 1);
     else if (btn.dataset.act === 'del') removeItem(i);
+  });
+
+  el.agenda.addEventListener('change', e => {
+    if (e.target.matches('[data-edit] select[data-ef="kind"]')) syncEditKind(e.target);
+  });
+  el.agenda.addEventListener('keydown', e => {
+    if (!e.target.closest('[data-edit]')) return;
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeEdit(true); }
+    else if (e.key === 'Enter' && !e.isComposing && e.target.matches('input')) { e.preventDefault(); saveEdit(); }
   });
 
   el.start.addEventListener('click', start);
