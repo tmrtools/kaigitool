@@ -144,6 +144,68 @@
   .next-keep { margin: 12px 0; padding: 8px 12px; background: #f7f8f6; border-radius: 8px; font-size: .85rem; color: var(--muted); }
   .next-keep b { color: var(--text); }
   .modal-foot { display: flex; justify-content: flex-end; gap: 8px; }
+  .modal-foot.split { justify-content: space-between; flex-wrap: wrap; margin-top: 12px; }
+  .modal.wide { width: min(600px, calc(100vw - 24px)); }
+
+  /* ① 前回までの TODO 確認 */
+  .rv-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; font-size: .8rem; }
+  .rv-chips span { border-radius: 999px; padding: 2px 10px; background: #e7ebe8; color: var(--muted); font-weight: 600; }
+  .rv-chips .r { background: var(--over-bg); color: var(--over); }
+  .rv-chips .g { background: #e8f1ea; color: var(--ok); }
+  .rv-todos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .rv-todos li { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: #fff; }
+  .rv-todos li.overdue { border-left: 4px solid var(--over); }
+  .rv-todos li.done { background: #f3f7f4; }
+  .rv-todos li.done .t { text-decoration: line-through; color: var(--muted); }
+  .rv-todos input[type=checkbox] { width: 22px; height: 22px; margin: 2px 0 0; accent-color: var(--ok); flex: 0 0 auto; }
+  .rv-todos .body { flex: 1 1 auto; min-width: 0; word-break: break-word; }
+  .rv-todos .meta { display: block; font-size: .8rem; color: var(--muted); }
+  .rv-todos .meta b { color: var(--accent-dark); }
+  .rv-todos .meta .over { color: var(--over); font-weight: 700; }
+  .rv-todos label.due { display: flex; flex-direction: column; font-size: .72rem; color: var(--muted); flex: 0 0 auto; }
+  .rv-todos input[type=date] { font: inherit; font-size: .85rem; padding: 4px 6px; border: 1px solid var(--line); border-radius: 8px; width: 140px; }
+  .rv-note { font-size: .8rem; color: var(--muted); margin: 8px 0 0; }
+
+  /* ③ 会議の振り返り */
+  .rv-sec { display: flex; justify-content: space-between; align-items: baseline; font-weight: 700; color: var(--accent-dark); margin: 14px 0 6px; font-size: .95rem; }
+  .rv-sec small { font-weight: 400; color: var(--muted); font-size: .8rem; }
+  .rv-box { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin-bottom: 6px; background: #fff; font-size: .92rem; word-break: break-word; }
+  .rv-box .h { font-weight: 700; }
+  .rv-box .d { white-space: pre-wrap; }
+  .rv-box .d.none { color: var(--muted); }
+  .rv-box.skipped { background: #f5f5f3; color: var(--muted); }
+  .warnchip { display: inline-block; font-size: .75rem; background: var(--warn-bg); color: #7a5a06; border-radius: 999px; padding: 0 8px; font-weight: 700; margin-left: 6px; white-space: nowrap; }
+  .rv-empty { color: var(--muted); font-size: .88rem; margin: 0 0 6px; }
+
+  /* ② あとで話す */
+  .controls .park-btn { background: #fff3d6; color: #7a5a06; border-color: #ecd28a; font-weight: 700; }
+  .park { margin-top: 12px; border: 1px dashed #d6b34a; background: #fffaf0; border-radius: 10px; padding: 10px 12px; }
+  .park-head { display: flex; justify-content: space-between; align-items: center; color: #7a5a06; font-weight: 700; margin-bottom: 8px; }
+  .park-head small { font-weight: 400; }
+  .park-form { display: flex; gap: 6px; }
+  .park-form input { flex: 1 1 auto; min-width: 0; font: inherit; font-size: 1rem; min-height: 42px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  .park-form input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .park-form button { flex: 0 0 auto; white-space: nowrap; }
+  .park-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .park-list li { display: flex; gap: 8px; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 4px 4px 4px 10px; word-break: break-word; }
+  .park-list li .t { flex: 1 1 auto; min-width: 0; }
+  .park-list li button.icon { width: 34px; min-height: 34px; flex: 0 0 auto; }
+  .park-dest { display: flex; flex: 0 0 auto; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .park-dest button { min-height: 32px; padding: 2px 10px; font-size: .8rem; border: none; border-left: 1px solid var(--line); border-radius: 0; background: #fff; color: var(--muted); }
+  .park-dest button:first-child { border-left: none; }
+  .park-dest button.on { background: var(--accent); color: #fff; font-weight: 700; }
+  .park-result { margin: 18px 0 0; }
+  .park-result .park-list li, .rv-park li { flex-wrap: wrap; padding: 6px 6px 6px 10px; }
+  .rv-park { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .rv-park li { display: flex; gap: 8px; align-items: center; border: 1px solid var(--line); border-radius: 10px; background: #fff; word-break: break-word; }
+  .rv-park li .t { flex: 1 1 auto; min-width: 0; }
+
+  /* ④ この議題で決めること（タイマーの中） */
+  .timer-goal { margin: 10px auto 0; max-width: 640px; text-align: left; background: #fff; border-left: 5px solid var(--accent); border-radius: 10px; padding: 8px 14px; }
+  .timer-goal .k { display: block; font-size: .8rem; color: var(--muted); font-weight: 600; }
+  .timer-goal .v { display: block; font-size: clamp(1.05rem, 2.6vw, 1.35rem); font-weight: 700; color: var(--accent-dark); word-break: break-word; }
+  .timer-goal.report { border-left-color: #8a7bb0; }
+  .timer-goal.report .v { color: #5b4f86; }
   .info-bar {
     max-width: 1100px; margin: 8px auto 0; padding: 10px 16px; border-radius: var(--radius);
     background: #e8f1ea; border: 1px solid #b9d5c1; color: var(--ok); font-weight: 600;
@@ -643,6 +705,32 @@
   </div>
 </div>
 
+<!-- ① 前回までの TODO を確認（開始前） -->
+<div id="todoRvDim" class="drawer-dim hidden"></div>
+<div id="todoRvModal" class="modal wide hidden" role="dialog" aria-modal="true" aria-labelledby="todoRvTitle">
+  <h3 id="todoRvTitle">📋 前回までの TODO を確認</h3>
+  <p class="modal-lead">会議を始める前に、やると決めたことの進み具合を確認しましょう。</p>
+  <div id="todoRvChips" class="rv-chips"></div>
+  <ul id="todoRvList" class="rv-todos"></ul>
+  <p class="rv-note">チェックを付けると完了、期限もここで変えられます（すぐ保存され、TODO一覧・会議履歴にも反映）。</p>
+  <div class="modal-foot split">
+    <button type="button" id="btnTodoRvCancel" class="secondary">キャンセル</button>
+    <button type="button" id="btnTodoRvGo">確認して ▶ 開始</button>
+  </div>
+</div>
+
+<!-- ③ 会議の振り返り（終了前） -->
+<div id="reviewDim" class="drawer-dim hidden"></div>
+<div id="reviewModal" class="modal wide hidden" role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
+  <h3 id="reviewTitle">🔁 会議の振り返り</h3>
+  <p class="modal-lead">読み上げて全員で確認しましょう。直したいところは「記録に戻る」で直せます。「会議を終了」で議事録になります。</p>
+  <div id="reviewBody"></div>
+  <div class="modal-foot split">
+    <button type="button" id="btnReviewBack" class="secondary">記録に戻る</button>
+    <button type="button" id="btnReviewEnd">⏹ 会議を終了</button>
+  </div>
+</div>
+
 <!-- 使い方ガイド -->
 <div id="helpDim" class="drawer-dim hidden"></div>
 <div id="helpModal" class="modal help-modal hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
@@ -685,7 +773,11 @@
       <summary>② 会議の進行（タイマー）</summary>
       <ul>
         <li><b>▶ 開始</b>：1つ目の議題からタイマーが動きます。残り1分で黄色、時間を過ぎると赤になり、音でお知らせします。</li>
+        <li>未完了の TODO があるときは、開始の前に<b>「📋 前回までの TODO を確認」</b>が出ます。チェックで完了、期限の変更もその場でできます。</li>
+        <li>タイマーの中に<b>「🎯 この議題で決めること」</b>を大きく表示します。決まったら次の議題へ進む目安にしてください。</li>
         <li><b>⏸ 一時停止</b>／<b>▶ 再開</b>、<b>⏭ 次の議題へ</b>（最後の議題では「⏹ 会議を終了」）。</li>
+        <li><b>🅿 あとで話す</b>：脱線した話題をメモに逃がして本題に戻ります（タイマーは止まりません）。メモは会議の最後に行き先を決めます。</li>
+        <li>「⏹ 会議を終了」を押すと、終わる前に<b>「🔁 会議の振り返り」</b>が出ます。決まった事・TODO を読み上げて確認し、担当や期限が抜けている TODO（⚠）はその場で決めましょう。「記録に戻る」で直せます。</li>
         <li>緑または赤の帯に、予定の終了時刻と今のペースでの終了見込みが出ます。</li>
         <li><b>⏱ 時間の調整</b>を開くと：今の議題 +1分／+5分、<b>⚖ 残りを自動調整</b>（遅れた分を残りの議題から削ります。報告の議題から先に短くします）。</li>
         <li>まだ始まっていない議題は、アジェンダで −／＋ で時間を変えたり、<b>次回へ</b> で今回は話さずに回したりできます。</li>
@@ -713,6 +805,7 @@
         <li>会議を終えると「会議結果・議事録」が表示され、<b>会議履歴に自動で保存</b>されます。</li>
         <li><b>📋 議事録をテキストでコピー</b>：メールやチャットに貼り付けられる形でコピーします。</li>
         <li><b>➡ 次の会議を準備</b>：議題を「持ち越し・保留だけ残す／同じ議題を使う／空にする」から選んで、次の会議の準備画面に切り替えます。参加者・司会・書記・TODO・履歴はそのまま引き継ぎます。</li>
+        <li><b>🅿 あとで話す</b>の行き先は、会議結果でも変えられます。「次回の議題」にしたものは次の会議の議題に追加され、「TODO」にしたものはメモした議題の TODO になります。</li>
         <li><b>📝 TODO一覧</b>：これまでの会議の TODO を期限の近い順に表示します。担当で絞り込み、チェックで完了にできます。「未完了のTODOをコピー」で次の会議の冒頭の確認にも使えます。</li>
         <li><b>🗂 会議履歴</b>：過去の議事録を開いたり、言葉で検索したりできます。持ち越し・保留の議題を貼り付け欄に戻すこともできます。</li>
       </ul>
@@ -841,6 +934,7 @@
       <div class="presenter" id="timerPresenter"></div>
       <div class="time" id="timerTime">--:--</div>
       <div class="sub" id="timerSub">&nbsp;</div>
+      <div id="timerGoal" class="timer-goal hidden"><span class="k" id="timerGoalK"></span><span class="v" id="timerGoalV"></span></div>
       <div id="pausedBadge" class="paused-badge hidden">一時停止中</div>
     </div>
 
@@ -850,6 +944,17 @@
       <button id="btnNext" class="secondary" disabled>⏭ 次の議題へ</button>
       <button id="btnReset" class="danger" disabled>リセット</button>
       <button id="btnMini" class="secondary" title="資料の上に小さく表示するタイマー">🗗 ミニタイマー</button>
+      <button id="btnPark" class="secondary park-btn hidden" title="脱線した話題をメモして本題に戻る（タイマーは止まりません）">🅿 あとで話す</button>
+    </div>
+
+    <!-- あとで話す（脱線した話題のメモ・会議中のみ） -->
+    <div id="parkPanel" class="park hidden">
+      <div class="park-head"><span>🅿 あとで話す</span><small id="parkCount"></small></div>
+      <form id="parkForm" class="park-form" autocomplete="off">
+        <input id="parkText" type="text" maxlength="200" placeholder="脱線した話題をメモ（Enter で追加）" aria-label="あとで話す話題">
+        <button type="submit" class="small">追加</button>
+      </form>
+      <ul id="parkList" class="park-list"></ul>
     </div>
 
     <!-- 時間調整（進行中のみ表示） -->
@@ -976,6 +1081,7 @@
     <button type="button" id="btnNextMeeting" class="next-btn">➡ 次の会議を準備</button>
     <h3 class="notes-title">決まった事の記録（あとから修正できます）</h3>
     <div id="resultNotes"></div>
+    <div id="parkResult" class="park park-result hidden"></div>
     <div class="result-actions">
       <button id="btnCopy">📋 議事録をテキストでコピー</button>
       <button id="btnCopyCarry" class="secondary">↪ 持ち越し・保留を次回用にコピー</button>
@@ -1069,6 +1175,7 @@
     return (todos || []).filter(t => t.text.trim()).map(t =>
       (t.done ? '［済］' : '') + (t.whos.length ? t.whos.join('・') + ' ' : '') + t.text + (t.due ? `（${fmtDue(t.due)}まで）` : '')).join('\n');
   }
+  const PARK_DESTS = ['next', 'todo', 'none'];
   function normRun(r, items, names) {
     const n = items.length;
     if (!r || !Array.isArray(r.elapsed) || r.elapsed.length !== n || r.idx > n) return null;
@@ -1082,6 +1189,10 @@
     r.people = normPeople(r.people);
     r.roles = normRoles(r.roles);
     normNotes(r.notes, names, r.meetingStart);
+    // あとで話す：[{id, text, itemId（メモした時の議題）, dest: 'next'|'todo'|'none', todoId}]
+    r.parked = (Array.isArray(r.parked) ? r.parked : []).filter(x => x && typeof x.text === 'string' && x.text.trim())
+      .map(x => ({ id: String(x.id || Math.random().toString(36).slice(2)), text: x.text.slice(0, 200), itemId: String(x.itemId || ''),
+        dest: PARK_DESTS.includes(x.dest) ? x.dest : 'next', todoId: String(x.todoId || '') }));
     return r;
   }
   // 保存データを現在の形式にそろえる（古いデータ・共有ファイルの読み込み時）
@@ -1162,6 +1273,10 @@
     nextLead: $('nextLead'), nextOpts: $('nextOpts'), nextKeep: $('nextKeep'), nextCancel: $('btnNextCancel'), nextGo: $('btnNextGo'),
     infoBar: $('infoBar'), guide: $('btnGuide'), helpModal: $('helpModal'), helpDim: $('helpDim'), helpClose: $('btnHelpClose'),
     roleWarn: $('roleWarn'), roleWarnText: $('roleWarnText'), roleSet: $('btnRoleSet'), roleSkip: $('btnRoleSkip'),
+    timerGoal: $('timerGoal'), timerGoalK: $('timerGoalK'), timerGoalV: $('timerGoalV'),
+    park: $('btnPark'), parkPanel: $('parkPanel'), parkForm: $('parkForm'), parkText: $('parkText'), parkList: $('parkList'), parkCount: $('parkCount'), parkResult: $('parkResult'),
+    todoRvModal: $('todoRvModal'), todoRvDim: $('todoRvDim'), todoRvChips: $('todoRvChips'), todoRvList: $('todoRvList'), todoRvCancel: $('btnTodoRvCancel'), todoRvGo: $('btnTodoRvGo'),
+    reviewModal: $('reviewModal'), reviewDim: $('reviewDim'), reviewBody: $('reviewBody'), reviewBack: $('btnReviewBack'), reviewEnd: $('btnReviewEnd'),
   };
 
   // ---------- ユーティリティ ----------
@@ -1271,9 +1386,16 @@
       ? LOSE_MSG + action
       : 'この会議の議事録は会議履歴に保存されています（あとから見たり、コピーしたりできます）。\n\n' + action;
   }
-  function start() {
+  // 「▶ 開始」：未完了の TODO があれば、先に確認画面を出す
+  function requestStart() {
     if (!state.items.length) { el.title.focus(); return; }
     if (state.run && state.run.status === 'done' && !confirm(doneCloseMsg('同じ議題で新しく会議を始めますか？'))) return;
+    if (collectTodos().some(x => !x.t.done)) openTodoReview();
+    else start(true);
+  }
+  function start(confirmed) {
+    if (!state.items.length) { el.title.focus(); return; }
+    if (!confirmed && state.run && state.run.status === 'done' && !confirm(doneCloseMsg('同じ議題で新しく会議を始めますか？'))) return;
     ensureAudio();
     const now = Date.now();
     state.run = {
@@ -1287,6 +1409,7 @@
       added: state.items.map(() => false),           // 会議中に追加した議題
       people: clone(state.people),                   // この会議の参加者（名簿から写す）
       roles: clone(state.roles),
+      parked: [],                                    // あとで話す
     };
     beep();
     save(); render();
@@ -1306,13 +1429,15 @@
     }
     save(); render();
   }
-  function next() {
+  // 最後の議題で押したときは、終了の前に振り返り画面を出す（force=true で終了）
+  function next(force) {
     const r = state.run;
     if (!r || r.status === 'done') return;
+    const ni = nextActive(r.idx + 1);
+    if (ni === -1 && force !== true) { openReview(); return; }
     ensureAudio();
     const now = Date.now();
     if (r.status === 'running') r.elapsed[r.idx] += now - r.startedAt;
-    const ni = nextActive(r.idx + 1);
     r.idx = ni === -1 ? state.items.length : ni;
     if (r.idx >= state.items.length) {
       r.status = 'done';
@@ -1419,9 +1544,11 @@
       opt('empty', '議題を空にする', 'まったく別の会議を始めるとき', '', false);
     const roles = [state.roles.chair && `司会 ${state.roles.chair}`, state.roles.scribe && `書記 ${state.roles.scribe}`].filter(Boolean).join('・');
     const openTodos = collectTodos().filter(x => !x.t.done).length;
+    const pk = parkedNext();
     el.nextKeep.innerHTML = 'そのまま引き継ぐもの：<b>' + [
       `参加者（${state.people.length}名）`, roles, `TODO（未完了${openTodos}件）`, '会議履歴',
-    ].filter(Boolean).map(escapeHtml).join('・') + '</b>';
+    ].filter(Boolean).map(escapeHtml).join('・') + '</b>' +
+      (pk.length ? `<br>🅿「あとで話す」から次回の議題にした <b>${pk.length}件</b>（${pk.map(x => escapeHtml(x.text)).join('・')}）は、「持ち越し・保留」「同じ議題」のどちらでも議題に追加します。` : '');
     el.nextModal.classList.remove('hidden'); el.nextDim.classList.remove('hidden');
     const first = el.nextOpts.querySelector('input:checked');
     if (first) first.focus();
@@ -1449,6 +1576,12 @@
       items = state.items.map(fresh);
       msg = `次の会議の準備ができました（同じ議題 ${items.length}件）`;
     }
+    // 「あとで話す」で次回の議題にしたもの
+    const pk = mode === 'empty' ? [] : parkedNext();
+    if (pk.length) {
+      items = items.concat(pk.map(x => ({ id: newId(), title: x.text.slice(0, 100), minutes: DEFAULT_MINUTES, presenter: '', goal: '', kind: 'decide', carry: 'あとで' })));
+      msg += `・あとで話す ${pk.length}件`;
+    }
     state.items = items;
     state.run = null;
     notesPanelKey = '';
@@ -1465,6 +1598,192 @@
     clearTimeout(el.infoBar._t);
     el.infoBar._t = setTimeout(() => el.infoBar.classList.add('hidden'), 8000);
   }
+
+  // ---------- ① 前回までの TODO を確認（開始前） ----------
+  let todoRvIds = [], todoRvDoneNow = 0;
+  const todoRvOpen = () => !el.todoRvModal.classList.contains('hidden');
+  function openTodoReview() {
+    const open = sortTodos(collectTodos().filter(x => !x.t.done));
+    todoRvIds = open.map(x => x.t.id);
+    todoRvDoneNow = 0;
+    renderTodoReview();
+    el.todoRvModal.classList.remove('hidden'); el.todoRvDim.classList.remove('hidden');
+    el.todoRvGo.focus();
+  }
+  function renderTodoReview() {
+    const map = new Map(collectTodos().map(x => [x.t.id, x]));
+    const list = todoRvIds.map(id => map.get(id)).filter(Boolean);
+    const open = list.filter(x => !x.t.done);
+    const over = open.filter(x => dueClass(x.t) === 'overdue').length;
+    todoRvDoneNow = list.length - open.length;
+    el.todoRvChips.innerHTML = (over ? `<span class="r">期限切れ ${over}件</span>` : '') + `<span>未完了 ${open.length}件</span>` +
+      (todoRvDoneNow ? `<span class="g">今回 完了 ${todoRvDoneNow}件</span>` : '');
+    el.todoRvList.innerHTML = list.map(({ t, item, run }) => {
+      const dc = dueClass(t);
+      const days = dc === 'overdue' ? Math.round((new Date(todayStr()) - new Date(t.due)) / 86400000) : 0;
+      const due = t.due ? (dc === 'overdue' ? `<span class="over">期限 ${fmtDue(t.due)}（${days}日過ぎ）</span>` : `期限 ${fmtDue(t.due)}${dc === 'today' ? '（今日まで）' : ''}`) : '期限なし';
+      return `<li class="${t.done ? 'done' : dc}" data-tid="${t.id}">
+        <input type="checkbox" data-rv-done ${t.done ? 'checked' : ''} aria-label="完了">
+        <span class="body"><span class="t">${escapeHtml(t.text)}</span>
+          <span class="meta">${t.whos.length ? `<b>${escapeHtml(whoShort(t.whos))}</b>・` : '担当なし・'}${due}・${dateLabel(run.meetingStart)}の会議「${escapeHtml(item.title)}」</span></span>
+        <label class="due">期限<input type="date" data-rv-due value="${escapeHtml(t.due)}"></label>
+      </li>`;
+    }).join('');
+  }
+  function onTodoReviewChange(e) {
+    const li = e.target.closest('li[data-tid]');
+    if (!li) return;
+    const x = collectTodos().find(x => x.t.id === li.dataset.tid);
+    if (!x) return;
+    if (e.target.matches('[data-rv-done]')) x.t.done = e.target.checked;
+    else if (e.target.matches('[data-rv-due]')) x.t.due = e.target.value;
+    else return;
+    notesPanelKey = '';
+    save();
+    const f = e.target.matches('[data-rv-due]') ? li.dataset.tid : '';
+    renderTodoReview();
+    renderTodoBoard();
+    if (f) { const d = el.todoRvList.querySelector(`li[data-tid="${f}"] [data-rv-due]`); if (d) d.focus(); }
+  }
+  function closeTodoReview(go) {
+    if (!todoRvOpen()) return;
+    el.todoRvModal.classList.add('hidden'); el.todoRvDim.classList.add('hidden');
+    if (go) start(true);
+    else { render(); el.start.focus(); }
+  }
+
+  // ---------- ② あとで話す ----------
+  const PARK_LABEL = { next: '次回の議題', todo: 'TODO', none: 'なし' };
+  let parkOpen = false;
+  const parkedNext = () => (state.run && state.run.parked || []).filter(x => x.dest === 'next');
+  function openPark() {
+    if (!runActive()) return;
+    parkOpen = true;
+    renderPark();
+    el.parkText.focus();
+  }
+  function addPark(text) {
+    const r = state.run;
+    if (!runActive() || !text.trim()) return;
+    text.split(/[\r\n]+/).map(x => x.trim()).filter(Boolean).forEach(t => {
+      r.parked.push({ id: newId(), text: t.slice(0, 200), itemId: (state.items[r.idx] || {}).id || '', dest: 'next', todoId: '' });
+    });
+    save(); renderPark();
+  }
+  // TODO にした「あとで話す」は、メモした時の議題の TODO として記録する
+  function parkTodoHome(x) {
+    const r = state.run;
+    let i = state.items.findIndex(it => it.id === x.itemId);
+    if (i < 0) i = Math.min(r.idx, state.items.length - 1);
+    return i;
+  }
+  function dropParkTodo(x) {
+    if (!x.todoId) return;
+    state.run.notes.forEach(n => { n.todos = n.todos.filter(t => t.id !== x.todoId); });
+    x.todoId = '';
+  }
+  function setParkDest(id, dest) {
+    const r = state.run;
+    const x = r && r.parked.find(p => p.id === id);
+    if (!x || !PARK_DESTS.includes(dest) || x.dest === dest) return;
+    if (x.dest === 'todo') dropParkTodo(x);
+    x.dest = dest;
+    if (dest === 'todo') {
+      const i = parkTodoHome(x);
+      if (i >= 0) {
+        const t = { id: newId(), text: x.text, whos: [], due: '', done: false };
+        r.notes[i].todos.push(t);
+        x.todoId = t.id;
+      }
+    }
+    notesPanelKey = '';
+    save(); render();
+    if (r.status === 'done') renderResultNotes();
+    if (reviewOpen()) renderReview();
+  }
+  function delPark(id) {
+    const r = state.run;
+    const k = r ? r.parked.findIndex(p => p.id === id) : -1;
+    if (k < 0) return;
+    dropParkTodo(r.parked[k]);
+    r.parked.splice(k, 1);
+    notesPanelKey = '';
+    save(); render();
+    if (r.status === 'done') renderResultNotes();
+  }
+  const destHTML = x => `<span class="park-dest" role="group" aria-label="「${escapeHtml(x.text)}」の行き先">${PARK_DESTS.map(d =>
+    `<button type="button" data-park-dest="${d}" class="${x.dest === d ? 'on' : ''}" aria-pressed="${x.dest === d}">${PARK_LABEL[d]}</button>`).join('')}</span>`;
+  let parkKey = '';
+  function renderPark() {
+    const r = state.run, active = runActive();
+    const list = (r && r.parked) || [];
+    el.park.classList.toggle('hidden', !active);
+    if (!active) parkOpen = false;
+    el.parkPanel.classList.toggle('hidden', !active || (!parkOpen && !list.length));
+    el.parkCount.textContent = list.length ? `${list.length}件` : '';
+    const key = JSON.stringify([active, list]);
+    if (key !== parkKey) {
+      parkKey = key;
+      el.parkList.innerHTML = list.map(x => `<li data-pid="${x.id}"><span class="t">${escapeHtml(x.text)}</span>
+        <button type="button" class="danger icon" data-park-del aria-label="このメモを削除" title="削除">✕</button></li>`).join('');
+    }
+    // 会議後：行き先を選ぶ
+    const done = !!r && r.status === 'done' && list.length > 0;
+    el.parkResult.classList.toggle('hidden', !done);
+    if (done) {
+      el.parkResult.innerHTML = `<div class="park-head"><span>🅿 あとで話す（${list.length}件）の行き先</span><small>次回の議題＝「次の会議を準備」で議題に追加</small></div>
+        <ul class="park-list">${list.map(x => `<li data-pid="${x.id}"><span class="t">${escapeHtml(x.text)}</span>${destHTML(x)}
+          <button type="button" class="danger icon" data-park-del aria-label="このメモを削除" title="削除">✕</button></li>`).join('')}</ul>`;
+    } else el.parkResult.innerHTML = '';
+  }
+  function onParkClick(e) {
+    const li = e.target.closest('li[data-pid]');
+    if (!li) return;
+    const d = e.target.closest('button[data-park-dest]');
+    if (d) { setParkDest(li.dataset.pid, d.dataset.parkDest); return; }
+    if (e.target.closest('button[data-park-del]')) delPark(li.dataset.pid);
+  }
+
+  // ---------- ③ 会議の振り返り（終了前） ----------
+  const reviewOpen = () => !el.reviewModal.classList.contains('hidden');
+  function openReview() {
+    if (!runActive()) return;
+    renderReview();
+    el.reviewModal.classList.remove('hidden'); el.reviewDim.classList.remove('hidden');
+    el.reviewModal.scrollTop = 0;
+    el.reviewEnd.focus();
+  }
+  function renderReview() {
+    const r = state.run;
+    const items = state.items.map((item, i) => {
+      const n = r.notes[i];
+      if (r.skipped[i]) return `<div class="rv-box skipped"><div class="h">${i + 1}. ${escapeHtml(item.title)}<span class="badge 持ち越し">次回へ</span></div><div class="d">今回は話さずに次回へ</div></div>`;
+      const dec = n.decision.trim();
+      const st = n.status ? `<span class="badge ${n.status}">${n.status}</span>` : '<span class="warnchip">⚠ 結論が未選択</span>';
+      return `<div class="rv-box"><div class="h">${i + 1}. ${isReport(item) ? '📢 ' : ''}${escapeHtml(item.title)}${st}</div>
+        <div class="d ${dec ? '' : 'none'}">${dec ? escapeHtml(dec) : '（記録なし）'}</div></div>`;
+    }).join('');
+    const todos = [];
+    r.notes.forEach((n, i) => n.todos.forEach(t => { if (t.text.trim()) todos.push({ t, i }); }));
+    const todoHTML = todos.length ? todos.map(({ t }) => `<div class="rv-box">${t.done ? '✓ ' : ''}${escapeHtml(t.text)}　` +
+      (t.whos.length ? `<b>${escapeHtml(whoShort(t.whos))}</b>` : '<span class="warnchip">⚠ 担当なし</span>') +
+      (t.due ? `・${fmtDue(t.due)}` : '<span class="warnchip">⚠ 期限なし</span>') + '</div>').join('')
+      : '<p class="rv-empty">TODO はありません</p>';
+    const decided = r.notes.filter((n, i) => !r.skipped[i] && n.status === '決定' && !n.todos.some(t => t.text.trim())).length;
+    const pk = r.parked;
+    el.reviewBody.innerHTML = `
+      <div class="rv-sec"><span>決まった事</span><small>${state.items.length}議題</small></div>${items}
+      <div class="rv-sec"><span>TODO（${todos.length}件）</span>${decided ? `<small>「決定」で TODO がない議題 ${decided}件</small>` : ''}</div>${todoHTML}
+      ${pk.length ? `<div class="rv-sec"><span>🅿 あとで話す（${pk.length}件）の行き先</span></div>
+        <ul class="rv-park">${pk.map(x => `<li data-pid="${x.id}"><span class="t">${escapeHtml(x.text)}</span>${destHTML(x)}</li>`).join('')}</ul>` : ''}`;
+  }
+  function closeReview(end) {
+    if (!reviewOpen()) return;
+    el.reviewModal.classList.add('hidden'); el.reviewDim.classList.add('hidden');
+    if (end) { next(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    else { notesPanelKey = ''; render(); const f = el.notesPanel.querySelector('textarea'); (f || el.next).focus(); }
+  }
+  const anyModalOpen = () => todoRvOpen() || reviewOpen();
 
   function reset() {
     if (!state.run) return;
@@ -1685,6 +2004,7 @@
     renderHistory();
     renderFolds();
     renderRoleWarn();
+    renderPark();
     updateMini();
   }
 
@@ -2197,7 +2517,7 @@
 
   // 前回の会議から残した議題の目印
   function carryBadge(item) {
-    return item.carry ? `<span class="badge carry">${item.carry === '保留' ? '前回は保留' : '前回から持ち越し'}</span>` : '';
+    return item.carry ? `<span class="badge carry">${item.carry === '保留' ? '前回は保留' : item.carry === 'あとで' ? '前回の「あとで話す」' : '前回から持ち越し'}</span>` : '';
   }
   function statusBadge(i) {
     const n = state.run && state.run.notes && state.run.notes[i];
@@ -2532,6 +2852,7 @@
 
     el.timer.classList.remove('warn', 'over');
     el.timerPresenter.textContent = '';
+    setTimerGoal(!r ? state.items[0] : r.status === 'done' ? null : state.items[r.idx]);
 
     if (!r) {
       el.label.textContent = '待機中';
@@ -2554,6 +2875,18 @@
     tick();
   }
 
+  // ④ この議題で決めること（決まったら次へ進む目安）／報告の議題は報告内容
+  function setTimerGoal(item) {
+    const show = !!item && !!item.goal;
+    el.timerGoal.classList.toggle('hidden', !show);
+    if (!show) return;
+    const rep = isReport(item);
+    el.timerGoal.classList.toggle('report', rep);
+    const k = rep ? '📢 報告内容' : '🎯 この議題で決めること（決まったら次へ）';
+    if (el.timerGoalK.textContent !== k) el.timerGoalK.textContent = k;
+    if (el.timerGoalV.textContent !== item.goal) el.timerGoalV.textContent = item.goal;
+  }
+
   // 毎フレーム更新する部分
   function tick() {
     const r = state.run;
@@ -2564,6 +2897,7 @@
 
     el.label.textContent = `議題 ${r.idx + 1} / ${state.items.length}`;
     el.topic.textContent = item.title;
+    setTimerGoal(item);
     el.timerPresenter.textContent = presenterLine(item);
     if (remain >= 0) {
       // 切り上げで表示（残り0.4秒→00:01）
@@ -2663,7 +2997,7 @@
       const p = effMs(i), a = r.elapsed[i] || 0;
       const n = r.notes[i];
       tp += p; ta += a;
-      const head = `${i + 1}. ${item.carry ? (item.carry === '保留' ? '［前回保留］' : '［前回持ち越し］') : ''}${isAdded(i) ? '［追加］' : ''}${isReport(item) ? '［報告］' : ''}${item.title}` + (item.presenter ? `（担当：${item.presenter}）` : '');
+      const head = `${i + 1}. ${item.carry ? (item.carry === '保留' ? '［前回保留］' : item.carry === 'あとで' ? '［前回のあとで話す］' : '［前回持ち越し］') : ''}${isAdded(i) ? '［追加］' : ''}${isReport(item) ? '［報告］' : ''}${item.title}` + (item.presenter ? `（担当：${item.presenter}）` : '');
       if (r.skipped[i]) {
         lines.push(`${head}　［次回へ］当初${fmt(orig)}・今回は実施せず`);
       } else {
@@ -2691,6 +3025,11 @@
     lines.push(`合計：当初予定 ${fmt(ot)}` + (ot !== tp ? ` ／ 調整後 ${fmt(tp)}` : '') + ` ／ 実際 ${fmt(ta)}（当初比 ${fmtSigned(ta - ot)}）`);
     const sumBy = rep => state.items.reduce((a, x, i) => isReport(x) === rep ? a + (r.elapsed[i] || 0) : a, 0);
     if (state.items.some(isReport)) lines.push(`　内訳（実際）：決定 ${fmt(sumBy(false))} ／ 報告 ${fmt(sumBy(true))}`);
+    if (r.parked && r.parked.length) {
+      lines.push('');
+      lines.push('【あとで話す】');
+      r.parked.forEach(x => lines.push(`・${x.text}（→ ${PARK_LABEL[x.dest]}）`));
+    }
     const carry = carryOverLines();
     if (carry.length) {
       lines.push('');
@@ -2721,13 +3060,14 @@
     return state.items
       .map((item, i) => ({ item, n: r.notes[i] }))
       .filter(x => x.n.status === '保留' || x.n.status === '持ち越し')
-      .map(x => '・' + itemLine(x.item));
+      .map(x => '・' + itemLine(x.item))
+      .concat((r.parked || []).filter(x => x.dest === 'next').map(x => `・${x.text} / ${DEFAULT_MINUTES}分`));
   }
 
   async function copyCarry() {
     if (!state.run || state.run.status !== 'done') return;
     const lines = carryOverLines();
-    if (!lines.length) { flash(el.copied, '「保留」「持ち越し」の議題はありません'); return; }
+    if (!lines.length) { flash(el.copied, '「保留」「持ち越し」の議題・次回に回す「あとで話す」はありません'); return; }
     const ok = await copyText(lines.join('\n'));
     flash(el.copied, ok ? `${lines.length}件をコピーしました（次回の貼り付け欄へ）` : 'コピーできませんでした');
   }
@@ -3399,7 +3739,7 @@
     d.body.innerHTML = `<div id="mLabel"></div><div id="mTopic"></div><div id="mTime"></div><div id="mDelay"></div>
       <div class="b"><button id="mPause" class="s"></button><button id="mNext"></button></div>`;
     d.getElementById('mPause').addEventListener('click', () => { if (state.run) togglePause(); else start(); });
-    d.getElementById('mNext').addEventListener('click', next);
+    d.getElementById('mNext').addEventListener('click', () => { next(); if (reviewOpen()) window.focus(); });
     mini = w;
     w.addEventListener('pagehide', () => { if (mini === w) mini = null; });
     updateMini();
@@ -3471,7 +3811,26 @@
     else if (e.key === 'Enter' && !e.isComposing && e.target.matches('input')) { e.preventDefault(); saveEdit(); }
   });
 
-  el.start.addEventListener('click', start);
+  el.start.addEventListener('click', requestStart);
+  el.park.addEventListener('click', openPark);
+  el.parkForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const v = el.parkText.value;
+    if (!v.trim()) { el.parkText.focus(); return; }
+    addPark(v);
+    el.parkText.value = '';
+    el.parkText.focus();
+  });
+  el.parkList.addEventListener('click', onParkClick);
+  el.parkResult.addEventListener('click', onParkClick);
+  el.reviewBody.addEventListener('click', onParkClick);
+  el.todoRvList.addEventListener('change', onTodoReviewChange);
+  el.todoRvGo.addEventListener('click', () => closeTodoReview(true));
+  el.todoRvCancel.addEventListener('click', () => closeTodoReview(false));
+  el.todoRvDim.addEventListener('click', () => closeTodoReview(false));
+  el.reviewEnd.addEventListener('click', () => closeReview(true));
+  el.reviewBack.addEventListener('click', () => closeReview(false));
+  el.reviewDim.addEventListener('click', () => closeReview(false));
   el.pause.addEventListener('click', togglePause);
   el.next.addEventListener('click', next);
   el.reset.addEventListener('click', reset);
@@ -3573,7 +3932,9 @@
   // Esc：開いているダイアログ・メニューを閉じる（フォーカスがどこにあっても）
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    if (guideOpen()) { e.preventDefault(); closeGuide(); }
+    if (todoRvOpen()) { e.preventDefault(); closeTodoReview(false); }
+    else if (reviewOpen()) { e.preventDefault(); closeReview(false); }
+    else if (guideOpen()) { e.preventDefault(); closeGuide(); }
     else if (!el.nextModal.classList.contains('hidden')) { e.preventDefault(); closeNextMeeting(); }
     else if (menuOpen()) { e.preventDefault(); closeMenu(); }
   });
@@ -3675,7 +4036,7 @@
 
   // キーボード操作：Space=一時停止/再開、→ / N = 次へ（入力中は無効）
   document.addEventListener('keydown', e => {
-    if (e.target.matches('input, textarea, select') || menuOpen() || guideOpen() || !el.nextModal.classList.contains('hidden')) return;
+    if (e.target.matches('input, textarea, select') || menuOpen() || guideOpen() || anyModalOpen() || !el.nextModal.classList.contains('hidden')) return;
     if (!state.run || state.run.status === 'done') return;
     if (e.code === 'Space') { e.preventDefault(); togglePause(); }
     else if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'n') { e.preventDefault(); next(); }
