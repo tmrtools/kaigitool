@@ -273,9 +273,14 @@
   .add-form #title { flex: 1 1 100%; min-width: 0; font-size: 1.05rem; }
   .add-form .min-wrap { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
   .add-form #minutes { width: 80px; }
-  .add-form #presenter { flex: 1 1 140px; min-width: 0; }
-  .add-form #goal { flex: 1 1 200px; min-width: 0; }
-  .add-form button { flex: 0 0 auto; }
+  .add-form #presenter { flex: 1 1 100px; min-width: 0; }
+  .add-form #goal { flex: 1 1 100%; min-width: 0; }
+  /* 種類は「追加」ボタンと同じ行に（決めること／報告内容の要約の欄を1行まるごと使う） */
+  .add-form #goal { order: 1; }
+  .add-form #kind { order: 2; }
+  .add-form #addPos { order: 3; }
+  .add-form button[type=submit] { order: 4; }
+  .add-form button { flex: 0 0 auto; margin-left: auto; min-width: 120px; }
 
   /* Bulk import */
   .bulk { margin-bottom: 14px; border: 1px dashed var(--line); border-radius: 10px; }
