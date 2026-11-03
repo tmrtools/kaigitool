@@ -2620,11 +2620,45 @@
       return (await h.requestPermission({ mode: 'readwrite' })) === 'granted';
     } catch (e) { return false; }
   }
-  async function readShared(h = share.handle) {
+  // JSON を読む。古い内容が切り詰められずに後ろに残ったファイル（スマホ経由の保存などで起きる）は、
+  // 先頭の正しい部分だけを読む。repaired=true のときは、次の保存でファイルを直す
+  function parseJsonLoose(text) {
+    text = String(text).replace(/^\uFEFF/, '');
+    try { return { data: JSON.parse(text), repaired: false }; } catch (err) {
+      const start = text.search(/\S/), open = text[start];
+      if (open === '{' || open === '[') {
+        let depth = 0, inStr = false, esc = false;
+        for (let k = start; k < text.length; k++) {
+          const c = text[k];
+          if (inStr) { if (esc) esc = false; else if (c === '\\') esc = true; else if (c === '"') inStr = false; continue; }
+          if (c === '"') inStr = true;
+          else if (c === '{' || c === '[') depth++;
+          else if (c === '}' || c === ']') {
+            if (--depth === 0) {
+              try { return { data: JSON.parse(text.slice(start, k + 1)), repaired: true }; } catch (e2) { break; }
+            }
+          }
+        }
+      }
+      throw new Error('ファイルの中身が壊れています（' + err.message + '）');
+    }
+  }
+  // ファイルに書き込む。書いた長さで必ず切り詰めて、前の長い内容が後ろに残らないようにする
+  async function writeFileText(h, text) {
+    const w = await h.createWritable({ keepExistingData: false });
+    await w.write(text);
+    try { await w.truncate(new Blob([text]).size); } catch (e) { /* 切り詰めに対応しない環境 */ }
+    await w.close();
+  }
+  async function readSharedRaw(h = share.handle) {
     const f = await h.getFile();
     const text = await f.text();
     if (!text.trim()) return null;
-    return JSON.parse(text);
+    return parseJsonLoose(text);
+  }
+  async function readShared(h = share.handle) {
+    const r = await readSharedRaw(h);
+    return r && r.data;
   }
   function serialize(rev) {
     return JSON.stringify({ app: APP_ID, version: 3, rev, savedAt: Date.now(), items: state.items, run: state.run, history: state.history, people: state.people, roles: state.roles }, null, 1);
@@ -2649,9 +2683,7 @@
         if (remote && remote.rev && remote.rev !== share.rev) { share.conflict = true; return; }
       }
       const rev = newId();
-      const w = await share.handle.createWritable();
-      await w.write(serialize(rev));
-      await w.close();
+      await writeFileText(share.handle, serialize(rev));
       share.rev = rev;
       share.savedSeq = seqAtStart;
       share.lastSaved = Date.now();
@@ -2693,10 +2725,14 @@
   }
   // 選んだファイルに接続する。中身があれば読み込み、空なら今の内容を書き込む
   async function connect(h, { isNew = false, fromReconnect = false } = {}) {
+    let repaired = false;
     if (!(await ensurePermission(h, true))) { alert('ファイルへのアクセスが許可されませんでした。'); return; }
     let d = null;
     if (!isNew) {
-      try { d = await readShared(h); } catch (e) { alert('ファイルを読み込めませんでした：' + (e.message || e.name)); return; }
+      let raw = null;
+      try { raw = await readSharedRaw(h); } catch (e) { alert('ファイルを読み込めませんでした：' + (e.message || e.name)); return; }
+      d = raw && raw.data;
+      repaired = !!(raw && raw.repaired);
       if (d && d.app !== APP_ID) { alert('このファイルは会議データではありません。'); return; }
     }
     share.handle = h; share.storedName = h.name; share.error = ''; share.conflict = false;
@@ -2715,12 +2751,18 @@
       share.rev = null;
       await writeShared(true);                 // 新しいファイル（空）に今の内容を書き込む
     }
+    // 末尾が壊れていたファイルは、読み込めた内容で保存し直して直す
+    if (repaired && share.handle && !share.conflict) {
+      await writeShared(false);
+      showInfo('🛠 共有ファイルの末尾に壊れたデータがあったため、読み込める部分だけを読み込み、ファイルを修復しました');
+    }
     renderShare();
   }
   const hasLocalData = () => state.items.length > 0 || state.history.length > 0;
   async function shareOpen() {
     try {
-      const [h] = await window.showOpenFilePicker({ types: FILE_TYPES, multiple: false });
+      // ファイルの種類で絞り込まない（環境によってファイルがグレーになり選べないため）。中身は読み込み時に確かめる
+      const [h] = await window.showOpenFilePicker({ multiple: false });
       await connect(h);
     } catch (e) { if (e.name !== 'AbortError') alert('開けませんでした：' + (e.message || e.name)); }
   }
@@ -2812,7 +2854,7 @@
   function parseTeam(text, fileName) {
     let rows = [];
     if (/\.json$/i.test(fileName) || /^\s*[\[{]/.test(text)) {
-      let d = JSON.parse(text);
+      let d = parseJsonLoose(text).data;
       if (d && !Array.isArray(d)) d = d.members || d.team || [];
       rows = (Array.isArray(d) ? d : []).map(x => ({ name: typeof x === 'string' ? x : String(x.name || x['名前'] || x['氏名'] || '') }));
     } else {
@@ -2899,9 +2941,7 @@
     if (team.saving) { team.again = true; return; }
     team.saving = true; renderTeam();
     try {
-      const w = await team.handle.createWritable();
-      await w.write(teamFileText(team.handle.name));
-      await w.close();
+      await writeFileText(team.handle, teamFileText(team.handle.name));
       team.modified = (await team.handle.getFile()).lastModified;
       team.dirty = false; team.savedAt = Date.now(); team.error = '';
     } catch (e) {
@@ -3070,7 +3110,7 @@
       // Edge / Chrome：保存先を選べるダイアログ
       try {
         const h = await window.showSaveFilePicker({ suggestedName: `会議データ_バックアップ_${ymd}.json`, types: FILE_TYPES });
-        const w = await h.createWritable(); await w.write(text); await w.close();
+        await writeFileText(h, text);
         flash(el.agendaMsg, '書き出しました');
       } catch (e) { if (e.name !== 'AbortError') alert('書き出せませんでした：' + (e.message || e.name)); }
       return;
@@ -3084,8 +3124,9 @@
   }
   async function importData(file) {
     try {
-      const d = JSON.parse(await file.text());
+      const { data: d, repaired } = parseJsonLoose(await file.text());
       if (!d || d.app !== APP_ID) { alert('このファイルは会議データではありません。'); return; }
+      if (repaired && !confirm('このファイルは末尾が壊れていたため、読み込める部分だけを読み込みます。よろしいですか？')) return;
       if (!confirm('読み込んだ内容で、今のアジェンダ・会議・履歴を置き換えます。よろしいですか？')) return;
       state = normalize(d);
       notesPanelKey = ''; historyKey = ''; todoKey = '';
