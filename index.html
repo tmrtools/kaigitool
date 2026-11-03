@@ -686,6 +686,18 @@
   .park-add .sp { flex: 1 1 auto; }
   .park-add button { min-height: 36px; padding: 4px 12px; font-size: .88rem; }
   .badge.park { background: #c9a73c; }
+  /* あとで話す → TODO：担当と期間 */
+  .pt-box { flex-basis: 100%; display: flex; flex-direction: column; gap: 6px; padding: 8px 4px 4px; border-top: 1px dashed var(--line); font-size: .85rem; }
+  .pt-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .pt-k { font-weight: 700; color: var(--muted); min-width: 2.6em; }
+  .pt-box .pchip { border: 1px solid var(--line); background: #fff; color: var(--text); border-radius: 999px; padding: 3px 11px; font-size: .88rem; min-height: 32px; }
+  .pt-box .pchip.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .pt-box .pchip.on::before { content: "✓ "; }
+  .pt-box input[type=text], .pt-box input[type=date] { font: inherit; font-size: .9rem; min-height: 34px; padding: 3px 8px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  .pt-box input[type=text] { flex: 1 1 140px; min-width: 0; }
+  .pt-box input[type=date] { width: 140px; }
+  .pt-box label { display: inline-flex; gap: 4px; align-items: center; color: var(--muted); }
+  .pt-box .toolsel { min-height: 34px; font-size: .82rem; }
 
   .hidden { display: none !important; }
 
@@ -841,7 +853,7 @@
         <li>会議を終えると「会議結果・議事録」が表示され、<b>会議履歴に自動で保存</b>されます。</li>
         <li><b>📋 議事録をテキストでコピー</b>：メールやチャットに貼り付けられる形でコピーします。</li>
         <li><b>➡ 次の会議を準備</b>：議題を「持ち越し・保留だけ残す／同じ議題を使う／空にする」から選んで、次の会議の準備画面に切り替えます。参加者・司会・書記・TODO・履歴はそのまま引き継ぎます。</li>
-        <li><b>🅿 あとで話す</b>の行き先は、会議結果でも変えられます。「次回の議題」にしたものは次の会議の議題に追加され、「TODO」にしたものはメモした議題の TODO になります。</li>
+        <li><b>🅿 あとで話す</b>の行き先は、会議結果でも変えられます。「TODO」を選ぶと、その場で担当（出席者から選ぶ・手入力）と期間（開始〜期限）、ツール登録を決められます。「次回の議題」にしたものは次の会議の議題に追加され、「TODO」にしたものはメモした議題の TODO になります。</li>
         <li><b>📝 TODO一覧</b>：これまでの会議の TODO を期限の近い順に表示します。担当・時期（着手中／開始前）・ツールで絞り込み、チェックで完了にできます。「🗂 ツール未登録 ○件」を押すと未登録だけになり、「📋 表示中のTODOをコピー」でタスク管理ツールへの入力に使えます。入力したら「✓ 登録済みにする」を押します。</li>
         <li><b>🗂 会議履歴</b>：過去の議事録を開いたり、言葉で検索したりできます。持ち越し・保留の議題を貼り付け欄に戻すこともできます。</li>
       </ul>
@@ -1769,8 +1781,14 @@
     }
     notesPanelKey = '';
     save(); render();
-    if (r.status === 'done') renderResultNotes();
+    if (r.status === 'done') { renderResultNotes(); renderPark(true); }
     if (reviewOpen()) renderReview();
+    // TODO にしたら、続けて担当を選べるように
+    if (dest === 'todo') {
+      const root = reviewOpen() ? el.reviewBody : el.parkResult;
+      const f = root.querySelector(`li[data-pid="${id}"] [data-pt] .pchip, li[data-pid="${id}"] [data-pt-free]`);
+      if (f) f.focus();
+    }
   }
   function delPark(id) {
     const r = state.run;
@@ -1785,7 +1803,7 @@
   const destHTML = x => `<span class="park-dest" role="group" aria-label="「${escapeHtml(x.text)}」の行き先">${PARK_DESTS.map(d =>
     `<button type="button" data-park-dest="${d}" class="${x.dest === d ? 'on' : ''}" aria-pressed="${x.dest === d}">${PARK_LABEL[d]}</button>`).join('')}</span>`;
   let parkKey = '';
-  function renderPark() {
+  function renderPark(force) {
     const r = state.run, active = runActive();
     const list = (r && r.parked) || [];
     el.park.classList.toggle('hidden', !active);
@@ -1809,16 +1827,23 @@
     // 会議後：行き先を選ぶ
     const done = !!r && r.status === 'done' && list.length > 0;
     el.parkResult.classList.toggle('hidden', !done);
+    if (done && !force && el.parkResult.contains(document.activeElement)) return;  // 入力中は描き直さない
     if (done) {
       el.parkResult.innerHTML = `<div class="park-head"><span>🅿 あとで話す（${list.length}件）の行き先</span><small>次回の議題＝「次の会議を準備」で議題に追加</small></div>
         <ul class="park-list">${list.map(x => `<li data-pid="${x.id}"><span class="t">${escapeHtml(x.text)}</span>${destHTML(x)}
-          <button type="button" class="danger icon" data-park-del aria-label="このメモを削除" title="削除">✕</button></li>`).join('')}</ul>`;
+          <button type="button" class="danger icon" data-park-del aria-label="このメモを削除" title="削除">✕</button>${parkTodoHTML(x)}</li>`).join('')}</ul>`;
     } else el.parkResult.innerHTML = '';
   }
   function onParkClick(e) {
     const li = e.target.closest('li[data-pid]');
     if (!li) return;
     const id = li.dataset.pid;
+    const who = e.target.closest('button[data-pt-who]');
+    if (who) {
+      const n = who.dataset.ptWho;
+      parkTodoUpdate(li, t => { t.whos = t.whos.includes(n) ? t.whos.filter(x => x !== n) : orderNames([...t.whos, n]); }, `[data-pt-who="${CSS.escape(n)}"]`);
+      return;
+    }
     if (e.target.closest('button[data-park-agenda]')) {
       if (reviewOpen()) {  // 振り返り画面から：最後に追加して会議を続ける
         if (parkToAgenda(id, DEFAULT_MINUTES, 'end')) closeReview(false);
@@ -1835,6 +1860,64 @@
     if (e.target.closest('button[data-park-del]')) delPark(li.dataset.pid);
   }
 
+  // 「TODO」にした「あとで話す」の TODO を探す
+  function parkTodo(x) {
+    if (!x || x.dest !== 'todo' || !x.todoId || !state.run) return null;
+    for (const n of state.run.notes) { const t = n.todos.find(t => t.id === x.todoId); if (t) return t; }
+    return null;
+  }
+  // 担当（出席者から選ぶ＋手入力）と期間（開始〜期限）・ツール登録
+  function parkTodoHTML(x) {
+    const t = parkTodo(x);
+    if (!t) return '';
+    const r = state.run, present = r.people.filter(p => p.present).map(p => p.name);
+    const base = present.length ? present : team.members.map(m => m.name);
+    const cands = [...new Set([...base, ...t.whos])];  // 並びは固定（押しても位置が変わらない）
+    return `<div class="pt-box" data-pt>
+      <div class="pt-row"><span class="pt-k">担当</span>${cands.map(n => `<button type="button" class="pchip ${t.whos.includes(n) ? 'on' : ''}" data-pt-who="${escapeHtml(n)}" aria-pressed="${t.whos.includes(n)}">${escapeHtml(n)}</button>`).join('')}
+        <input type="text" data-pt-free list="peopleList" maxlength="200" placeholder="${cands.length ? 'ほかの人' : '担当の名前'}（Enter・「、」区切りで複数可）" aria-label="担当の名前を入力"></div>
+      <div class="pt-row"><span class="pt-k">期間</span>
+        <label>開始<input type="date" data-pt-start value="${escapeHtml(t.start)}" aria-label="開始日（空ならすぐ）"></label>
+        <label>〜 期限<input type="date" data-pt-due value="${escapeHtml(t.due)}" aria-label="期限"></label>
+        <select data-pt-tool class="toolsel t-${t.tool || 'unset'}" aria-label="課のタスク管理ツールへの登録">${TOOL_STATES.map(v => `<option value="${v}" ${t.tool === v ? 'selected' : ''}>${toolOpt(v)}</option>`).join('')}</select></div>
+    </div>`;
+  }
+  // 入力を TODO に反映して、表示を合わせ直す（フォーカスは同じ欄に戻す）
+  function parkTodoUpdate(li, fn, focusSel) {
+    const r = state.run;
+    const x = r && r.parked.find(p => p.id === li.dataset.pid);
+    const t = parkTodo(x);
+    if (!t) return;
+    fn(t);
+    notesPanelKey = '';
+    save();
+    const inReview = reviewOpen();
+    if (inReview) renderReview();
+    render();
+    if (!inReview) { renderPark(true); if (r.status === 'done') renderResultNotes(); }
+    const root = inReview ? el.reviewBody : el.parkResult;
+    const f = focusSel && root.querySelector(`li[data-pid="${x.id}"] ${focusSel}`);
+    if (f) f.focus();
+  }
+  function ptAddFree(li) {
+    const inp = li.querySelector('[data-pt-free]');
+    const names = inp ? inp.value.split(/[、,，\n\t]+|　/).map(n => n.trim().slice(0, 40)).filter(Boolean) : [];
+    if (!names.length) return;
+    parkTodoUpdate(li, t => { t.whos = orderNames([...new Set([...t.whos, ...names])]); }, '[data-pt-free]');
+  }
+  function onParkChange(e) {
+    const li = e.target.closest('li[data-pid]');
+    if (!li || !e.target.closest('[data-pt]')) return;
+    if (e.target.matches('[data-pt-start]')) parkTodoUpdate(li, t => { t.start = e.target.value; }, '[data-pt-start]');
+    else if (e.target.matches('[data-pt-due]')) parkTodoUpdate(li, t => { t.due = e.target.value; }, '[data-pt-due]');
+    else if (e.target.matches('[data-pt-tool]')) parkTodoUpdate(li, t => { t.tool = TOOL_STATES.includes(e.target.value) ? e.target.value : ''; }, '[data-pt-tool]');
+    else if (e.target.matches('[data-pt-free]')) ptAddFree(li);
+  }
+  function onParkKey(e) {
+    if (e.key !== 'Enter' || e.isComposing || !e.target.matches('[data-pt-free]')) return;
+    e.preventDefault();
+    ptAddFree(e.target.closest('li[data-pid]'));
+  }
   function parkGo(li) {
     const m = li.querySelector('[data-pa-min]'), w = li.querySelector('[data-pa-pos]');
     const min = Math.round(Number(m && m.value));
@@ -1873,7 +1956,7 @@
       <div class="rv-sec"><span>決まった事</span><small>${state.items.length}議題</small></div>${items}
       <div class="rv-sec"><span>TODO（${todos.length}件）</span>${decided ? `<small>「決定」で TODO がない議題 ${decided}件</small>` : ''}</div>${todoHTML}
       ${pk.length ? `<div class="rv-sec"><span>🅿 あとで話す（${pk.length}件）の行き先</span></div>
-        <ul class="rv-park">${pk.map(x => `<li data-pid="${x.id}"><span class="t">${escapeHtml(x.text)}</span>${destHTML(x)}<button type="button" class="small pa-btn" data-park-agenda title="今回の会議の最後に議題として追加して、会議を続けます">＋ 今回の議題に</button></li>`).join('')}</ul>` : ''}`;
+        <ul class="rv-park">${pk.map(x => `<li data-pid="${x.id}"><span class="t">${escapeHtml(x.text)}</span>${destHTML(x)}<button type="button" class="small pa-btn" data-park-agenda title="今回の会議の最後に議題として追加して、会議を続けます">＋ 今回の議題に</button>${parkTodoHTML(x)}</li>`).join('')}</ul>` : ''}`;
   }
   function closeReview(end) {
     if (!reviewOpen()) return;
@@ -3976,6 +4059,7 @@
   });
   el.parkResult.addEventListener('click', onParkClick);
   el.reviewBody.addEventListener('click', onParkClick);
+  [el.parkResult, el.reviewBody].forEach(c => { c.addEventListener('change', onParkChange); c.addEventListener('keydown', onParkKey); });
   el.todoRvList.addEventListener('change', onTodoReviewChange);
   el.todoRvGo.addEventListener('click', () => closeTodoReview(true));
   el.todoRvCancel.addEventListener('click', () => closeTodoReview(false));
