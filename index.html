@@ -880,7 +880,7 @@
         <li><b>決める議題</b>：「決まった事」を書き、結論（決定／保留／持ち越し）を押します。</li>
         <li><b>報告の議題</b>：「報告の要点」と「質疑・補足」を書き、報告済み／持ち越し を押します。</li>
         <li><b>TODO</b>：「＋ TODOを追加」で、やること・担当・<b>開始日〜期限</b>を入れます（開始日が空なら「すぐ」）。やることの欄で <b>Enter</b> を押すと次の TODO が増えます。</li>
-        <li><b>🗂 ツール</b>：課のタスク管理ツールへの登録を「未設定／不要／要・未登録／登録済み」から選びます。新しい TODO の初期値は ☰ メニューの「⚙ 設定」で変えられます。</li>
+        <li><b>🗂 WBSツール</b>：課の WBSツールへの登録を「未設定／不要／要・未登録／登録済み」から選びます。新しい TODO の初期値は ☰ メニューの「⚙ 設定」で変えられます。</li>
         <li>担当欄を押すと選択パネルが開き、チーム員・参加者を押して選べます（複数可）。「出席者を全員選ぶ」や、名簿にない人の手入力もできます。</li>
         <li>書いた内容は自動で保存されます。会議の後でも議事録の画面で直せます。</li>
       </ul>
@@ -894,9 +894,9 @@
         <li><b>✉ メールで送る</b>：件名と本文を入れた状態でメールソフト（Outlook など）を開きます。宛先はご自身で入力してください（本文が長いときは本文をコピーするので、貼り付けてください）。</li>
         <li><b>💬 Teams 用にコピー</b>：Teams のチャットに貼り付けると、見出し・番号付きの一覧・資料のリンクがそのまま表示されます。</li>
         <li><b>➡ 次の会議を準備</b>：議題を「持ち越し・保留だけ残す／同じ議題を使う／空にする」から選んで、次の会議の準備画面に切り替えます。参加者・司会・書記・TODO・履歴はそのまま引き継ぎます。</li>
-        <li><b>🅿 あとで話す</b>の行き先は、会議結果でも変えられます。「TODO」を選ぶと、その場で担当（出席者から選ぶ・手入力）と期間（開始〜期限）、ツール登録を決められます。「次回の議題」にしたものは次の会議の議題に追加され、「TODO」にしたものはメモした議題の TODO になります。</li>
-        <li><b>📝 TODO一覧</b>：これまでの会議の TODO を期限の近い順に表示します。担当・時期（着手中／開始前）・ツールで絞り込み、チェックで完了にできます。「🗂 ツール未登録 ○件」を押すと未登録だけになり、「📋 表示中のTODOをコピー」でタスク管理ツールへの入力に使えます。入力したら「✓ 登録済みにする」を押します。</li>
-        <li><b>📊 会議の振り返り</b>：会議履歴から、時間内に終わった割合・TODO の完了率・よく延びる議題・担当者別の TODO などを計算します（直近5回／10回／すべて）。「ツール未登録の TODO」を押すと TODO 一覧がその条件で絞り込まれます。</li>
+        <li><b>🅿 あとで話す</b>の行き先は、会議結果でも変えられます。「TODO」を選ぶと、その場で担当（出席者から選ぶ・手入力）と期間（開始〜期限）、WBSツール登録を決められます。「次回の議題」にしたものは次の会議の議題に追加され、「TODO」にしたものはメモした議題の TODO になります。</li>
+        <li><b>📝 TODO一覧</b>：これまでの会議の TODO を期限の近い順に表示します。担当・時期（着手中／開始前）・WBSツールで絞り込み、チェックで完了にできます。「🗂 WBSツール未登録 ○件」を押すと未登録だけになり、「📋 表示中のTODOをコピー」でWBSツールへの入力に使えます。入力したら「✓ 登録済みにする」を押します。</li>
+        <li><b>📊 会議の振り返り</b>：会議履歴から、時間内に終わった割合・TODO の完了率・よく延びる議題・担当者別の TODO などを計算します（直近5回／10回／すべて）。「WBSツール未登録の TODO」を押すと TODO 一覧がその条件で絞り込まれます。</li>
         <li><b>🗂 会議履歴</b>：過去の議事録を開いたり、言葉で検索したりできます。持ち越し・保留の議題を貼り付け欄に戻すこともできます。</li>
       </ul>
     </details>
@@ -1005,10 +1005,10 @@
     </section>
     <section class="dsec">
       <h3>⚙ 設定</h3>
-      <label class="pref-row">新しい TODO のツール登録の初期値
+      <label class="pref-row">新しい TODO の WBSツール登録の初期値
         <select id="prefToolDefault"><option value="">未設定</option><option value="need">要・未登録</option><option value="none">不要</option></select>
       </label>
-      <p class="note">課のタスク管理ツールに入力が必要な TODO が多いときは「要・未登録」にすると、毎回選ぶ手間が減ります（この端末に保存）。</p>
+      <p class="note">課の WBSツールに入力が必要な TODO が多いときは「要・未登録」にすると、毎回選ぶ手間が減ります（この端末に保存）。</p>
     </section>
     <section class="dsec">
       <h3>💾 バックアップ</h3>
@@ -1194,9 +1194,9 @@
     <div class="todo-tools">
       <label>担当<select id="todoWho"></select></label>
       <label>時期<select id="todoPhase" title="着手中＝開始日を過ぎた・開始日なし／開始前＝開始日がまだ先"><option value="">すべて</option><option value="now">着手中</option><option value="later">開始前（まだ先）</option></select></label>
-      <label>ツール<select id="todoTool"><option value="">すべて</option><option value="need">要・未登録</option><option value="done">登録済み</option><option value="none">不要</option><option value="unset">要否 未設定</option></select></label>
+      <label>WBSツール<select id="todoTool"><option value="">すべて</option><option value="need">要・未登録</option><option value="done">登録済み</option><option value="none">不要</option><option value="unset">要否 未設定</option></select></label>
       <label><input type="checkbox" id="todoShowDone"> 完了したものも表示</label>
-      <button type="button" id="btnCopyTodos" class="secondary small" title="絞り込んだ未完了の TODO を「やること（担当／期間）」の形でコピー（タスク管理ツールへの入力に）">📋 表示中のTODOをコピー</button>
+      <button type="button" id="btnCopyTodos" class="secondary small" title="絞り込んだ未完了の TODO を「やること（担当／期間）」の形でコピー（WBSツールへの入力に）">📋 表示中のTODOをコピー</button>
       <span id="todoMsg" class="copied hidden"></span>
     </div>
     <div id="todoToolSum" class="tool-sum"></div>
@@ -1281,7 +1281,7 @@
         if (!Array.isArray(t.whos)) t.whos = t.who ? [String(t.who)] : [];
         delete t.who;
         if (typeof t.start !== 'string') t.start = '';               // いつからやるか（空＝すぐ）
-        if (!TOOL_STATES.includes(t.tool)) t.tool = '';              // 課のタスク管理ツール：''未設定／none不要／need要・未登録／done登録済み
+        if (!TOOL_STATES.includes(t.tool)) t.tool = '';              // 課の WBSツール：''未設定／none不要／need要・未登録／done登録済み
       });
       n.todo = legacyTodo(n.todos);
     });
@@ -1314,7 +1314,7 @@
   const linkA = (l, cls) => `<a class="${cls || 'lnk'}" href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(l.url)}">📎 ${escapeHtml(linkName(l))}</a>`;
   const linksOf = item => (item && Array.isArray(item.links) ? item.links : []);
   const TOOL_STATES = ['', 'none', 'need', 'done'];
-  const TOOL_LABEL = { '': '要否 未設定', none: 'ツール不要', need: 'ツール要・未登録', done: 'ツール登録済み' };
+  const TOOL_LABEL = { '': '要否 未設定', none: 'WBSツール不要', need: 'WBSツール要・未登録', done: 'WBSツール登録済み' };
   const PREF_KEY = 'meetingTimer.prefs';
   function toolDefault() {
     try { const v = (JSON.parse(localStorage.getItem(PREF_KEY)) || {}).toolDefault; return TOOL_STATES.includes(v) && v !== 'done' ? v : ''; } catch (e) { return ''; }
@@ -1945,7 +1945,7 @@
     for (const n of state.run.notes) { const t = n.todos.find(t => t.id === x.todoId); if (t) return t; }
     return null;
   }
-  // 担当（出席者から選ぶ＋手入力）と期間（開始〜期限）・ツール登録
+  // 担当（出席者から選ぶ＋手入力）と期間（開始〜期限）・WBSツール登録
   function parkTodoHTML(x) {
     const t = parkTodo(x);
     if (!t) return '';
@@ -1958,7 +1958,7 @@
       <div class="pt-row"><span class="pt-k">期間</span>
         <label>開始<input type="date" data-pt-start value="${escapeHtml(t.start)}" aria-label="開始日（空ならすぐ）"></label>
         <label>〜 期限<input type="date" data-pt-due value="${escapeHtml(t.due)}" aria-label="期限"></label>
-        <select data-pt-tool class="toolsel t-${t.tool || 'unset'}" aria-label="課のタスク管理ツールへの登録">${TOOL_STATES.map(v => `<option value="${v}" ${t.tool === v ? 'selected' : ''}>${toolOpt(v)}</option>`).join('')}</select></div>
+        <select data-pt-tool class="toolsel t-${t.tool || 'unset'}" aria-label="課の WBSツールへの登録">${TOOL_STATES.map(v => `<option value="${v}" ${t.tool === v ? 'selected' : ''}>${toolOpt(v)}</option>`).join('')}</select></div>
     </div>`;
   }
   // 入力を TODO に反映して、表示を合わせ直す（フォーカスは同じ欄に戻す）
@@ -2503,7 +2503,7 @@
     const open = all.filter(x => !x.t.done);
     const over = open.filter(x => dueClass(x.t) === 'overdue').length;
     const tc = v => open.filter(x => (x.t.tool || '') === v).length;
-    const sums = [['need', 'ツール未登録'], ['done', 'ツール登録済み'], ['none', 'ツール不要'], ['unset', '要否 未設定']]
+    const sums = [['need', 'WBSツール未登録'], ['done', 'WBSツール登録済み'], ['none', 'WBSツール不要'], ['unset', '要否 未設定']]
       .map(([v, l]) => [v, l, tc(v === 'unset' ? '' : v)]).filter(x => x[2]);
     el.todoToolSum.innerHTML = sums.length ? sums.map(([v, l, n]) => `<button type="button" class="t-${v} ${el.todoTool.value === v ? 'on' : ''}" data-tool-filter="${v}" title="この状態だけ表示（もう一度押すと解除）">🗂 ${l} ${n}件</button>`).join('') : '';
     el.todoCount.textContent = all.length ? `未完了 ${open.length}件${over ? `（期限切れ ${over}件）` : ''}` : 'まだありません';
@@ -2555,7 +2555,7 @@
     const list = sortTodos(filterTodos(collectTodos()).filter(x => !x.t.done));
     if (!list.length) return '';
     const who = el.todoWho.value;
-    const cond = [who && who !== '\u0000' ? `担当：${who}` : '', el.todoPhase.value ? el.todoPhase.selectedOptions[0].text : '', el.todoTool.value ? `ツール：${el.todoTool.selectedOptions[0].text}` : ''].filter(Boolean).join('・');
+    const cond = [who && who !== '\u0000' ? `担当：${who}` : '', el.todoPhase.value ? el.todoPhase.selectedOptions[0].text : '', el.todoTool.value ? `WBSツール：${el.todoTool.selectedOptions[0].text}` : ''].filter(Boolean).join('・');
     const lines = [`【未完了のTODO】${dateLabel(Date.now())}時点・${list.length}件` + (cond ? `（${cond}）` : '')];
     list.forEach(({ t, item, run }) => {
       const dc = dueClass(t);
@@ -2925,11 +2925,11 @@
         <button type="button" class="whobtn ${picker.tid === t.id ? 'open' : ''}" data-who-open aria-expanded="${picker.tid === t.id}" title="${t.whos.length ? '担当：' + escapeHtml(t.whos.join('・')) : '担当を選ぶ'}">${whoTagsHTML(t.whos)}</button>
         <label class="tdate">開始<input type="date" data-tf="start" value="${escapeHtml(t.start)}" aria-label="開始日（空ならすぐ）" title="いつからやるか（空ならすぐ）"></label>
         <label class="tdate">〜 期限<input type="date" data-tf="due" value="${escapeHtml(t.due)}" aria-label="期限" title="期限"></label>
-        <select data-tf="tool" class="toolsel t-${t.tool || 'unset'}" aria-label="課のタスク管理ツールへの登録" title="課のタスク管理ツールへの登録">${TOOL_STATES.map(v => `<option value="${v}" ${t.tool === v ? 'selected' : ''}>${toolOpt(v)}</option>`).join('')}</select>
+        <select data-tf="tool" class="toolsel t-${t.tool || 'unset'}" aria-label="課の WBSツールへの登録" title="課の WBSツールへの登録">${TOOL_STATES.map(v => `<option value="${v}" ${t.tool === v ? 'selected' : ''}>${toolOpt(v)}</option>`).join('')}</select>
         <button type="button" class="danger icon" data-todo-del aria-label="このTODOを削除" title="削除">✕</button>
       </div>${picker.tid === t.id ? pickerHTML(t) : ''}`).join('');
   }
-  const toolOpt = v => ({ '': '🗂 ツール：未設定', none: '🚫 ツール：不要', need: '⚠ ツール：要・未登録', done: '✅ ツール：登録済み' })[v];
+  const toolOpt = v => ({ '': '🗂 WBSツール：未設定', none: '🚫 WBSツール：不要', need: '⚠ WBSツール：要・未登録', done: '✅ WBSツール：登録済み' })[v];
   const toolChip = t => `<span class="toolchip t-${t.tool || 'unset'}">🗂 ${TOOL_LABEL[t.tool || '']}</span>`;
   // 「11/10〜11/20」「11/10〜」「〜11/20」
   function periodText(t) {
@@ -3418,7 +3418,7 @@
     const per = t.start && t.due ? `期間：${fmtDue(t.start)}〜${fmtDue(t.due)}` : t.start ? `開始：${fmtDue(t.start)}〜` : t.due ? `期限：${fmtDue(t.due)}` : '';
     const meta = [t.whos.length ? `担当：${t.whos.join('・')}` : '', per].filter(Boolean).join('／');
     return t.text.trim() + (meta ? `（${meta}）` : '') + (t.done ? '［完了］' : '') +
-      (t.tool === 'need' ? '［ツール未登録］' : t.tool === 'done' ? '［ツール登録済み］' : '');
+      (t.tool === 'need' ? '［WBSツール未登録］' : t.tool === 'done' ? '［WBSツール登録済み］' : '');
   }
   // 「出席：佐藤（司会）、鈴木（書記）、高橋／欠席：田中」
   function peopleLine(people, roles) {
@@ -3570,7 +3570,7 @@
       tile('TODO の完了率', todos.length ? pct(done, todos.length) : '—', todos.length ? '%' : '', todos.length ? `${done} / ${todos.length}件・期限切れ ${overdue}件` : 'TODO はまだありません'),
       tile('1回あたりの議題数', (itemsN / n).toFixed(1), '件', `会議の長さ 平均 ${m(durSum / n)}分`),
       tile('持ち越し・保留', pct(carryN, itemsN), '%', `全議題 ${itemsN}件のうち ${carryN}件（次回へを含む）`),
-      tile('ツール未登録の TODO', toolNeed, '件', toolNeed ? '押すと TODO 一覧で絞り込み' : 'ありません', toolNeed ? 'data-stat-tool' : ''),
+      tile('WBSツール未登録の TODO', toolNeed, '件', toolNeed ? '押すと TODO 一覧で絞り込み' : 'ありません', toolNeed ? 'data-stat-tool' : ''),
       tile('「あとで話す」', (parkN / n).toFixed(1), '件/回', parkN ? `うち今回の議題にした ${pct(parkToAgenda, parkN)}%` : 'まだありません'),
     ].join('');
     // よく延びる議題（同じ議題名で集計・実施した回だけ）
@@ -4569,7 +4569,7 @@
   try { el.prefToolDefault.value = toolDefault(); } catch (e) { /* ignore */ }
   el.prefToolDefault.addEventListener('change', () => {
     try { localStorage.setItem(PREF_KEY, JSON.stringify({ toolDefault: el.prefToolDefault.value })); } catch (e) { /* ignore */ }
-    showInfo('✓ 新しい TODO のツール登録の初期値を「' + el.prefToolDefault.selectedOptions[0].text + '」にしました');
+    showInfo('✓ 新しい TODO の WBSツール登録の初期値を「' + el.prefToolDefault.selectedOptions[0].text + '」にしました');
   });
   el.todoWho.addEventListener('change', () => { todoKey = ''; renderTodoBoard(); });
   el.todoShowDone.addEventListener('change', () => { todoKey = ''; renderTodoBoard(); });
