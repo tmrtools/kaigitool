@@ -208,7 +208,8 @@
   /* ④ この議題で決めること（タイマーの中） */
   .timer-goal { margin: 10px auto 0; max-width: 640px; text-align: left; background: #fff; border-left: 5px solid var(--accent); border-radius: 10px; padding: 8px 14px; }
   .timer-goal .k { display: block; font-size: .8rem; color: var(--muted); font-weight: 600; }
-  .timer-goal .v { display: block; font-size: clamp(1.05rem, 2.6vw, 1.35rem); font-weight: 700; color: var(--accent-dark); word-break: break-word; }
+  .timer-goal .v { display: block; font-size: clamp(1.05rem, 2.6vw, 1.35rem); font-weight: 700; color: var(--accent-dark); word-break: break-word; white-space: pre-wrap; }
+  .timer-goal.long .v { font-size: clamp(.95rem, 2vw, 1.08rem); font-weight: 600; line-height: 1.55; max-height: 12em; overflow-y: auto; }
   .timer-goal.report { border-left-color: #8a7bb0; }
   .timer-goal.report .v { color: #5b4f86; }
   .info-bar {
@@ -342,6 +343,17 @@
   .add-form #minutes { flex: 1 1 auto; width: 0; min-width: 60px; }
   .add-form #presenter { flex: 1 1 100%; min-width: 0; }
   .add-form #goal { flex: 1 1 100%; min-width: 0; }
+  /* 決めること・報告内容の要約：300字ほど・改行も入れられる。書いた量に合わせて伸びる */
+  textarea.goal-ta {
+    font: inherit; font-size: 1rem; font-weight: 400; line-height: 1.55; padding: 10px 12px; width: 100%; min-width: 0;
+    border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--text);
+    resize: vertical; min-height: 7.2em; max-height: 24em; field-sizing: content;
+  }
+  textarea.goal-ta:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .goal-count { display: block; text-align: right; font-size: .75rem; color: var(--muted); font-weight: 400; margin-top: -2px; }
+  .note-card textarea.goal-ta { overflow-y: auto; margin: 0; font-size: 1rem; }
+  .add-form .goal-count { flex: 1 1 100%; margin-top: -6px; }
+  .goal-count.near { color: var(--warn); font-weight: 600; }
   .add-form button { flex: 0 0 auto; margin-left: auto; min-width: 120px; }
 
   /* Bulk import */
@@ -373,7 +385,7 @@
   .note-card h3 .who { font-weight: 400; color: var(--muted); font-size: .85rem; margin-left: 6px; }
   .goal {
     background: #eef2f1; border-left: 4px solid var(--accent); border-radius: 6px;
-    padding: 8px 10px; margin-bottom: 10px; font-size: .95rem; word-break: break-word;
+    padding: 8px 10px; margin-bottom: 10px; font-size: .95rem; word-break: break-word; white-space: pre-wrap;
   }
   .goal .k, .field-label { display: block; font-size: .78rem; color: var(--muted); font-weight: 600; }
   .goal.none { color: var(--muted); border-left-color: var(--line); }
@@ -406,6 +418,9 @@
   }
   .summary .breakdown { color: var(--muted); }
   .agenda .goal-line { display: block; font-size: .8rem; color: var(--accent-dark); font-weight: 400; }
+  .goal-line .gt, .report-line .sum { white-space: pre-wrap; }
+  /* アジェンダでは長い要約を3行まで（全文はマウスを乗せると表示） */
+  .agenda .goal-line, .agenda .report-line { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; word-break: break-word; }
   .notes-title { font-size: 1rem; color: var(--accent-dark); margin: 24px 0 10px; }
   .timer .presenter { font-size: clamp(1rem, 2.5vw, 1.3rem); color: var(--muted); margin-bottom: 4px; }
 
@@ -833,9 +848,9 @@
       <h4>議題を追加する</h4>
       <ul>
         <li>アジェンダの「＋ 議題を追加」で、議題名・持ち時間（分）・担当者・種類を入れて「追加」を押します。</li>
-        <li>種類は <b>🎯 決める</b>（決めることを書く）か <b>📢 報告</b>（報告内容の要約を書く）を選びます。</li>
+        <li>種類は <b>🎯 決める</b>（決めることを書く）か <b>📢 報告</b>（報告内容の要約を書く）を選びます。決めること・報告内容の要約は 400字まで、Enter で改行できます（Ctrl＋Enter で追加）。</li>
         <li>▲▼ で並べ替え、✕ で削除できます（会議の開始前のみ）。</li>
-        <li><b>📎 資料のリンク</b>：✏ 編集の一番下に、OneDrive・SharePoint・Teams などの資料の URL を貼って「＋ 追加」（1議題に10件まで）。アジェンダの 📎 や、会議中はタイマーの「📎 ○○ を開く」で資料が開きます。貼り付け欄でも、行の最後に URL を書けば取り込まれます。</li>
+        <li><b>📎 資料のリンク</b>：✏ 編集の一番下に、OneDrive・SharePoint・Teams などの資料の URL を貼って「＋ 追加」（1議題に10件まで）。アジェンダの 📎 や、会議中はタイマーの「📎 ○○ を開く」で資料が開きます（Microsoft Edge の新しいタブで開きます）。貼り付け欄でも、行の最後に URL を書けば取り込まれます。</li>
         <li>✏ で議題名・持ち時間・担当者・種類・決めること（報告の議題では報告内容の要約）を直せます。会議中は今の議題とこれからの議題を（持ち時間は −／＋ で）、会議後は「決まった事の記録」の「✏ 議題を編集」から議題名・担当者・決めることを直せます。</li>
       </ul>
       <h4>まとめて貼り付ける</h4>
@@ -1110,7 +1125,8 @@
         <option value="decide">🎯 決める</option>
         <option value="report">📢 報告</option>
       </select>
-      <input id="goal" type="text" placeholder="決めること（任意）" maxlength="200" aria-label="決めること">
+      <textarea id="goal" class="goal-ta" rows="4" placeholder="決めること（任意）" maxlength="400" aria-label="決めること"></textarea>
+      <span class="goal-count" data-goal-count>0 / 400字・Ctrl＋Enter で追加</span>
       <select id="addPos" class="hidden" aria-label="追加する位置">
         <option value="next">今の議題の次に追加</option>
         <option value="end">最後に追加</option>
@@ -1311,7 +1327,7 @@
       return last && last.length <= 60 ? last : u.hostname;
     } catch (e) { return l.url.slice(0, 40); }
   }
-  const linkA = (l, cls) => `<a class="${cls || 'lnk'}" href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(l.url)}">📎 ${escapeHtml(linkName(l))}</a>`;
+  const linkA = (l, cls) => `<a class="${cls || 'lnk'}" data-res href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(l.url)}">📎 ${escapeHtml(linkName(l))}</a>`;
   const linksOf = item => (item && Array.isArray(item.links) ? item.links : []);
   const TOOL_STATES = ['', 'none', 'need', 'done'];
   const TOOL_LABEL = { '': '要否 未設定', none: 'WBSツール不要', need: 'WBSツール要・未登録', done: 'WBSツール登録済み' };
@@ -2181,7 +2197,7 @@
         const k = splitReport(x.goal);
         return {
           ...x, title: x.title.slice(0, 100), presenter: x.presenter.slice(0, 40),
-          goal: k.goal.slice(0, 200), kind: k.kind,
+          goal: k.goal.slice(0, GOAL_MAX), kind: k.kind,
         };
       });
   }
@@ -2221,7 +2237,8 @@
   // 「議題名 / 分 / 担当者 / 決めること」形式（貼り付け欄にそのまま戻せる）
   function itemLine(x) {
     let s = `${x.title} / ${x.minutes}分`;
-    const tail = isReport(x) ? (x.goal ? `報告：${x.goal}` : '報告') : x.goal;
+    const g = (x.goal || '').replace(/\s*\n\s*/g, ' ');  // 1行1議題の形なので改行は空白に
+    const tail = isReport(x) ? (g ? `報告：${g}` : '報告') : g;
     if (x.presenter || tail) s += ` / ${x.presenter || ''}`;
     if (tail) s += ` / ${tail}`;
     linksOf(x).forEach(l => { s += ` ${l.url}`; });
@@ -2678,7 +2695,7 @@
       <label class="full">担当者<input type="text" data-ef="presenter" value="${escapeHtml(d.presenter)}" maxlength="40" list="peopleList" placeholder="（任意）"></label>
       ${withMinutes ? `<label>持ち時間（分）<input type="number" data-ef="minutes" min="1" max="600" step="1" value="${escapeHtml(String(d.minutes))}"></label>` : ''}
       ${afterMeeting ? '' : `<label class="${withMinutes ? '' : 'full'}">種類<select data-ef="kind"><option value="decide"${report ? '' : ' selected'}>🎯 決める議題</option><option value="report"${report ? ' selected' : ''}>📢 報告の議題</option></select></label>`}
-      <label class="full"><span data-goal-label>${goalLabel(report)}</span><input type="text" data-ef="goal" value="${escapeHtml(d.goal)}" maxlength="200" placeholder="${report ? '例）10月の売上は前年比105%（任意）' : '（任意）'}"></label>
+      <label class="full"><span data-goal-label>${goalLabel(report)}</span><textarea data-ef="goal" class="goal-ta" rows="4" maxlength="${GOAL_MAX}" placeholder="${report ? '例）10月の売上は前年比105%（任意・改行もできます）' : '（任意・改行もできます）'}">${escapeHtml(d.goal)}</textarea>${goalCountHTML(d.goal)}</label>
       <div class="full links-ed" data-links>
         <span class="lab">📎 資料のリンク（OneDrive・SharePoint・Teams などの URL）</span>
         ${(editing.links || linksOf(item)).map((l, k) => `<div class="lrow">${linkA(l)}<button type="button" class="danger icon" data-act="link-del" data-k="${k}" aria-label="このリンクを外す" title="外す">✕</button></div>`).join('')}
@@ -2690,7 +2707,7 @@
       </div>
       ${err ? `<div class="err" role="alert">${escapeHtml(err)}</div>` : ''}
       <div class="acts">
-        <span class="note">${withMinutes ? 'Enter で保存・Esc で取り消し' : afterMeeting ? '予定・実際の時間は記録のため変えられません' : '持ち時間は −／＋ で変えます'}</span>
+        <span class="note">${withMinutes ? 'Enter で保存（要約の欄は Ctrl＋Enter）・Esc で取り消し' : afterMeeting ? '予定・実際の時間は記録のため変えられません' : '持ち時間は −／＋ で変えます'}</span>
         <button type="button" class="secondary" data-act="edit-cancel">キャンセル</button>
         <button type="button" data-act="edit-save">保存</button>
       </div>
@@ -2821,7 +2838,7 @@
     if (!g) return;
     const report = sel.value === 'report';
     form.querySelector('[data-goal-label]').textContent = goalLabel(report);
-    g.placeholder = report ? '例）10月の売上は前年比105%（任意）' : '（任意）';
+    g.placeholder = report ? '例）10月の売上は前年比105%（任意・改行もできます）' : '（任意・改行もできます）';
   }
 
   // 会議後：「決まった事の記録」から議題名・担当・決めることを直す
@@ -2861,11 +2878,20 @@
 
   // 議題の下に出す1行：🎯 決めること／📢 報告（：要約）
   function goalLineHTML(x, pre) {
-    if (isReport(x)) return pre !== undefined ? `${pre}📢 報告${x.goal ? '：' + escapeHtml(x.goal) : ''}` : `<span class="report-line">📢 報告${x.goal ? `<span class="sum">：${escapeHtml(x.goal)}</span>` : ''}</span>`;
+    if (isReport(x)) return pre !== undefined ? `${pre}📢 報告${x.goal ? '：' + escapeHtml(x.goal) : ''}` : `<span class="report-line"${x.goal ? ` title="${escapeHtml(x.goal)}"` : ''}>📢 報告${x.goal ? `<span class="sum">：${escapeHtml(x.goal)}</span>` : ''}</span>`;
     if (!x.goal) return '';
-    return pre !== undefined ? `${pre}🎯 ${escapeHtml(x.goal)}` : `<span class="goal-line">🎯 ${escapeHtml(x.goal)}</span>`;
+    return pre !== undefined ? `${pre}🎯 ${escapeHtml(x.goal)}` : `<span class="goal-line" title="${escapeHtml(x.goal)}">🎯 <span class="gt">${escapeHtml(x.goal)}</span></span>`;
   }
   const goalLabel = report => report ? '報告内容の要約' : '決めること';
+  // 決めること・報告内容の要約：300字ほどを目安に、上限は 400字
+  const GOAL_MAX = 400;
+  const goalCountHTML = v => `<span class="goal-count${v.length > GOAL_MAX - 50 ? ' near' : ''}" data-goal-count>${v.length} / ${GOAL_MAX}字</span>`;
+  function syncGoalCount(ta) {
+    const c = ta.parentElement.querySelector('[data-goal-count]');
+    if (!c) return;
+    c.textContent = `${ta.value.length} / ${GOAL_MAX}字` + (ta.id === 'goal' ? '・Ctrl＋Enter で追加' : '');
+    c.classList.toggle('near', ta.value.length > GOAL_MAX - 50);
+  }
 
   // 前回の会議から残した議題の目印
   function carryBadge(item) {
@@ -3109,7 +3135,7 @@
       const card = e.target.closest('.note-card'), i = Number(card.dataset.i);
       if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); noteEditClose(i); }
       else if (e.key === 'Enter' && !e.isComposing && e.target.matches('[data-el]')) { e.preventDefault(); onLinkAct('link-add', e.target, () => el.resultNotes.querySelector(`.note-card[data-i="${i}"]`), renderResultNotes); }
-      else if (e.key === 'Enter' && !e.isComposing && e.target.matches('input')) { e.preventDefault(); noteEditSave(i, card); }
+      else if (e.key === 'Enter' && !e.isComposing && (e.target.matches('input') || (e.target.matches('textarea[data-ef]') && (e.ctrlKey || e.metaKey)))) { e.preventDefault(); noteEditSave(i, card); }
       return;
     }
     const card = e.target.closest('.note-card');
@@ -3248,7 +3274,7 @@
     const ls = linksOf(item), lk = JSON.stringify(ls);
     if (lk !== timerLinksKey) {
       timerLinksKey = lk;
-      el.timerLinks.innerHTML = ls.map(l => `<a href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(l.url)}">📎 ${escapeHtml(linkName(l))} を開く</a>`).join('');
+      el.timerLinks.innerHTML = ls.map(l => `<a data-res href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(l.url)}">📎 ${escapeHtml(linkName(l))} を開く</a>`).join('');
       el.timerLinks.classList.toggle('hidden', !ls.length);
     }
     const show = !!item && !!item.goal;
@@ -3259,6 +3285,7 @@
     const k = rep ? '📢 報告内容' : '🎯 この議題で決めること（決まったら次へ）';
     if (el.timerGoalK.textContent !== k) el.timerGoalK.textContent = k;
     if (el.timerGoalV.textContent !== item.goal) el.timerGoalV.textContent = item.goal;
+    el.timerGoal.classList.toggle('long', item.goal.length > 80 || item.goal.includes('\n'));
   }
 
   // 毎フレーム更新する部分
@@ -3380,12 +3407,12 @@
       const dec = n.decision.trim();
       const tag = n.status ? `【${n.status}】` : '';
       if (isReport(item)) {
-        if (item.goal) lines.push(`   ■報告内容：${item.goal}`);
+        if (item.goal) lines.push(`   ■報告内容：${indentLines(item.goal, '     ')}`);
         lines.push(`   ■報告：${dec ? indentLines(dec, '     ') : '（記録なし）'}${tag}`);
         const qa = (n.qa || '').trim();
         if (qa) lines.push(`   ■質疑・補足：${indentLines(qa, '     ')}`);
       } else {
-        if (item.goal) lines.push(`   ■決めること：${item.goal}`);
+        if (item.goal) lines.push(`   ■決めること：${indentLines(item.goal, '     ')}`);
         lines.push(`   ■決まった事：${dec ? indentLines(dec, '     ') : '（記録なし）'}${tag}`);
       }
       linksOf(item).forEach(l => lines.push(`   ■資料：${linkName(l)} ${l.url}`));
@@ -4297,6 +4324,23 @@
   }
 
   // ---------- イベント ----------
+  // 資料のリンクは Microsoft Edge で開く（社内の OneDrive・SharePoint にサインイン済みのブラウザ）。
+  // Edge で使っているときはそのまま新しいタブ。Windows のほかのブラウザでは「microsoft-edge:」で Edge を起動する。
+  const IS_EDGE = /\bEdg(e|A|iOS)?\//.test(navigator.userAgent);
+  const IS_WINDOWS = /Windows/i.test(navigator.userAgent);
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[data-res]');
+    if (!a || IS_EDGE || !IS_WINDOWS || e.button !== 0) return;
+    const url = a.getAttribute('href');
+    if (!okUrl(url)) return;
+    e.preventDefault();
+    openUrl('microsoft-edge:' + url);
+  });
+  // 決めること・報告内容の要約：文字数を表示。Enter は改行、Ctrl＋Enter で追加・保存
+  document.addEventListener('input', e => { if (e.target.matches('textarea.goal-ta')) syncGoalCount(e.target); });
+  el.goal.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !e.isComposing) { e.preventDefault(); el.form.requestSubmit(); }
+  });
   el.form.addEventListener('submit', e => {
     e.preventDefault();
     if (!canAdd()) return;
@@ -4308,6 +4352,7 @@
     el.title.value = '';
     el.presenter.value = '';
     el.goal.value = '';
+    syncGoalCount(el.goal);
     el.kind.value = 'decide';
     syncKind();
     el.title.focus();
@@ -4341,7 +4386,7 @@
     if (!e.target.closest('[data-edit]')) return;
     if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeEdit(true); }
     else if (e.key === 'Enter' && !e.isComposing && e.target.matches('[data-el]')) { e.preventDefault(); onLinkAct('link-add', e.target, () => el.agenda, renderAgenda); }
-    else if (e.key === 'Enter' && !e.isComposing && e.target.matches('input')) { e.preventDefault(); saveEdit(); }
+    else if (e.key === 'Enter' && !e.isComposing && (e.target.matches('input') || (e.target.matches('textarea') && (e.ctrlKey || e.metaKey)))) { e.preventDefault(); saveEdit(); }
   });
 
   el.start.addEventListener('click', requestStart);
