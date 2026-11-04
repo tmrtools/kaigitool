@@ -144,6 +144,18 @@
   .next-opt b { display: block; }
   .next-opt small { display: block; color: var(--muted); font-size: .82rem; }
   .next-opt ul { margin: 4px 0 0; padding-left: 1.2em; font-size: .85rem; }
+  .sched-row, .next-sched { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+  .sched-row { margin: 0 0 12px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: #f4f8f9; }
+  .next-sched { margin: 12px 0 0; }
+  .sched-k { font-weight: 700; color: var(--accent-dark); font-size: .92rem; }
+  .sched-row input, .next-sched input {
+    font: inherit; font-size: 1rem; min-height: 40px; padding: 4px 8px;
+    border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--text); min-width: 0;
+  }
+  .sched-row button { min-height: 36px; padding: 4px 10px; font-size: .85rem; }
+  .sched-rel { font-size: .85rem; color: var(--muted); font-weight: 600; }
+  .sched-rel.soon { color: var(--accent-dark); }
+  .sched-rel.past { color: var(--over); }
   .next-keep { margin: 12px 0; padding: 8px 12px; background: #f7f8f6; border-radius: 8px; font-size: .85rem; color: var(--muted); }
   .next-keep b { color: var(--text); }
   .modal-foot { display: flex; justify-content: flex-end; gap: 8px; }
@@ -854,6 +866,8 @@
   <h3 id="nextTitle">次の会議を準備</h3>
   <p id="nextLead" class="modal-lead"></p>
   <div id="nextOpts" class="next-opts" role="radiogroup" aria-label="次の会議の議題"></div>
+  <div class="next-sched"><span class="sched-k">📅 次の会議の開始予定（任意）</span>
+    <input type="date" id="nextDate" aria-label="次の会議の日付"><input type="time" id="nextTime" step="300" aria-label="次の会議の開始時刻"></div>
   <div id="nextKeep" class="next-keep"></div>
   <div class="modal-foot">
     <button type="button" id="btnNextCancel" class="secondary">キャンセル</button>
@@ -904,6 +918,7 @@
       <h4>議題を追加する</h4>
       <ul>
         <li>アジェンダの「＋ 議題を追加」で、議題名・持ち時間（分）・担当者・種類を入れて「追加」を押します。</li>
+        <li><b>📅 開始予定</b>：アジェンダの上で会議の日付と開始時刻を入れておくと、各議題の開始時刻・終了予定がその時刻から計算され、「アジェンダをコピー」にも日時が入ります。会議を終えて「次の会議を準備」するときは、1週間後の同じ時刻が初めから入ります（変更・空欄も可）。</li>
         <li>種類は <b>🎯 決める</b>（決めることを書く）か <b>📢 報告</b>（報告内容の要約を書く）を選びます。決めること・報告内容の要約は 400字まで、Enter で改行できます（Ctrl＋Enter で追加）。</li>
         <li>▲▼ で並べ替え、✕ で削除できます（会議の開始前のみ）。</li>
         <li><b>📎 資料のリンク</b>：✏ 編集の一番下に、OneDrive・SharePoint・Teams などの資料の URL を貼って「＋ 追加」（1議題に10件まで）。アジェンダの 📎 や、会議中はタイマーの「📎 ○○ を開く」で資料が開きます（Microsoft Edge の新しいタブで開きます）。貼り付け欄でも、行の最後に URL を書けば取り込まれます。</li>
@@ -1169,6 +1184,13 @@
       担当者なしで決めることを書く場合は「議題名 / 10 / / 決めること」と空欄にしてください。
       <div style="margin-top:8px"><button type="button" id="btnGuide2" class="secondary small">📖 使い方ガイドを開く</button></div>
     </div>
+    <div id="schedRow" class="sched-row">
+      <span class="sched-k">📅 開始予定</span>
+      <input type="date" id="schedDate" aria-label="会議の日付">
+      <input type="time" id="schedTime" step="300" aria-label="開始時刻">
+      <button type="button" id="schedClear" class="secondary small hidden" title="開始予定を消す">✕ 消す</button>
+      <span id="schedRel" class="sched-rel"></span>
+    </div>
     <details id="addFold" class="fold add-fold" open>
     <summary>＋ 議題を追加</summary>
     <form id="addForm" class="add-form" autocomplete="off">
@@ -1418,6 +1440,11 @@
         dest: PARK_DESTS.includes(x.dest) ? x.dest : 'next', todoId: String(x.todoId || '') }));
     return r;
   }
+  // 次の会議の開始予定：{date: 'yyyy-mm-dd'（空＝未設定）, time: 'HH:MM'（空＝時刻なし）}
+  const normSchedule = x => ({
+    date: x && /^\d{4}-\d{2}-\d{2}$/.test(x.date) ? x.date : '',
+    time: x && x.date && /^\d{2}:\d{2}$/.test(x.time) ? x.time : '',
+  });
   // 会議外の TODO：[{id, text, whos, start, due, done, tool, src（どこで決まったか）, created}]
   function normExtraTodos(list) {
     return (Array.isArray(list) ? list : []).filter(t => t && typeof t.text === 'string' && t.text.trim()).map(t => ({
@@ -1437,6 +1464,7 @@
       people: normPeople(s && s.people),
       roles: normRoles(s && s.roles),
       extraTodos: normExtraTodos(s && s.extraTodos),
+      schedule: normSchedule(s && s.schedule),
     };
     // 担当者として使われている名前（旧TODOの「佐藤 ○○」から担当者を取り出すため）
     const names = new Set(st.people.map(p => p.name));
@@ -1494,6 +1522,7 @@
     statsFold: $('statsFold'), statsBody: $('statsBody'), statsNote: $('statsNote'),
     peoplePick: $('btnPeoplePick'), peoplePicker: $('peoplePicker'), peopleForm: $('peopleForm'), personName: $('personName'), peopleChips: $('peopleChips'), peopleCount: $('peopleCount'),
     roleChair: $('roleChair'), roleScribe: $('roleScribe'), peopleNote: $('peopleNote'), peopleList: $('peopleList'),
+    schedRow: $('schedRow'), schedDate: $('schedDate'), schedTime: $('schedTime'), schedClear: $('schedClear'), schedRel: $('schedRel'), nextDate: $('nextDate'), nextTime: $('nextTime'),
     todoBoard: $('todoBoard'), todoSrc: $('todoSrc'), todoNew: $('btnTodoNew'), todoBulkBtn: $('btnTodoBulk'), todoEditor: $('todoEditor'), todoWho: $('todoWho'), todoShowDone: $('todoShowDone'), todoCount: $('todoCount'),
     todoPhase: $('todoPhase'), todoTool: $('todoTool'), todoToolSum: $('todoToolSum'), prefToolDefault: $('prefToolDefault'),
     copyTodos: $('btnCopyTodos'), todoMsg: $('todoMsg'),
@@ -1639,6 +1668,7 @@
       status: 'running', idx: 0,
       elapsed: state.items.map(() => 0),
       startedAt: now, meetingStart: now, meetingEnd: null,
+      schedStart: state.schedule.time ? schedTs() : null,  // 開始予定（議事録に「予定より○分遅れて開始」）
       notes: state.items.map(emptyNote),
       plan: state.items.map(x => x.minutes),        // 調整後の持ち時間（分）
       skipped: state.items.map(() => false),         // 「次回へ」にした議題
@@ -1786,6 +1816,10 @@
       `参加者（${state.people.length}名）`, roles, `TODO（未完了${openTodos}件）`, '会議履歴',
     ].filter(Boolean).map(escapeHtml).join('・') + '</b>' +
       (pk.length ? `<br>🅿「あとで話す」から次回の議題にした <b>${pk.length}件</b>（${pk.map(x => escapeHtml(x.text)).join('・')}）は、「持ち越し・保留」「同じ議題」のどちらでも議題に追加します。` : '');
+    // 次の会議の開始予定：前回の予定（なければ今回の開始）の1週間後・同じ時刻を初期値に
+    const base = schedTs() || r.meetingStart, nd = new Date(base + 7 * 86400000);
+    el.nextDate.value = state.schedule.date ? `${nd.getFullYear()}-${pad(nd.getMonth() + 1)}-${pad(nd.getDate())}` : '';
+    el.nextTime.value = state.schedule.date ? state.schedule.time : '';
     el.nextModal.classList.remove('hidden'); el.nextDim.classList.remove('hidden');
     const first = el.nextOpts.querySelector('input:checked');
     if (first) first.focus();
@@ -1821,6 +1855,8 @@
     }
     state.items = items;
     state.run = null;
+    state.schedule = normSchedule({ date: el.nextDate.value, time: el.nextTime.value });
+    if (state.schedule.date) msg += `・開始予定 ${schedLabel()}`;
     notesPanelKey = '';
     el.bulk.open = false;
     el.nextModal.classList.add('hidden'); el.nextDim.classList.add('hidden');
@@ -2302,7 +2338,9 @@
 
   // ---------- 共有用テキスト ----------
   function agendaText() {
-    const lines = [`【アジェンダ】全${state.items.length}件・合計${formatMinutes(origMinutes())}`];
+    const sc = state.schedule, st = sc.time ? schedTs() : null;
+    const when = sc.date ? `${schedLabel()}${st ? `〜${clock(st + origMinutes() * 60000)}` : ''}・` : '';
+    const lines = [`【アジェンダ】${when}全${state.items.length}件・合計${formatMinutes(origMinutes())}`];
     state.items.forEach((x, i) => {
       lines.push(`${i + 1}. ${itemLine(x)}`);
     });
@@ -2366,6 +2404,7 @@
   // ---------- 描画 ----------
   function render() {
     renderAgenda();
+    renderSchedule();
     renderTimer();
     renderNotesPanel();
     renderResult();
@@ -2861,10 +2900,63 @@
 
   // ---------- 議題ごとの開始見込み時刻 ----------
   // 会議前は「今から始めた場合」、進行中は今のペースで進めた場合の、未着手の議題の開始時刻
+  // ---------- 開始予定 ----------
+  function schedTs(sc = state.schedule) {
+    if (!sc || !sc.date) return null;
+    const [y, m, d] = sc.date.split('-').map(Number), [hh, mm] = (sc.time || '00:00').split(':').map(Number);
+    return new Date(y, m - 1, d, hh, mm).getTime();
+  }
+  // 「11/6（木）10:00」
+  function schedLabel(sc = state.schedule) {
+    const ts = schedTs(sc);
+    if (ts === null) return '';
+    const d = new Date(ts);
+    return `${d.getMonth() + 1}/${d.getDate()}（${WD[d.getDay()]}）${sc.time ? ' ' + sc.time : ''}`;
+  }
+  // 時刻まで決まっていて、まだ先なら予定の時刻から。それ以外は今から始めた場合
+  function planBase() {
+    const ts = state.schedule.time ? schedTs() : null;
+    return ts && ts > Date.now() ? ts : Date.now();
+  }
+  // 「あと 2日」「明日」「あと 45分」「予定を 5分過ぎています」
+  function schedRel() {
+    const ts = schedTs();
+    if (ts === null) return { text: '', cls: '' };
+    const now = new Date(), day = 86400000;
+    const days = Math.round((new Date(state.schedule.date + 'T00:00') - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / day);
+    if (days < 0) return { text: '過ぎた日付です', cls: 'past' };
+    if (days > 1) return { text: `あと ${days}日`, cls: '' };
+    if (days === 1) return { text: '明日', cls: '' };
+    if (!state.schedule.time) return { text: '今日', cls: 'soon' };
+    const min = Math.round((ts - now.getTime()) / 60000);
+    if (min > 90) return { text: `今日・あと ${Math.floor(min / 60)}時間${min % 60 ? (min % 60) + '分' : ''}`, cls: 'soon' };
+    if (min > 0) return { text: `まもなく・あと ${min}分`, cls: 'soon' };
+    if (min === 0) return { text: '開始の時刻です', cls: 'soon' };
+    return { text: `予定を ${-min}分過ぎています`, cls: 'past' };
+  }
+  function renderSchedule() {
+    const show = !state.run;
+    el.schedRow.classList.toggle('hidden', !show);
+    if (!show) return;
+    const sc = state.schedule;
+    if (document.activeElement !== el.schedDate && el.schedDate.value !== sc.date) el.schedDate.value = sc.date;
+    if (document.activeElement !== el.schedTime && el.schedTime.value !== sc.time) el.schedTime.value = sc.time;
+    el.schedClear.classList.toggle('hidden', !sc.date && !sc.time);
+    const rel = schedRel();
+    el.schedRel.textContent = rel.text || (sc.date ? '' : '日付と時刻を入れると、各議題の開始時刻と終了予定がその時刻から計算されます');
+    el.schedRel.className = 'sched-rel' + (rel.cls ? ' ' + rel.cls : '');
+  }
+  function onScheduleChange() {
+    state.schedule = normSchedule({ date: el.schedDate.value, time: el.schedTime.value });
+    if (!state.schedule.date && el.schedTime.value) { el.schedRel.textContent = '日付も入れてください'; el.schedRel.className = 'sched-rel past'; }
+    save(); render();
+    if (!state.schedule.date && el.schedTime.value) { el.schedRel.textContent = '日付も入れてください'; el.schedRel.className = 'sched-rel past'; }
+  }
+
   function startTimes() {
     const r = state.run, n = state.items.length, out = new Array(n).fill(null);
     if (r && r.status === 'done') return out;
-    let t = r ? Date.now() + Math.max(0, effMs(r.idx) - currentElapsed()) : Date.now();
+    let t = r ? Date.now() + Math.max(0, effMs(r.idx) - currentElapsed()) : planBase();
     for (let i = r ? r.idx + 1 : 0; i < n; i++) {
       if (r && r.skipped[i]) continue;
       out[i] = t;
@@ -3500,7 +3592,11 @@
   function updateEndTime() {
     const r = state.run;
     if (!state.items.length) { el.end.textContent = '--:--'; return; }
-    if (!r) { el.end.textContent = clock(Date.now() + totalMinutes() * 60000) + '（今から開始した場合）'; return; }
+    if (!r) {
+      const b = planBase();
+      el.end.textContent = clock(b + totalMinutes() * 60000) + (b > Date.now() ? `（${schedLabel()} 開始の場合）` : '（今から開始した場合）');
+      return;
+    }
     if (r.status === 'done') { el.end.textContent = clock(r.meetingEnd) + '（終了）'; return; }
     el.end.textContent = clock(projectedEnd()) + '（見込み）';
   }
@@ -3525,7 +3621,7 @@
     setTimerGoal(!r ? state.items[0] : r.status === 'done' ? null : state.items[r.idx]);
 
     if (!r) {
-      el.label.textContent = '待機中';
+      el.label.textContent = state.schedule.date ? `📅 ${schedLabel()} 開始予定${schedRel().text ? `（${schedRel().text}）` : ''}` : '待機中';
       el.topic.textContent = hasItems ? state.items[0].title : 'アジェンダを登録して「開始」';
       el.timerPresenter.textContent = hasItems ? presenterLine(state.items[0]) : '';
       el.time.textContent = hasItems ? fmt(effMs(0)) : '--:--';
@@ -3666,6 +3762,10 @@
     const date = `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}`;
     const lines = [];
     lines.push(`【議事録】${date} ${clock(r.meetingStart)}〜${clock(r.meetingEnd)}`);
+    if (r.schedStart && new Date(r.schedStart).toDateString() === d.toDateString()) {
+      const late = Math.round((r.meetingStart - r.schedStart) / 60000);
+      lines.push(`開始予定 ${clock(r.schedStart)} ／ 実際の開始 ${clock(r.meetingStart)}（${late > 0 ? `${late}分遅れ` : late < 0 ? `${-late}分早く開始` : '予定どおり'}）`);
+    }
     lines.push(`予定終了 ${clock(r.plannedEnd)} ／ 実際の終了 ${clock(r.meetingEnd)}（${fmtSigned(r.meetingEnd - r.plannedEnd)}）`);
     const pl = peopleLine(r.people, r.roles);
     if (pl) lines.push(pl);
@@ -3916,7 +4016,7 @@
   // 履歴の1件を一時的に state に見立てて、議事録テキストなどを作る
   function withSnapshot(rec, fn) {
     const saved = state;
-    state = { items: rec.items, run: rec.run, history: [], people: [], roles: emptyRoles(), extraTodos: [] };
+    state = { items: rec.items, run: rec.run, history: [], people: [], roles: emptyRoles(), extraTodos: [], schedule: normSchedule(null) };
     try { return fn(); } finally { state = saved; }
   }
   const historyOpen = new Set();
@@ -4069,7 +4169,7 @@
     return r && r.data;
   }
   function serialize(rev) {
-    return JSON.stringify({ app: APP_ID, version: 3, rev, savedAt: Date.now(), items: state.items, run: state.run, history: state.history, people: state.people, roles: state.roles, extraTodos: state.extraTodos }, null, 1);
+    return JSON.stringify({ app: APP_ID, version: 3, rev, savedAt: Date.now(), items: state.items, run: state.run, history: state.history, people: state.people, roles: state.roles, extraTodos: state.extraTodos, schedule: state.schedule }, null, 1);
   }
   function scheduleShared() {
     share.seq++;
@@ -4880,6 +4980,8 @@
     try { await loadTeamFrom(f, f.name); flash(el.agendaMsg, `チーム員 ${team.members.length}名を読み込みました`); }
     catch (e) { alert('チーム員ファイルを読み込めませんでした：' + (e.message || e.name)); }
   });
+  [el.schedDate, el.schedTime].forEach(x => x.addEventListener('change', onScheduleChange));
+  el.schedClear.addEventListener('click', () => { state.schedule = normSchedule(null); save(); render(); el.schedDate.focus(); });
   el.todoBoard.addEventListener('change', onTodoBoardChange);
   el.todoNew.addEventListener('click', () => (xt.mode === 'new' ? closeXt() : openXt('new')));
   el.todoBulkBtn.addEventListener('click', () => (xt.mode === 'bulk' ? closeXt() : openXt('bulk')));
@@ -4962,7 +5064,7 @@
   setInterval(pollShared, 5000);
   setInterval(() => {
     if (runActive()) tick(); // 一時停止中も「予定との差」は増えていくので更新
-    else if (!state.run) { updateEndTime(); updateAgendaTimes(); }
+    else if (!state.run) { updateEndTime(); updateAgendaTimes(); renderSchedule(); renderTimer(); }
   }, 250);
   // 日付が変わったときの「期限切れ」表示の更新
   setInterval(renderTodoBoard, 60000);
