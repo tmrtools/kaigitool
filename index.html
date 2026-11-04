@@ -6,13 +6,13 @@
 <title>会議タイマー＆アジェンダ進行表</title>
 <style>
   :root {
-    --bg: #f4f5f2;
+    --bg: #e6eef0;
     --card: #ffffff;
     --text: #2b3236;
     --muted: #6b757b;
     --line: #dde1dc;
-    --accent: #3d6b7d;
-    --accent-dark: #2f5564;
+    --accent: #2f7a8a;
+    --accent-dark: #1f5966;
     --ok: #5b8a6b;
     --warn: #d9a520;
     --warn-bg: #fdf4d9;
@@ -437,7 +437,7 @@
   }
   .agenda li.done { background: #f3f5f3; color: var(--muted); border-left-color: var(--ok); }
   .agenda li.done .name { text-decoration: line-through; }
-  .agenda li.current { border-left-color: var(--accent); background: #eaf1f3; font-weight: 700; }
+  .agenda li.current { border-left-color: var(--accent); background: #dcedf0; font-weight: 700; }
   .agenda li.current.warn { border-left-color: var(--warn); background: var(--warn-bg); }
   .agenda li.current.over { border-left-color: var(--over); background: var(--over-bg); }
   .agenda .status {
@@ -452,7 +452,7 @@
   .agenda .ops { flex: 0 0 auto; display: flex; gap: 4px; margin-left: auto; }
   .agenda .br { display: none; }
   .agenda .ops button.edit, .note-card button.edit { color: var(--accent-dark); font-weight: 700; }
-  .agenda li.editing { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(61,107,125,.15); background: #fbfdfd; font-weight: 400; }
+  .agenda li.editing { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(47,122,138,.15); background: #fbfdfd; font-weight: 400; }
   .item-edit {
     flex-basis: 100%; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 10px;
     border-top: 1px dashed var(--line); margin-top: 4px; padding-top: 10px; font-weight: 400;
@@ -668,6 +668,40 @@
   .te-foot button { min-height: 42px; padding: 6px 14px; font-size: .92rem; }
 
   /* TODO一覧 */
+  /* 会議外の TODO：追加・まとめて貼り付け・編集 */
+  .todo-add-bar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+  .todo-add-bar button { min-height: 42px; padding: 8px 16px; }
+  .xt-form {
+    border: 2px solid var(--accent); border-radius: 12px; padding: 12px; margin: 0 0 14px; background: #fbfdfd;
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 12px;
+  }
+  .xt-form .full { grid-column: 1 / -1; }
+  .xt-form .xt-lab { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .xt-form h3 { grid-column: 1 / -1; margin: 0; font-size: 1rem; color: var(--accent-dark); }
+  .xt-form label { display: flex; flex-direction: column; gap: 4px; font-size: .8rem; color: var(--muted); font-weight: 600; min-width: 0; }
+  .xt-form input, .xt-form select, .xt-form textarea {
+    font: inherit; font-size: 1rem; font-weight: 400; min-height: 42px; padding: 6px 10px; width: 100%; min-width: 0;
+    border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--text);
+  }
+  .xt-form textarea { line-height: 1.55; resize: vertical; }
+  .xt-form .xt-who { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 6px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  .xt-form .xt-who input { flex: 1 1 160px; width: auto; min-height: 34px; border: none; padding: 4px 6px; }
+  .xt-form .pchip { border: 1px solid var(--line); background: #fff; color: var(--text); border-radius: 999px; padding: 4px 12px; font-size: .9rem; min-height: 34px; }
+  .xt-form .pchip:hover:not(:disabled) { background: #eef2f1; }
+  .xt-form .pchip.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .xt-form .pchip.on::before { content: "✓ "; }
+  .xt-form .acts { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; align-items: center; }
+  .xt-form .acts .note { margin: 0 auto 0 0; font-size: .78rem; font-weight: 400; }
+  .xt-form .acts button { min-height: 42px; }
+  .xt-form .err { grid-column: 1 / -1; color: var(--over); font-weight: 600; font-size: .88rem; }
+  .xt-prev { grid-column: 1 / -1; border: 1px dashed var(--line); border-radius: 8px; padding: 8px 10px; background: #fff; font-size: .9rem; }
+  .xt-prev ol { margin: 4px 0 0; padding-left: 1.4em; }
+  .xt-prev li { margin: 3px 0; word-break: break-word; }
+  .xt-prev .m { color: var(--muted); font-size: .82rem; }
+  .xt-prev .w { color: #8a6a10; font-size: .82rem; font-weight: 600; }
+  .src-chip { display: inline-block; font-size: .72rem; padding: 0 8px; border-radius: 999px; background: #ece8f4; color: #5b4f86; font-weight: 700; margin-right: 4px; }
+  .todo-board li.flash { outline: 3px solid var(--warn); outline-offset: 1px; }
+  @media (max-width: 600px) { .xt-form { grid-template-columns: minmax(0, 1fr); } }
   .todo-tools { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-bottom: 12px; }
   .todo-tools select {
     font: inherit; font-size: .95rem; min-height: 40px; padding: 4px 8px;
@@ -768,6 +802,28 @@
     .todo-row .tdate:first-of-type { margin-left: 30px; }
     .todo-row .tdate + .tdate { margin-left: 30px; }
     .todo-row .toolsel { margin-left: 30px; }
+  }
+  /* ---------- 配色：タイマーを濃い青緑に・ブロックごとに色分け ---------- */
+  header { background: linear-gradient(90deg, #1f5966, #2f7a8a); }
+  .card { box-shadow: 0 2px 6px rgba(31, 89, 102, .08); border-top: 5px solid var(--zone, var(--accent)); }
+  .card > h2, .card > summary h2, .card .h-row h2 { color: var(--zone-text, var(--accent-dark)); }
+  .zone-timer { --zone: #2f7a8a; --zone-text: #1f5966; }
+  .zone-agenda { --zone: #5b8a6b; --zone-text: #3f6b4e; }
+  #todoFold { --zone: #8a7bb0; --zone-text: #5b4f86; }
+  #statsFold { --zone: #c0504d; --zone-text: #8f3330; }
+  #historyFold { --zone: #c98a2e; --zone-text: #8a5a12; }
+  .timer { background: #1f5966; color: #fff; }
+  .timer .label, .timer .sub, .timer .presenter { color: #cfe6ea; }
+  .timer .time { color: #fff; }
+  .timer.warn { background: #7a5a0c; }
+  .timer.warn .time { color: #ffd76b; }
+  .timer.over { background: #8f3330; }
+  .timer.over .time { color: #fff; }
+  .timer .paused-badge { background: rgba(255, 255, 255, .22); }
+  .timer .timer-goal { color: var(--text); }
+  @media (max-width: 600px) {
+    .todo-board li { flex-wrap: wrap; }
+    .todo-board .side { flex-direction: row; flex-wrap: wrap; flex-basis: 100%; justify-content: flex-end; }
   }
 </style>
 </head>
@@ -910,6 +966,7 @@
         <li><b>💬 Teams 用にコピー</b>：Teams のチャットに貼り付けると、見出し・番号付きの一覧・資料のリンクがそのまま表示されます。</li>
         <li><b>➡ 次の会議を準備</b>：議題を「持ち越し・保留だけ残す／同じ議題を使う／空にする」から選んで、次の会議の準備画面に切り替えます。参加者・司会・書記・TODO・履歴はそのまま引き継ぎます。</li>
         <li><b>🅿 あとで話す</b>の行き先は、会議結果でも変えられます。「TODO」を選ぶと、その場で担当（出席者から選ぶ・手入力）と期間（開始〜期限）、WBSツール登録を決められます。「次回の議題」にしたものは次の会議の議題に追加され、「TODO」にしたものはメモした議題の TODO になります。</li>
+        <li><b>🗒 会議外の TODO</b>：会議以外で決まったことは、📝 TODO一覧の「＋ TODO を追加」で登録します（やること・担当・期間・WBSツール・どこで決まったか）。メールなどから何件もあるときは「📥 まとめて貼り付け」に1行1件「やること / 担当 / 期限」で貼り付けます。一覧では「🗒 会議外」の印が付き、「✏ 編集」で直す・削除ができます。次の会議の「前回までの TODO を確認」にも出ます。</li>
         <li><b>📝 TODO一覧</b>：これまでの会議の TODO を期限の近い順に表示します。担当・時期（着手中／開始前）・WBSツールで絞り込み、チェックで完了にできます。「🗂 WBSツール未登録 ○件」を押すと未登録だけになり、「📋 表示中のTODOをコピー」でWBSツールへの入力に使えます。入力したら「✓ 登録済みにする」を押します。</li>
         <li><b>📊 会議の振り返り</b>：会議履歴から、時間内に終わった割合・TODO の完了率・よく延びる議題・担当者別の TODO などを計算します（直近5回／10回／すべて）。「WBSツール未登録の TODO」を押すと TODO 一覧がその条件で絞り込まれます。</li>
         <li><b>🗂 会議履歴</b>：過去の議事録を開いたり、言葉で検索したりできます。持ち越し・保留の議題を貼り付け欄に戻すこともできます。</li>
@@ -1039,7 +1096,7 @@
 
 <main>
   <!-- タイマー -->
-  <section class="card">
+  <section class="card zone-timer">
     <div id="timer" class="timer">
       <div class="label" id="timerLabel">待機中</div>
       <div class="topic" id="timerTopic">アジェンダを登録して「開始」</div>
@@ -1102,7 +1159,7 @@
   </section>
 
   <!-- アジェンダ -->
-  <section class="card">
+  <section class="card zone-agenda">
     <h2 class="h-row">アジェンダ <button type="button" id="btnHelp" class="help-btn" aria-expanded="false" aria-controls="agendaHelp" title="議題の書き方">?</button></h2>
     <div id="agendaHelp" class="help-box hidden">
       <b>まとめて貼り付けるときの書き方</b><br>
@@ -1207,9 +1264,15 @@
   <!-- TODO一覧 -->
   <details id="todoFold" class="card full fold-card">
     <summary><h2>📝 TODO一覧</h2><span id="todoCount" class="note"></span></summary>
+    <div class="todo-add-bar">
+      <button type="button" id="btnTodoNew" title="会議以外で決まった TODO を登録します">＋ TODO を追加</button>
+      <button type="button" id="btnTodoBulk" class="secondary" title="メールなどから、1行1件でまとめて登録します">📥 まとめて貼り付け</button>
+    </div>
+    <div id="todoEditor"></div>
     <div class="todo-tools">
       <label>担当<select id="todoWho"></select></label>
       <label>時期<select id="todoPhase" title="着手中＝開始日を過ぎた・開始日なし／開始前＝開始日がまだ先"><option value="">すべて</option><option value="now">着手中</option><option value="later">開始前（まだ先）</option></select></label>
+      <label>出どころ<select id="todoSrc"><option value="">すべて</option><option value="mtg">会議の TODO</option><option value="extra">🗒 会議外だけ</option></select></label>
       <label>WBSツール<select id="todoTool"><option value="">すべて</option><option value="need">要・未登録</option><option value="done">登録済み</option><option value="none">不要</option><option value="unset">要否 未設定</option></select></label>
       <label><input type="checkbox" id="todoShowDone"> 完了したものも表示</label>
       <button type="button" id="btnCopyTodos" class="secondary small" title="絞り込んだ未完了の TODO を「やること（担当／期間）」の形でコピー（WBSツールへの入力に）">📋 表示中のTODOをコピー</button>
@@ -1217,7 +1280,7 @@
     </div>
     <div id="todoToolSum" class="tool-sum"></div>
     <ul id="todoBoard" class="todo-board"></ul>
-    <p class="note">これまでの会議で記録したTODOをまとめて表示します（期限の近い順）。チェックを付けると完了になり、議事録にも反映されます。次回の会議の冒頭で確認すると便利です。</p>
+    <p class="note">これまでの会議で記録したTODOと、「＋ TODO を追加」で登録した会議外の TODO をまとめて表示します（期限の近い順）。チェックを付けると完了になり、議事録にも反映されます。次回の会議の冒頭で確認すると便利です。</p>
   </details>
   <!-- 会議履歴 -->
   <!-- 会議の振り返りの数字 -->
@@ -1355,6 +1418,16 @@
         dest: PARK_DESTS.includes(x.dest) ? x.dest : 'next', todoId: String(x.todoId || '') }));
     return r;
   }
+  // 会議外の TODO：[{id, text, whos, start, due, done, tool, src（どこで決まったか）, created}]
+  function normExtraTodos(list) {
+    return (Array.isArray(list) ? list : []).filter(t => t && typeof t.text === 'string' && t.text.trim()).map(t => ({
+      id: String(t.id || newId()), text: t.text.slice(0, 200),
+      whos: Array.isArray(t.whos) ? t.whos.map(String).filter(Boolean) : [],
+      start: typeof t.start === 'string' ? t.start : '', due: typeof t.due === 'string' ? t.due : '',
+      done: !!t.done, tool: TOOL_STATES.includes(t.tool) ? t.tool : '',
+      src: typeof t.src === 'string' ? t.src.slice(0, 100) : '', created: Number(t.created) || Date.now(),
+    }));
+  }
   // 保存データを現在の形式にそろえる（古いデータ・共有ファイルの読み込み時）
   function normalize(s) {
     const st = {
@@ -1363,6 +1436,7 @@
       history: s && Array.isArray(s.history) ? s.history : [],
       people: normPeople(s && s.people),
       roles: normRoles(s && s.roles),
+      extraTodos: normExtraTodos(s && s.extraTodos),
     };
     // 担当者として使われている名前（旧TODOの「佐藤 ○○」から担当者を取り出すため）
     const names = new Set(st.people.map(p => p.name));
@@ -1420,7 +1494,7 @@
     statsFold: $('statsFold'), statsBody: $('statsBody'), statsNote: $('statsNote'),
     peoplePick: $('btnPeoplePick'), peoplePicker: $('peoplePicker'), peopleForm: $('peopleForm'), personName: $('personName'), peopleChips: $('peopleChips'), peopleCount: $('peopleCount'),
     roleChair: $('roleChair'), roleScribe: $('roleScribe'), peopleNote: $('peopleNote'), peopleList: $('peopleList'),
-    todoBoard: $('todoBoard'), todoWho: $('todoWho'), todoShowDone: $('todoShowDone'), todoCount: $('todoCount'),
+    todoBoard: $('todoBoard'), todoSrc: $('todoSrc'), todoNew: $('btnTodoNew'), todoBulkBtn: $('btnTodoBulk'), todoEditor: $('todoEditor'), todoWho: $('todoWho'), todoShowDone: $('todoShowDone'), todoCount: $('todoCount'),
     todoPhase: $('todoPhase'), todoTool: $('todoTool'), todoToolSum: $('todoToolSum'), prefToolDefault: $('prefToolDefault'),
     copyTodos: $('btnCopyTodos'), todoMsg: $('todoMsg'),
     teamStatus: $('teamStatus'), teamOpen: $('btnTeamOpen'), teamImport: $('lblTeamImport'), teamFile: $('teamFile'),
@@ -1781,14 +1855,15 @@
     todoRvDoneNow = list.length - open.length;
     el.todoRvChips.innerHTML = (over ? `<span class="r">期限切れ ${over}件</span>` : '') + `<span>未完了 ${open.length}件</span>` +
       (todoRvDoneNow ? `<span class="g">今回 完了 ${todoRvDoneNow}件</span>` : '');
-    el.todoRvList.innerHTML = list.map(({ t, item, run }) => {
+    el.todoRvList.innerHTML = list.map(x => {
+      const t = x.t;
       const dc = dueClass(t);
       const days = dc === 'overdue' ? Math.round((new Date(todayStr()) - new Date(t.due)) / 86400000) : 0;
       const due = t.due ? (dc === 'overdue' ? `<span class="over">期限 ${fmtDue(t.due)}（${days}日過ぎ）</span>` : `期限 ${fmtDue(t.due)}${dc === 'today' ? '（今日まで）' : ''}`) : '期限なし';
       return `<li class="${t.done ? 'done' : dc}" data-tid="${t.id}">
         <input type="checkbox" data-rv-done ${t.done ? 'checked' : ''} aria-label="完了">
         <span class="body"><span class="t">${escapeHtml(t.text)}</span>
-          <span class="meta">${t.whos.length ? `<b>${escapeHtml(whoShort(t.whos))}</b>・` : '担当なし・'}${t.start ? (isLater(t) ? `<span class="later-chip">${fmtDue(t.start)} から開始</span>・` : `${fmtDue(t.start)}〜・`) : ''}${due}・${dateLabel(run.meetingStart)}の会議「${escapeHtml(item.title)}」 ${toolChip(t)}</span></span>
+          <span class="meta">${t.whos.length ? `<b>${escapeHtml(whoShort(t.whos))}</b>・` : '担当なし・'}${t.start ? (isLater(t) ? `<span class="later-chip">${fmtDue(t.start)} から開始</span>・` : `${fmtDue(t.start)}〜・`) : ''}${due}・${srcHTML(x)} ${toolChip(t)}</span></span>
         <label class="due">期限<input type="date" data-rv-due value="${escapeHtml(t.due)}"></label>
       </li>`;
     }).join('');
@@ -2491,8 +2566,13 @@
     let liveId = '';
     if (r && !r.historyDeleted) { add(state.items, r); liveId = String(r.meetingStart); }
     state.history.forEach(h => { if (h.id !== liveId) add(h.items, h.run); });
+    // 会議外の TODO（登録した日を「会議の日」の代わりに使う）
+    (state.extraTodos || []).forEach(t => { if (t.text.trim()) out.push({ t, item: { title: '' }, run: { meetingStart: t.created }, extra: true }); });
     return out;
   }
+  // どこで決まった TODO か（一覧・確認画面・コピー用）
+  const srcText = x => x.extra ? `会議外${x.t.src ? `（${x.t.src}）` : ''}・${dateLabel(x.t.created)}登録` : `${dateLabel(x.run.meetingStart)}の会議「${x.item.title}」`;
+  const srcHTML = x => x.extra ? `<span class="src-chip">🗒 会議外</span>${x.t.src ? escapeHtml(x.t.src) + '・' : ''}${dateLabel(x.t.created)}登録` : escapeHtml(srcText(x));
   function dueClass(t) {
     if (t.done || !t.due) return '';
     const today = todayStr();
@@ -2504,12 +2584,207 @@
       (a.run.meetingStart - b.run.meetingStart));
   }
   let todoKey = '';
+  let todoFlashId = '', todoFlashTimer = 0;
+
+  // ---------- 会議外の TODO（追加・まとめて貼り付け・編集） ----------
+  const xt = { mode: '', id: '', d: null, bulk: { text: '', tool: '', src: '' }, err: '' };
+  const xtCands = extra => orderNames([...new Set([...team.members.map(m => m.name), ...state.people.map(p => p.name), ...extra])]);
+  function openXt(mode, id) {
+    xt.mode = mode; xt.id = id || ''; xt.err = '';
+    if (mode === 'new') xt.d = { ...newTodo(''), src: '' };
+    else if (mode === 'edit') {
+      const t = state.extraTodos.find(t => t.id === id);
+      if (!t) return;
+      xt.d = clone(t);
+    } else xt.bulk = { text: '', tool: toolDefault(), src: '' };
+    el.todoFold.open = true;
+    renderXt();
+    const f = el.todoEditor.querySelector(mode === 'bulk' ? '[data-xb="text"]' : '[data-xf="text"]');
+    if (f) f.focus({ preventScroll: true });
+    el.todoEditor.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+  function closeXt(focusBtn) {
+    const mode = xt.mode;
+    xt.mode = ''; xt.err = '';
+    renderXt();
+    if (focusBtn) (mode === 'bulk' ? el.todoBulkBtn : el.todoNew).focus({ preventScroll: true });
+  }
+  const xtToolSel = (attr, v) => `<select ${attr} aria-label="課の WBSツールへの登録">${TOOL_STATES.map(o => `<option value="${o}" ${v === o ? 'selected' : ''}>${toolOpt(o)}</option>`).join('')}</select>`;
+  const xtSrcIn = (attr, v) => `<input type="text" ${attr} value="${escapeHtml(v)}" maxlength="100" placeholder="例）課長から指示・メールで依頼">`;
+  function renderXt() {
+    el.todoNew.classList.toggle('secondary', xt.mode === 'bulk');
+    el.todoBulkBtn.classList.toggle('secondary', xt.mode !== 'bulk');
+    if (!xt.mode) { el.todoEditor.innerHTML = ''; el.todoNew.classList.remove('secondary'); el.todoBulkBtn.classList.add('secondary'); return; }
+    if (xt.mode === 'bulk') {
+      const rows = parseXtBulk(xt.bulk.text);
+      el.todoEditor.innerHTML = `<div class="xt-form" data-xt>
+        <h3>📥 TODO をまとめて貼り付けて追加</h3>
+        <p class="note full" style="margin:0">1行に1件「やること / 担当 / 期限」。担当・期限は省けます。担当が複数なら「、」で区切ります。期限は「11/20」「11/20まで」「2026-11-20」のどれでも書けます。</p>
+        <label class="full">貼り付け欄<textarea data-xb="text" rows="5" placeholder="会議室の予約 / 高橋 / 11/10まで&#10;アンケート集計 / 佐藤、鈴木 / 11/18&#10;来期予算のたたき台">${escapeHtml(xt.bulk.text)}</textarea></label>
+        <label>WBSツール（全件まとめて）${xtToolSel('data-xb="tool"', xt.bulk.tool)}</label>
+        <label>どこで決まったか（任意）${xtSrcIn('data-xb="src"', xt.bulk.src)}</label>
+        <div class="xt-prev" data-xt-prev>${xtPrevHTML(rows)}</div>
+        <div class="acts"><span class="note">Ctrl＋Enter で追加・Esc で閉じる</span><button type="button" class="secondary" data-xt-act="cancel">キャンセル</button><button type="button" data-xt-act="bulk-add" ${rows.length ? '' : 'disabled'}>${rows.length ? `${rows.length}件を追加` : '追加'}</button></div>
+      </div>`;
+      return;
+    }
+    const d = xt.d, cands = xtCands(d.whos), edit = xt.mode === 'edit';
+    el.todoEditor.innerHTML = `<div class="xt-form" data-xt>
+      <h3>${edit ? '✏ 会議外の TODO を直す' : '＋ 会議外の TODO を追加'}</h3>
+      <label class="full">やること<textarea data-xf="text" rows="2" maxlength="200" placeholder="例）取引先への見積もり回答">${escapeHtml(d.text)}</textarea></label>
+      <div class="full xt-lab"><span class="field-label">担当（押して選ぶ・複数可）</span><div class="xt-who">${cands.map(n => `<button type="button" class="pchip ${d.whos.includes(n) ? 'on' : ''}" data-xt-who="${escapeHtml(n)}" aria-pressed="${d.whos.includes(n)}">${escapeHtml(n)}</button>`).join('')}<input type="text" data-xt-free list="peopleList" maxlength="200" placeholder="${cands.length ? 'ほかの人' : '担当の名前'}（入力して Enter・「、」区切りで複数可）" aria-label="担当の名前を入力"></div></div>
+      <label>開始（空ならすぐ）<input type="date" data-xf="start" value="${escapeHtml(d.start)}"></label>
+      <label>期限<input type="date" data-xf="due" value="${escapeHtml(d.due)}"></label>
+      <label>WBSツール${xtToolSel('data-xf="tool"', d.tool)}</label>
+      <label>どこで決まったか（任意）${xtSrcIn('data-xf="src"', d.src)}</label>
+      ${xt.err ? `<p class="err" role="alert">${escapeHtml(xt.err)}</p>` : ''}
+      <div class="acts"><span class="note">Ctrl＋Enter で${edit ? '保存' : '追加'}・Esc で閉じる</span>${edit ? '<button type="button" class="danger" data-xt-act="del">🗑 削除</button>' : ''}<button type="button" class="secondary" data-xt-act="cancel">キャンセル</button><button type="button" data-xt-act="save">${edit ? '保存' : '追加'}</button></div>
+    </div>`;
+  }
+  // 「11/20」「11/20まで」「11月20日」「2026-11-20」「2026/11/20」→ yyyy-mm-dd（読めなければ null）
+  function parseDueText(raw) {
+    const s = raw.replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).trim()
+      .replace(/^[(（]|[)）]$/g, '').replace(/^期限[:：]?\s*/, '').replace(/\s*まで$/, '').trim();
+    let m = /^(\d{4})[-\/年](\d{1,2})[-\/月](\d{1,2})日?$/.exec(s);
+    let y, mo, da;
+    if (m) { y = +m[1]; mo = +m[2]; da = +m[3]; }
+    else {
+      m = /^(\d{1,2})[\/月](\d{1,2})日?$/.exec(s);
+      if (!m) return null;
+      mo = +m[1]; da = +m[2];
+      const now = new Date();
+      y = now.getFullYear();
+      if (new Date(y, mo - 1, da) < new Date(y, now.getMonth() - 2, now.getDate())) y++;  // 2か月以上前の日付は翌年とみなす
+    }
+    const dt = new Date(y, mo - 1, da);
+    if (dt.getMonth() !== mo - 1 || dt.getDate() !== da) return null;
+    return `${y}-${pad(mo)}-${pad(da)}`;
+  }
+  // 1行1件「やること / 担当 / 期限」。日付の「11/20」の / は区切りとみなさない
+  function parseXtBulk(text) {
+    return String(text || '').split(/\r?\n/)
+      .map(l => l.trim().replace(/^(\d{1,3}\s*[.．)）:：、]|[①-⑳]|[・\-*●○■□◆◇☐□])\s*/, '').trim()).filter(Boolean)
+      .map(l => {
+        const f = l.split(/\t|[／|｜]|(?<!\d)\/|\/(?!\d)/).map(x => x.trim());
+        const body = f.shift() || '';
+        let due = '';
+        const whos = [];
+        f.filter(Boolean).forEach(x => {
+          const d = parseDueText(x);
+          if (d && !due) due = d;
+          else whos.push(...x.split(/[、,，・]|\s+/).map(n => stripParen(n).trim().slice(0, 40)).filter(Boolean));
+        });
+        return { text: body.slice(0, 200), whos: [...new Set(whos)], due };
+      }).filter(r => r.text);
+  }
+  function xtPrevHTML(rows) {
+    if (!rows.length) return '<span class="m">貼り付けると、ここに取り込む内容が表示されます</span>';
+    return `<b>取り込み内容の確認（${rows.length}件）</b><ol>${rows.map(r => {
+      const meta = [r.whos.length ? r.whos.join('・') : '', r.due ? `期限 ${fmtDue(r.due)}` : ''].filter(Boolean).join('・');
+      return `<li>${escapeHtml(r.text)} ${meta ? `<span class="m">— ${escapeHtml(meta)}</span>` : '<span class="w">— 担当・期限なし（あとで一覧の ✏ 編集で決められます）</span>'}</li>`;
+    }).join('')}</ol>`;
+  }
+  function xtTakeFree() {
+    const inp = el.todoEditor.querySelector('[data-xt-free]');
+    const names = inp ? inp.value.split(/[、,，\n\t]+|　/).map(n => n.trim().slice(0, 40)).filter(Boolean) : [];
+    if (names.length) xt.d.whos = [...new Set([...xt.d.whos, ...names])];
+    return names.length;
+  }
+  // 追加・保存したTODOが一覧で見えるようにして、少しの間 目印を付ける
+  function xtShow(id, msg) {
+    const x = collectTodos().find(x => x.t.id === id);
+    if (x && !filterTodos([x]).length) { el.todoWho.value = ''; el.todoPhase.value = ''; el.todoTool.value = ''; el.todoSrc.value = ''; }
+    todoFlashId = id;
+    clearTimeout(todoFlashTimer);
+    todoFlashTimer = setTimeout(() => { todoFlashId = ''; renderTodoBoard(); }, 3000);
+    save(); render();
+    flash(el.todoMsg, msg);
+  }
+  function saveXt() {
+    const d = xt.d;
+    xtTakeFree();
+    d.text = d.text.replace(/\s*\n\s*/g, ' ').trim();
+    const fail = (msg, sel) => { xt.err = msg; renderXt(); const f = el.todoEditor.querySelector(sel); if (f) f.focus(); };
+    if (!d.text) return fail('やることを入力してください', '[data-xf="text"]');
+    if (d.start && d.due && d.start > d.due) return fail('開始日が期限より後になっています', '[data-xf="start"]');
+    const v = { text: d.text.slice(0, 200), whos: orderNames(d.whos), start: d.start, due: d.due, tool: TOOL_STATES.includes(d.tool) ? d.tool : '', src: d.src.trim().slice(0, 100) };
+    let id;
+    if (xt.mode === 'edit') {
+      const t = state.extraTodos.find(t => t.id === xt.id);
+      if (!t) { closeXt(); return; }
+      Object.assign(t, v); id = t.id;
+    } else {
+      id = newId();
+      state.extraTodos.push({ id, ...v, done: false, created: Date.now() });
+    }
+    const edited = xt.mode === 'edit';
+    closeXt();
+    xtShow(id, edited ? '保存しました' : 'TODO を追加しました');
+    if (!edited) el.todoNew.focus({ preventScroll: true });
+  }
+  function bulkAddXt() {
+    const rows = parseXtBulk(xt.bulk.text);
+    if (!rows.length) return;
+    const now = Date.now(), tool = TOOL_STATES.includes(xt.bulk.tool) ? xt.bulk.tool : '', src = xt.bulk.src.trim().slice(0, 100);
+    const ids = rows.map(r => { const id = newId(); state.extraTodos.push({ id, text: r.text, whos: orderNames(r.whos), start: '', due: r.due, done: false, tool, src, created: now }); return id; });
+    closeXt();
+    xtShow(ids[0], `${rows.length}件の TODO を追加しました`);
+    el.todoBulkBtn.focus({ preventScroll: true });
+  }
+  function delXt() {
+    const t = state.extraTodos.find(t => t.id === xt.id);
+    if (!t || !confirm(`「${t.text}」を削除しますか？`)) return;
+    state.extraTodos = state.extraTodos.filter(x => x !== t);
+    closeXt();
+    save(); render();
+    flash(el.todoMsg, '削除しました');
+  }
+  function onXtInput(e) {
+    const f = e.target;
+    if (!xt.mode) return;
+    if (f.dataset.xf) xt.d[f.dataset.xf] = f.value;
+    else if (f.dataset.xb) {
+      xt.bulk[f.dataset.xb] = f.value;
+      if (f.dataset.xb === 'text') {
+        const rows = parseXtBulk(f.value), b = el.todoEditor.querySelector('[data-xt-act="bulk-add"]');
+        el.todoEditor.querySelector('[data-xt-prev]').innerHTML = xtPrevHTML(rows);
+        b.disabled = !rows.length; b.textContent = rows.length ? `${rows.length}件を追加` : '追加';
+      }
+    }
+  }
+  function onXtClick(e) {
+    const w = e.target.closest('[data-xt-who]');
+    if (w) {
+      const n = w.dataset.xtWho;
+      xt.d.whos = xt.d.whos.includes(n) ? xt.d.whos.filter(x => x !== n) : [...xt.d.whos, n];
+      renderXt();
+      const b = el.todoEditor.querySelector(`[data-xt-who="${CSS.escape(n)}"]`);
+      if (b) b.focus();
+      return;
+    }
+    const a = e.target.closest('[data-xt-act]');
+    if (!a) return;
+    ({ cancel: () => closeXt(true), save: saveXt, 'bulk-add': bulkAddXt, del: delXt })[a.dataset.xtAct]();
+  }
+  function onXtKey(e) {
+    if (!xt.mode) return;
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeXt(true); return; }
+    if (e.key !== 'Enter' || e.isComposing) return;
+    if (e.ctrlKey || e.metaKey) { e.preventDefault(); xt.mode === 'bulk' ? bulkAddXt() : saveXt(); return; }
+    if (e.target.matches('[data-xt-free]')) {
+      e.preventDefault();
+      if (xtTakeFree()) { renderXt(); const f = el.todoEditor.querySelector('[data-xt-free]'); if (f) f.focus(); }
+    } else if (e.target.matches('[data-xf="text"], input[data-xf], input[data-xb="src"]')) {
+      e.preventDefault();  // やることは1行。Enter で追加・保存
+      xt.mode === 'bulk' ? bulkAddXt() : saveXt();
+    }
+  }
   function renderTodoBoard() {
     const all = collectTodos();
     const who = el.todoWho.value, showDone = el.todoShowDone.checked;
     const names = [...new Set(all.flatMap(x => x.t.whos))].sort((a, b) => a.localeCompare(b, 'ja'));
     const hasNoWho = all.some(x => !x.t.whos.length);
-    const key = JSON.stringify([all.map(x => [x.t, x.item.title, x.run.meetingStart]), who, showDone, el.todoPhase.value, el.todoTool.value, todayStr(), runActive()]);
+    const key = JSON.stringify([all.map(x => [x.t, x.item.title, x.run.meetingStart]), who, showDone, el.todoPhase.value, el.todoTool.value, el.todoSrc.value, todayStr(), runActive(), todoFlashId]);
     if (key === todoKey) return;
     todoKey = key;
     if (document.activeElement !== el.todoWho) {
@@ -2526,17 +2801,18 @@
     el.todoCount.textContent = all.length ? `未完了 ${open.length}件${over ? `（期限切れ ${over}件）` : ''}` : 'まだありません';
     el.todoCount.classList.toggle('alert', over > 0);
     const list = sortTodos(filterTodos(all));
-    if (!all.length) { el.todoBoard.innerHTML = '<li class="empty" style="border:none;justify-content:center">TODOはまだありません（会議中の記録欄で追加できます）</li>'; return; }
+    if (!all.length) { el.todoBoard.innerHTML = '<li class="empty" style="border:none;justify-content:center">TODOはまだありません（会議中の記録欄か、上の「＋ TODO を追加」で登録できます）</li>'; return; }
     if (!list.length) { el.todoBoard.innerHTML = `<li class="empty" style="border:none;justify-content:center">${showDone ? '該当するTODOはありません' : '未完了のTODOはありません 🎉'}</li>`; return; }
-    el.todoBoard.innerHTML = list.map(({ t, item, run }) => {
+    el.todoBoard.innerHTML = list.map(x => {
+      const { t, run } = x;
       const dc = dueClass(t);
       const dueText = (t.start ? (isLater(t) ? `<span class="later-chip">${fmtDue(t.start)} から開始（まだ先）</span>・` : `<span>${fmtDue(t.start)}〜</span>`) : '') +
         (t.due ? `<span class="due ${dc}">期限 ${fmtDue(t.due)}${dc === 'overdue' ? '（期限切れ）' : dc === 'today' ? '（今日まで）' : ''}</span>` : '<span>期限なし</span>');
-      return `<li class="${t.done ? 'done' : dc}${isLater(t) ? ' later' : ''}">
+      return `<li class="${t.done ? 'done' : dc}${isLater(t) ? ' later' : ''}${t.id === todoFlashId ? ' flash' : ''}" data-tid="${t.id}">
         <input type="checkbox" data-todo-done="${t.id}" ${t.done ? 'checked' : ''} aria-label="完了">
         <span class="body"><span class="t">${escapeHtml(t.text)}</span>
-          <span class="meta">${t.whos.length ? `<span class="who" title="${escapeHtml(t.whos.join('・'))}">${escapeHtml(whoShort(t.whos))}</span>・` : ''}${dueText}・${dateLabel(run.meetingStart)}の会議「${escapeHtml(item.title)}」${run === state.run && runActive() ? '（進行中）' : ''}</span></span>
-        <span class="side">${toolChip(t)}${t.tool === 'need' && !t.done ? `<button type="button" class="small" data-tool-done="${t.id}">✓ 登録済みにする</button>` : ''}</span>
+          <span class="meta">${t.whos.length ? `<span class="who" title="${escapeHtml(t.whos.join('・'))}">${escapeHtml(whoShort(t.whos))}</span>・` : ''}${dueText}・${srcHTML(x)}${run === state.run && runActive() ? '（進行中）' : ''}</span></span>
+        <span class="side">${toolChip(t)}${t.tool === 'need' && !t.done ? `<button type="button" class="small" data-tool-done="${t.id}">✓ 登録済みにする</button>` : ''}${x.extra ? `<button type="button" class="small secondary" data-xt-edit="${t.id}" title="この TODO を直す・削除する">✏ 編集</button>` : ''}</span>
       </li>`;
     }).join('');
   }
@@ -2544,12 +2820,14 @@
   const whoShort = (whos, max = 3) => whos.slice(0, max).join('・') + (whos.length > max ? ` ほか${whos.length - max}名` : '');
   function filterTodos(all) {
     const who = el.todoWho.value, showDone = el.todoShowDone.checked;
-    const phase = el.todoPhase.value, tool = el.todoTool.value;
-    return all.filter(x => (showDone || !x.t.done) && (!who || (who === '\u0000' ? !x.t.whos.length : x.t.whos.includes(who))) &&
+    const phase = el.todoPhase.value, tool = el.todoTool.value, src = el.todoSrc.value;
+    return all.filter(x => (showDone || !x.t.done) && (!src || (src === 'extra') === !!x.extra) && (!who || (who === '\u0000' ? !x.t.whos.length : x.t.whos.includes(who))) &&
       (!phase || (phase === 'later') === isLater(x.t)) &&
       (!tool || (tool === 'unset' ? !x.t.tool : x.t.tool === tool)));
   }
   function onTodoBoardClick(e) {
+    const ed = e.target.closest('button[data-xt-edit]');
+    if (ed) { openXt('edit', ed.dataset.xtEdit); return; }
     const b = e.target.closest('button[data-tool-done]');
     if (!b) return;
     const x = collectTodos().find(x => x.t.id === b.dataset.toolDone);
@@ -2572,11 +2850,11 @@
     const list = sortTodos(filterTodos(collectTodos()).filter(x => !x.t.done));
     if (!list.length) return '';
     const who = el.todoWho.value;
-    const cond = [who && who !== '\u0000' ? `担当：${who}` : '', el.todoPhase.value ? el.todoPhase.selectedOptions[0].text : '', el.todoTool.value ? `WBSツール：${el.todoTool.selectedOptions[0].text}` : ''].filter(Boolean).join('・');
+    const cond = [who && who !== '\u0000' ? `担当：${who}` : '', el.todoPhase.value ? el.todoPhase.selectedOptions[0].text : '', el.todoTool.value ? `WBSツール：${el.todoTool.selectedOptions[0].text}` : '', el.todoSrc.value ? el.todoSrc.selectedOptions[0].text.replace('🗒 ', '') : ''].filter(Boolean).join('・');
     const lines = [`【未完了のTODO】${dateLabel(Date.now())}時点・${list.length}件` + (cond ? `（${cond}）` : '')];
-    list.forEach(({ t, item, run }) => {
-      const dc = dueClass(t);
-      lines.push(`・${todoLine(t)}${dc === 'overdue' ? '［期限切れ］' : dc === 'today' ? '［今日まで］' : ''}${isLater(t) ? '［開始前］' : ''}　← ${dateLabel(run.meetingStart)}「${item.title}」`);
+    list.forEach(x => {
+      const t = x.t, dc = dueClass(t);
+      lines.push(`・${todoLine(t)}${dc === 'overdue' ? '［期限切れ］' : dc === 'today' ? '［今日まで］' : ''}${isLater(t) ? '［開始前］' : ''}　← ${x.extra ? srcText(x) : `${dateLabel(x.run.meetingStart)}「${x.item.title}」`}`);
     });
     return lines.join('\n');
   }
@@ -3638,7 +3916,7 @@
   // 履歴の1件を一時的に state に見立てて、議事録テキストなどを作る
   function withSnapshot(rec, fn) {
     const saved = state;
-    state = { items: rec.items, run: rec.run, history: [], people: [], roles: emptyRoles() };
+    state = { items: rec.items, run: rec.run, history: [], people: [], roles: emptyRoles(), extraTodos: [] };
     try { return fn(); } finally { state = saved; }
   }
   const historyOpen = new Set();
@@ -3791,7 +4069,7 @@
     return r && r.data;
   }
   function serialize(rev) {
-    return JSON.stringify({ app: APP_ID, version: 3, rev, savedAt: Date.now(), items: state.items, run: state.run, history: state.history, people: state.people, roles: state.roles }, null, 1);
+    return JSON.stringify({ app: APP_ID, version: 3, rev, savedAt: Date.now(), items: state.items, run: state.run, history: state.history, people: state.people, roles: state.roles, extraTodos: state.extraTodos }, null, 1);
   }
   function scheduleShared() {
     share.seq++;
@@ -3888,7 +4166,7 @@
     }
     renderShare();
   }
-  const hasLocalData = () => state.items.length > 0 || state.history.length > 0;
+  const hasLocalData = () => state.items.length > 0 || state.history.length > 0 || state.extraTodos.length > 0;
   async function shareOpen() {
     try {
       // ファイルの種類で絞り込まない（環境によってファイルがグレーになり選べないため）。中身は読み込み時に確かめる
@@ -4270,18 +4548,18 @@
   const MINI_CSS = `
     *{box-sizing:border-box} html,body{margin:0;height:100%}
     body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif;
-      background:#eef2f1;color:#2b3236;display:flex;flex-direction:column;justify-content:center;align-items:center;
+      background:#1f5966;color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;
       text-align:center;padding:6px 10px;overflow:hidden;transition:background .3s}
-    body.warn{background:#fdf4d9} body.over{background:#fbe5e3}
-    #mLabel{font-size:clamp(10px,4vw,16px);color:#6b757b}
+    body.warn{background:#7a5a0c} body.over{background:#8f3330}
+    #mLabel{font-size:clamp(10px,4vw,16px);color:#cfe6ea}
     #mTopic{font-size:clamp(12px,6vw,26px);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
     #mTime{font-size:clamp(28px,24vw,140px);font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums}
-    body.warn #mTime{color:#d9a520} body.over #mTime{color:#c0504d}
-    #mDelay{font-size:clamp(10px,3.6vw,15px);font-weight:600;color:#5b8a6b}
-    #mDelay.late{color:#c0504d}
+    body.warn #mTime{color:#ffd76b} body.over #mTime{color:#fff}
+    #mDelay{font-size:clamp(10px,3.6vw,15px);font-weight:600;color:#bfe8c9}
+    #mDelay.late{color:#ffc9c6}
     .b{display:flex;gap:6px;margin-top:4px}
-    button{font:inherit;font-size:clamp(11px,3.6vw,15px);border:none;border-radius:8px;padding:6px 12px;cursor:pointer;background:#3d6b7d;color:#fff}
-    button.s{background:#d6dcd8;color:#2b3236} button:disabled{opacity:.4}`;
+    button{font:inherit;font-size:clamp(11px,3.6vw,15px);border:none;border-radius:8px;padding:6px 12px;cursor:pointer;background:#fff;color:#1f5966;font-weight:600}
+    button.s{background:rgba(255,255,255,.2);color:#fff} button:disabled{opacity:.4}`;
   async function openMini() {
     if (mini && !mini.closed) { try { mini.focus(); } catch (e) { /* ignore */ } return; }
     let w = null;
@@ -4603,6 +4881,11 @@
     catch (e) { alert('チーム員ファイルを読み込めませんでした：' + (e.message || e.name)); }
   });
   el.todoBoard.addEventListener('change', onTodoBoardChange);
+  el.todoNew.addEventListener('click', () => (xt.mode === 'new' ? closeXt() : openXt('new')));
+  el.todoBulkBtn.addEventListener('click', () => (xt.mode === 'bulk' ? closeXt() : openXt('bulk')));
+  el.todoEditor.addEventListener('input', onXtInput);
+  el.todoEditor.addEventListener('click', onXtClick);
+  el.todoEditor.addEventListener('keydown', onXtKey);
   el.todoBoard.addEventListener('click', onTodoBoardClick);
   el.todoToolSum.addEventListener('click', e => {
     const b = e.target.closest('button[data-tool-filter]');
@@ -4610,7 +4893,7 @@
     el.todoTool.value = el.todoTool.value === b.dataset.toolFilter ? '' : b.dataset.toolFilter;
     todoKey = ''; renderTodoBoard();
   });
-  [el.todoPhase, el.todoTool].forEach(x => x.addEventListener('change', () => { todoKey = ''; renderTodoBoard(); }));
+  [el.todoPhase, el.todoTool, el.todoSrc].forEach(x => x.addEventListener('change', () => { todoKey = ''; renderTodoBoard(); }));
   try { el.prefToolDefault.value = toolDefault(); } catch (e) { /* ignore */ }
   el.prefToolDefault.addEventListener('change', () => {
     try { localStorage.setItem(PREF_KEY, JSON.stringify({ toolDefault: el.prefToolDefault.value })); } catch (e) { /* ignore */ }
@@ -4640,7 +4923,7 @@
 
   // キーボード操作：Space=一時停止/再開、→ / N = 次へ（入力中は無効）
   document.addEventListener('keydown', e => {
-    if (e.target.matches('input, textarea, select') || menuOpen() || guideOpen() || anyModalOpen() || !el.nextModal.classList.contains('hidden')) return;
+    if (e.target.matches('input, textarea, select') || e.target.closest('[data-xt]') || menuOpen() || guideOpen() || anyModalOpen() || !el.nextModal.classList.contains('hidden')) return;
     if (!state.run || state.run.status === 'done') return;
     if (e.code === 'Space') { e.preventDefault(); togglePause(); }
     else if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'n') { e.preventDefault(); next(); }
