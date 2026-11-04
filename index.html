@@ -353,7 +353,15 @@
   .add-form #title { flex: 1 1 100%; min-width: 0; font-size: 1.05rem; }
   .add-form .min-wrap { display: flex; align-items: center; gap: 6px; flex: 1 1 0; min-width: 0; }
   .add-form #minutes { flex: 1 1 auto; width: 0; min-width: 60px; }
-  .add-form #presenter { flex: 1 1 100%; min-width: 0; }
+  .add-form .who-wrap { flex: 1 1 100%; }
+  .who-wrap { display: flex; gap: 6px; min-width: 0; width: 100%; }
+  .who-wrap input { flex: 1 1 auto; min-width: 0; width: auto; }
+  .who-pick {
+    flex: 0 0 auto; max-width: 45%; font: inherit; font-size: .95rem; font-weight: 600; padding: 4px 8px;
+    border: 1px solid var(--accent); border-radius: 10px; background: #eef6f8; color: var(--accent-dark); cursor: pointer;
+  }
+  .add-form .who-pick { min-height: 48px; }
+  .item-edit .who-pick { min-height: 42px; width: auto; border-color: var(--accent); background: #eef6f8; }
   .add-form #goal { flex: 1 1 100%; min-width: 0; }
   /* 決めること・報告内容の要約：300字ほど・改行も入れられる。書いた量に合わせて伸びる */
   textarea.goal-ta {
@@ -1195,7 +1203,7 @@
     <summary>＋ 議題を追加</summary>
     <form id="addForm" class="add-form" autocomplete="off">
       <input id="title" type="text" placeholder="議題名" maxlength="100" required>
-      <input id="presenter" type="text" placeholder="担当者（任意）" maxlength="40">
+      <span class="who-wrap"><input id="presenter" type="text" placeholder="担当者（任意・入力 または 右から選ぶ）" maxlength="40" list="peopleList"><select id="presenterPick" class="who-pick" aria-label="チーム員・参加者から担当者を選ぶ" title="チーム員・参加者から選ぶ"><option value="">👥 選ぶ</option></select></span>
       <span class="min-wrap">
         <input id="minutes" type="number" min="1" max="600" step="1" value="10" required aria-label="持ち時間（分）">
         <span>分</span>
@@ -1523,6 +1531,7 @@
     peoplePick: $('btnPeoplePick'), peoplePicker: $('peoplePicker'), peopleForm: $('peopleForm'), personName: $('personName'), peopleChips: $('peopleChips'), peopleCount: $('peopleCount'),
     roleChair: $('roleChair'), roleScribe: $('roleScribe'), peopleNote: $('peopleNote'), peopleList: $('peopleList'),
     schedRow: $('schedRow'), schedDate: $('schedDate'), schedTime: $('schedTime'), schedClear: $('schedClear'), schedRel: $('schedRel'), nextDate: $('nextDate'), nextTime: $('nextTime'),
+    presenterPick: $('presenterPick'),
     todoBoard: $('todoBoard'), todoSrc: $('todoSrc'), todoNew: $('btnTodoNew'), todoBulkBtn: $('btnTodoBulk'), todoEditor: $('todoEditor'), todoWho: $('todoWho'), todoShowDone: $('todoShowDone'), todoCount: $('todoCount'),
     todoPhase: $('todoPhase'), todoTool: $('todoTool'), todoToolSum: $('todoToolSum'), prefToolDefault: $('prefToolDefault'),
     copyTodos: $('btnCopyTodos'), todoMsg: $('todoMsg'),
@@ -2522,6 +2531,28 @@
     const cand = new Set([...team.members, ...state.people, ...people].map(p => p.name));
     state.items.forEach(x => x.presenter && cand.add(x.presenter));
     el.peopleList.innerHTML = [...cand].map(nm => `<option value="${escapeHtml(nm)}">`).join('');
+    if (document.activeElement !== el.presenterPick) el.presenterPick.innerHTML = presenterPickOpts();
+  }
+  // 議題の担当者：チーム員 → 参加者 → これまでの議題の担当者 の順に、リストから選べる（手入力もできる）
+  function presenterCands() {
+    const c = new Set([...team.members, ...state.people].map(p => p.name));
+    state.items.forEach(x => x.presenter && c.add(x.presenter));
+    return [...c];
+  }
+  const presenterPickOpts = () => {
+    const c = presenterCands();
+    return '<option value="">👥 選ぶ</option>' + (c.length ? c.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('')
+      : '<option value="" disabled>（チーム員・参加者が未登録です）</option>');
+  };
+  const presenterPickHTML = () => `<select class="who-pick" aria-label="チーム員・参加者から担当者を選ぶ" title="チーム員・参加者から選ぶ">${presenterPickOpts()}</select>`;
+  function onPresenterPick(e) {
+    const sel = e.target.closest('select.who-pick');
+    if (!sel || !sel.value) return;
+    const inp = sel.parentElement.querySelector('input');
+    inp.value = sel.value;
+    sel.value = '';
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+    inp.focus();
   }
   // ---- チーム員から参加者を選ぶ ----
   let peoplePickerOpen = false;
@@ -3062,7 +3093,7 @@
     const report = d.kind === 'report';
     return `<div class="item-edit" data-edit>
       <label class="full">議題名<input type="text" data-ef="title" value="${escapeHtml(d.title)}" maxlength="100" required></label>
-      <label class="full">担当者<input type="text" data-ef="presenter" value="${escapeHtml(d.presenter)}" maxlength="40" list="peopleList" placeholder="（任意）"></label>
+      <label class="full">担当者<span class="who-wrap"><input type="text" data-ef="presenter" value="${escapeHtml(d.presenter)}" maxlength="40" list="peopleList" placeholder="（任意・入力 または 右から選ぶ）">${presenterPickHTML()}</span></label>
       ${withMinutes ? `<label>持ち時間（分）<input type="number" data-ef="minutes" min="1" max="600" step="1" value="${escapeHtml(String(d.minutes))}"></label>` : ''}
       ${afterMeeting ? '' : `<label class="${withMinutes ? '' : 'full'}">種類<select data-ef="kind"><option value="decide"${report ? '' : ' selected'}>🎯 決める議題</option><option value="report"${report ? ' selected' : ''}>📢 報告の議題</option></select></label>`}
       <label class="full"><span data-goal-label>${goalLabel(report)}</span><textarea data-ef="goal" class="goal-ta" rows="4" maxlength="${GOAL_MAX}" placeholder="${report ? '例）10月の売上は前年比105%（任意・改行もできます）' : '（任意・改行もできます）'}">${escapeHtml(d.goal)}</textarea>${goalCountHTML(d.goal)}</label>
@@ -4982,6 +5013,7 @@
   });
   [el.schedDate, el.schedTime].forEach(x => x.addEventListener('change', onScheduleChange));
   el.schedClear.addEventListener('click', () => { state.schedule = normSchedule(null); save(); render(); el.schedDate.focus(); });
+  document.addEventListener('change', onPresenterPick);
   el.todoBoard.addEventListener('change', onTodoBoardChange);
   el.todoNew.addEventListener('click', () => (xt.mode === 'new' ? closeXt() : openXt('new')));
   el.todoBulkBtn.addEventListener('click', () => (xt.mode === 'bulk' ? closeXt() : openXt('bulk')));
