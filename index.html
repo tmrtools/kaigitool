@@ -357,11 +357,11 @@
   .who-wrap { display: flex; gap: 6px; min-width: 0; width: 100%; }
   .who-wrap input { flex: 1 1 auto; min-width: 0; width: auto; }
   .who-pick {
-    flex: 0 0 auto; max-width: 45%; font: inherit; font-size: .95rem; font-weight: 600; padding: 4px 8px;
+    flex: 0 0 auto; width: 7.2em; font: inherit; font-size: .95rem; font-weight: 600; padding: 4px 8px;
     border: 1px solid var(--accent); border-radius: 10px; background: #eef6f8; color: var(--accent-dark); cursor: pointer;
   }
   .add-form .who-pick { min-height: 48px; }
-  .item-edit .who-pick { min-height: 42px; width: auto; border-color: var(--accent); background: #eef6f8; }
+  .item-edit .who-pick { min-height: 42px; width: 7.2em; border-color: var(--accent); background: #eef6f8; }
   .add-form #goal { flex: 1 1 100%; min-width: 0; }
   /* 決めること・報告内容の要約：300字ほど・改行も入れられる。書いた量に合わせて伸びる */
   textarea.goal-ta {
@@ -856,6 +856,10 @@
 
 <!-- 対応が必要なお知らせだけを画面に出す -->
 <div class="notice-wrap">
+  <div id="reconnectBar" class="conflict hidden">
+    <span id="reconnectText"></span>
+    <button type="button" id="btnReconnectNow">🔗 共有ファイルに接続する</button>
+  </div>
   <div id="conflictBar" class="conflict hidden">
     <span>⚠ 共有ファイルが他の端末で更新されました。この端末にも保存していない変更があります。どちらを残しますか？</span>
     <button type="button" id="btnTakeRemote">共有ファイルの内容を読み込む（この端末の変更は破棄）</button>
@@ -1002,6 +1006,7 @@
       <ul>
         <li>☰ メニュー →「☁ 共有ファイル」で、OneDrive の<b>同期フォルダ</b>にある会議データ（.json）を開くか、新規作成します。</li>
         <li>以後は変更のたびに自動で保存され、他の PC の変更も数秒ごとに読み込みます。ヘッダー右上の「☁ 保存先：共有ファイル」で状態がわかります（保存中は「☁ 共有ファイルに保存中…」、問題があると「⚠」）。</li>
+        <li>ブラウザを開き直すと、ファイルへの許可が切れて接続が外れることがあります。そのときは右上が「⚠ 共有ファイル未接続」になり、画面の上にお知らせが出ます。「🔗 共有ファイルに接続する」を押すと、外れていた間の変更も共有ファイルに書き込まれます。許可を聞かれたときに「毎回許可する」を選ぶと、次からは自動で接続されます。</li>
         <li>同時に編集して重なったときは、画面上の案内で「共有ファイルの内容を読み込む」か「この端末の内容で上書き」を選びます。</li>
         <li>共有ファイルを使わない場合、データはこの PC のブラウザにだけ保存されます。「💾 バックアップ」で書き出し・読み込みができます。</li>
       </ul>
@@ -1541,7 +1546,7 @@
     teamBulk: $('teamBulk'), teamBulkBtn: $('btnTeamBulk'), teamRows: $('teamRows'), teamSaveAs: $('btnTeamSaveAs'),
     teamClose: $('btnTeamClose'), teamMsg: $('teamMsg'), teamNote: $('teamNote'), teamMobileNote: $('teamMobileNote'),
     saveBadge: $('saveBadge'), menu: $('btnMenu'), menuClose: $('btnMenuClose'), drawer: $('drawer'), drawerDim: $('drawerDim'),
-    errorBar: $('errorBar'), errorText: $('errorText'), errorMenu: $('btnErrorMenu'),
+    reconnectBar: $('reconnectBar'), reconnectText: $('reconnectText'), reconnectNow: $('btnReconnectNow'), errorBar: $('errorBar'), errorText: $('errorText'), errorMenu: $('btnErrorMenu'),
     adjustFold: $('adjustFold'), addFold: $('addFold'), peopleFold: $('peopleFold'), todoFold: $('todoFold'), historyFold: $('historyFold'),
     help: $('btnHelp'), agendaHelp: $('agendaHelp'),
     savedNote: $('savedNote'), nextMeeting: $('btnNextMeeting'), nextDim: $('nextDim'), nextModal: $('nextModal'),
@@ -2474,6 +2479,7 @@
     (menuReturn && document.body.contains(menuReturn) ? menuReturn : el.menu).focus();
   }
   const menuOpen = () => !el.drawer.classList.contains('hidden');
+  const needReconnect = () => FS_SUPPORTED && !IS_MOBILE && !share.handle && !!share.storedName;
   // ヘッダーの保存表示と、対応が必要なときのお知らせ
   function renderBadge() {
     let txt, warn = false;
@@ -2482,7 +2488,12 @@
       else if (share.conflict) { txt = '⚠ 要確認'; warn = true; }
       else if (share.saving || isDirty()) txt = '☁ 共有ファイルに保存中…';
       else txt = '☁ 保存先：共有ファイル';
-    } else txt = IS_MOBILE ? '💾 保存先：この端末' : '💾 保存先：この PC';
+    } else if (needReconnect()) { txt = '⚠ 共有ファイル未接続'; warn = true; }
+    else txt = IS_MOBILE ? '💾 保存先：この端末' : '💾 保存先：この PC';
+    // 前回の共有ファイルにつながっていない（ブラウザを開き直すと、ファイルへの許可が切れることがある）
+    const rc = needReconnect();
+    el.reconnectBar.classList.toggle('hidden', !rc);
+    if (rc) el.reconnectText.textContent = `⚠ 共有ファイル「${share.storedName}」に接続していません。今の変更はこの PC にだけ保存されています。接続すると共有ファイルに書き込まれます。`;
     if (!warn && team.error) { txt = '⚠ チーム員'; warn = true; }
     el.saveBadge.textContent = txt;
     el.saveBadge.classList.toggle('warn', warn);
@@ -4315,6 +4326,7 @@
     const h = await idbGet('handle');
     if (!h) { alert('前回のファイルが見つかりません。「共有ファイルを開く」から選んでください。'); share.storedName = ''; renderShare(); return; }
     await connect(h, { fromReconnect: true });
+    if (share.handle) showInfo('✓ 共有ファイル「' + share.handle.name + '」に接続しました。次からは、ファイルの許可で「毎回許可する」を選ぶと自動で接続されます');
   }
   async function shareDisconnect() {
     if (!confirm('共有ファイルとの接続を解除しますか？（以後はこの PC にだけ保存されます）')) return;
@@ -4883,7 +4895,8 @@
   });
   el.peopleChips.addEventListener('click', onPeopleClick);
   el.menu.addEventListener('click', () => menuOpen() ? closeMenu() : openMenu());
-  el.saveBadge.addEventListener('click', () => openMenu());
+  el.saveBadge.addEventListener('click', () => (needReconnect() ? shareReconnect() : openMenu()));
+  el.reconnectNow.addEventListener('click', shareReconnect);
   el.errorMenu.addEventListener('click', () => openMenu());
   el.menuClose.addEventListener('click', closeMenu);
   el.drawerDim.addEventListener('click', closeMenu);
