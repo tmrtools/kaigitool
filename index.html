@@ -1391,6 +1391,7 @@
   function normNotes(notes, names, baseTs) {
     notes.forEach(n => {
       ['decision', 'qa', 'status'].forEach(k => { if (typeof n[k] !== 'string') n[k] = ''; });
+      if (n.status && !STATUSES.includes(n.status) && !REPORT_STATUSES.includes(n.status)) n.status = '';  // 決まった値だけ（改ざんされたファイル対策）
       if (!Array.isArray(n.todos)) n.todos = parseTodoText(n.todo, names, baseTs);
       n.todos.forEach(t => {  // 担当1人（who）→ 複数（whos）
         if (!Array.isArray(t.whos)) t.whos = t.who ? [String(t.who)] : [];
@@ -2161,7 +2162,7 @@
       const n = r.notes[i];
       if (r.skipped[i]) return `<div class="rv-box skipped"><div class="h">${i + 1}. ${escapeHtml(item.title)}<span class="badge 持ち越し">次回へ</span></div><div class="d">今回は話さずに次回へ</div></div>`;
       const dec = n.decision.trim();
-      const st = n.status ? `<span class="badge ${n.status}">${n.status}</span>` : '<span class="warnchip">⚠ 結論が未選択</span>';
+      const st = n.status ? `<span class="badge ${escapeHtml(n.status)}">${escapeHtml(n.status)}</span>` : '<span class="warnchip">⚠ 結論が未選択</span>';
       return `<div class="rv-box"><div class="h">${i + 1}. ${isReport(item) ? '📢 ' : ''}${escapeHtml(item.title)}${st}</div>
         <div class="d ${dec ? '' : 'none'}">${dec ? escapeHtml(dec) : '（記録なし）'}</div></div>`;
     }).join('');
@@ -3321,7 +3322,7 @@
   }
   function statusBadge(i) {
     const n = state.run && state.run.notes && state.run.notes[i];
-    return n && n.status ? `<span class="badge ${n.status}">${n.status}</span>` : '';
+    return n && n.status ? `<span class="badge ${escapeHtml(n.status)}">${escapeHtml(n.status)}</span>` : '';
   }
 
   // ---------- 決まった事の入力欄 ----------
