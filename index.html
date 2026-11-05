@@ -696,6 +696,7 @@
     display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 12px;
   }
   .xt-form .full { grid-column: 1 / -1; }
+  .xt-form .xt-mtg { font-size: .9rem; color: var(--text); padding: 8px 0; word-break: break-word; }
   .xt-form .xt-lab { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
   .xt-form h3 { grid-column: 1 / -1; margin: 0; font-size: 1rem; color: var(--accent-dark); }
   .xt-form label { display: flex; flex-direction: column; gap: 4px; font-size: .8rem; color: var(--muted); font-weight: 600; min-width: 0; }
@@ -993,7 +994,7 @@
         <li><b>💬 Teams 用にコピー</b>：Teams のチャットに貼り付けると、見出し・番号付きの一覧・資料のリンクがそのまま表示されます。</li>
         <li><b>➡ 次の会議を準備</b>：議題を「持ち越し・保留だけ残す／同じ議題を使う／空にする」から選んで、次の会議の準備画面に切り替えます。参加者・司会・書記・TODO・履歴はそのまま引き継ぎます。</li>
         <li><b>🅿 あとで話す</b>の行き先は、会議結果でも変えられます。「TODO」を選ぶと、その場で担当（出席者から選ぶ・手入力）と期間（開始〜期限）、WBSツール登録を決められます。「次回の議題」にしたものは次の会議の議題に追加され、「TODO」にしたものはメモした議題の TODO になります。</li>
-        <li><b>🗒 会議外の TODO</b>：会議以外で決まったことは、📝 TODO一覧の「＋ TODO を追加」で登録します（やること・担当・期間・WBSツール・どこで決まったか）。メールなどから何件もあるときは「📥 まとめて貼り付け」に1行1件「やること / 担当 / 期限」で貼り付けます。一覧では「🗒 会議外」の印が付き、「✏ 編集」で直す・削除ができます。次の会議の「前回までの TODO を確認」にも出ます。</li>
+        <li><b>🗒 会議外の TODO</b>：会議以外で決まったことは、📝 TODO一覧の「＋ TODO を追加」で登録します（やること・担当・期間・WBSツール・どこで決まったか）。メールなどから何件もあるときは「📥 まとめて貼り付け」に1行1件「やること / 担当 / 期限」で貼り付けます。一覧では「🗒 会議外」の印が付き、「✏ 編集」で直す・削除ができます（会議で決めた TODO も同じように直せます）。次の会議の「前回までの TODO を確認」にも出ます。</li>
         <li><b>📝 TODO一覧</b>：これまでの会議の TODO を期限の近い順に表示します。担当・時期（着手中／開始前）・WBSツールで絞り込み、チェックで完了にできます。「🗂 WBSツール未登録 ○件」を押すと未登録だけになり、「📋 表示中のTODOをコピー」でWBSツールへの入力に使えます。入力したら「✓ 登録済みにする」を押します。</li>
         <li><b>📊 会議の振り返り</b>：会議履歴から、時間内に終わった割合・TODO の完了率・よく延びる議題・担当者別の TODO などを計算します（直近5回／10回／すべて）。「WBSツール未登録の TODO」を押すと TODO 一覧がその条件で絞り込まれます。</li>
         <li><b>🗂 会議履歴</b>：過去の議事録を開いたり、言葉で検索したりできます。持ち越し・保留の議題を貼り付け欄に戻すこともできます。</li>
@@ -2668,15 +2669,18 @@
   let todoFlashId = '', todoFlashTimer = 0;
 
   // ---------- 会議外の TODO（追加・まとめて貼り付け・編集） ----------
-  const xt = { mode: '', id: '', d: null, bulk: { text: '', tool: '', src: '' }, err: '' };
+  const xt = { mode: '', id: '', meeting: '', d: null, bulk: { text: '', tool: '', src: '' }, err: '' };
   const xtCands = extra => orderNames([...new Set([...team.members.map(m => m.name), ...state.people.map(p => p.name), ...extra])]);
   function openXt(mode, id) {
     xt.mode = mode; xt.id = id || ''; xt.err = '';
+    xt.meeting = '';
     if (mode === 'new') xt.d = { ...newTodo(''), src: '' };
     else if (mode === 'edit') {
-      const t = state.extraTodos.find(t => t.id === id);
-      if (!t) return;
-      xt.d = clone(t);
+      // 会議外の TODO も、会議で決めた TODO も直せる（会議の TODO は「どこで決まったか」の代わりに会議名を表示）
+      const x = collectTodos().find(x => x.t.id === id);
+      if (!x) return;
+      xt.d = { src: '', ...clone(x.t) };
+      xt.meeting = x.extra ? '' : srcText(x);
     } else xt.bulk = { text: '', tool: toolDefault(), src: '' };
     el.todoFold.open = true;
     renderXt();
@@ -2711,13 +2715,13 @@
     }
     const d = xt.d, cands = xtCands(d.whos), edit = xt.mode === 'edit';
     el.todoEditor.innerHTML = `<div class="xt-form" data-xt>
-      <h3>${edit ? '✏ 会議外の TODO を直す' : '＋ 会議外の TODO を追加'}</h3>
+      <h3>${edit ? (xt.meeting ? '✏ 会議の TODO を直す' : '✏ 会議外の TODO を直す') : '＋ 会議外の TODO を追加'}</h3>
       <label class="full">やること<textarea data-xf="text" rows="2" maxlength="200" placeholder="例）取引先への見積もり回答">${escapeHtml(d.text)}</textarea></label>
       <div class="full xt-lab"><span class="field-label">担当（押して選ぶ・複数可）</span><div class="xt-who">${cands.map(n => `<button type="button" class="pchip ${d.whos.includes(n) ? 'on' : ''}" data-xt-who="${escapeHtml(n)}" aria-pressed="${d.whos.includes(n)}">${escapeHtml(n)}</button>`).join('')}<input type="text" data-xt-free list="peopleList" maxlength="200" placeholder="${cands.length ? 'ほかの人' : '担当の名前'}（入力して Enter・「、」区切りで複数可）" aria-label="担当の名前を入力"></div></div>
       <label>開始（空ならすぐ）<input type="date" data-xf="start" value="${escapeHtml(d.start)}"></label>
       <label>期限<input type="date" data-xf="due" value="${escapeHtml(d.due)}"></label>
       <label>WBSツール${xtToolSel('data-xf="tool"', d.tool)}</label>
-      <label>どこで決まったか（任意）${xtSrcIn('data-xf="src"', d.src)}</label>
+      ${xt.meeting ? `<div class="xt-lab"><span class="field-label">決まった会議</span><span class="xt-mtg">${escapeHtml(xt.meeting)}</span></div>` : `<label>どこで決まったか（任意）${xtSrcIn('data-xf="src"', d.src)}</label>`}
       ${xt.err ? `<p class="err" role="alert">${escapeHtml(xt.err)}</p>` : ''}
       <div class="acts"><span class="note">Ctrl＋Enter で${edit ? '保存' : '追加'}・Esc で閉じる</span>${edit ? '<button type="button" class="danger" data-xt-act="del">🗑 削除</button>' : ''}<button type="button" class="secondary" data-xt-act="cancel">キャンセル</button><button type="button" data-xt-act="save">${edit ? '保存' : '追加'}</button></div>
     </div>`;
@@ -2791,9 +2795,12 @@
     const v = { text: d.text.slice(0, 200), whos: orderNames(d.whos), start: d.start, due: d.due, tool: TOOL_STATES.includes(d.tool) ? d.tool : '', src: d.src.trim().slice(0, 100) };
     let id;
     if (xt.mode === 'edit') {
-      const t = state.extraTodos.find(t => t.id === xt.id);
-      if (!t) { closeXt(); return; }
-      Object.assign(t, v); id = t.id;
+      const x = collectTodos().find(x => x.t.id === xt.id);
+      if (!x) { closeXt(); return; }
+      if (!x.extra) delete v.src;  // 会議の TODO は「どこで決まったか」を持たない
+      Object.assign(x.t, v); id = x.t.id;
+      notesPanelKey = '';  // 進行中・会議結果の記録欄にも反映
+      if (state.run && state.run.status === 'done') setTimeout(renderResultNotes);
     } else {
       id = newId();
       state.extraTodos.push({ id, ...v, done: false, created: Date.now() });
@@ -2813,9 +2820,12 @@
     el.todoBulkBtn.focus({ preventScroll: true });
   }
   function delXt() {
-    const t = state.extraTodos.find(t => t.id === xt.id);
-    if (!t || !confirm(`「${t.text}」を削除しますか？`)) return;
-    state.extraTodos = state.extraTodos.filter(x => x !== t);
+    const x = collectTodos().find(x => x.t.id === xt.id);
+    if (!x || !confirm(`「${x.t.text}」を削除しますか？${x.extra ? '' : '（その会議の議事録からも消えます）'}`)) return;
+    if (x.extra) state.extraTodos = state.extraTodos.filter(t => t !== x.t);
+    else x.run.notes.forEach(n => { n.todos = n.todos.filter(t => t !== x.t); });
+    notesPanelKey = '';
+    if (state.run && state.run.status === 'done') setTimeout(renderResultNotes);
     closeXt();
     save(); render();
     flash(el.todoMsg, '削除しました');
@@ -2893,7 +2903,7 @@
         <input type="checkbox" data-todo-done="${t.id}" ${t.done ? 'checked' : ''} aria-label="完了">
         <span class="body"><span class="t">${escapeHtml(t.text)}</span>
           <span class="meta">${t.whos.length ? `<span class="who" title="${escapeHtml(t.whos.join('・'))}">${escapeHtml(whoShort(t.whos))}</span>・` : ''}${dueText}・${srcHTML(x)}${run === state.run && runActive() ? '（進行中）' : ''}</span></span>
-        <span class="side">${toolChip(t)}${t.tool === 'need' && !t.done ? `<button type="button" class="small" data-tool-done="${t.id}">✓ 登録済みにする</button>` : ''}${x.extra ? `<button type="button" class="small secondary" data-xt-edit="${t.id}" title="この TODO を直す・削除する">✏ 編集</button>` : ''}</span>
+        <span class="side">${toolChip(t)}${t.tool === 'need' && !t.done ? `<button type="button" class="small" data-tool-done="${t.id}">✓ 登録済みにする</button>` : ''}<button type="button" class="small secondary" data-xt-edit="${t.id}" title="この TODO を直す・削除する">✏ 編集</button></span>
       </li>`;
     }).join('');
   }
