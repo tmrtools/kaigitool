@@ -414,6 +414,11 @@
     border: 1px solid var(--line); border-radius: 8px; resize: vertical; color: var(--text); background: #fff;
     line-height: 1.5; overflow-y: hidden;  /* 高さは書いた量に合わせて自動で伸びる（autoGrow） */
   }
+  .copied-note { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 0 0 6px; padding: 6px 10px; border-radius: 8px; background: #f1eff7; color: #5b4f86; font-size: .82rem; font-weight: 600; }
+  .copied-note button { min-height: 30px; padding: 2px 10px; font-size: .8rem; margin-left: auto; }
+  .pref-check { display: flex; gap: 8px; align-items: flex-start; font-size: .92rem; margin: 10px 0 4px; cursor: pointer; }
+  .pref-check input { width: 20px; height: 20px; margin: 2px 0 0; flex: 0 0 auto; accent-color: var(--accent); }
+  .pref-check small { display: block; margin: 2px 0 0; }
   .note-card textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
   .status-btns { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 10px; }
   .status-btns button {
@@ -977,7 +982,7 @@
       <ul>
         <li>会議中は、タイマーの下に今の議題の記録欄が出ます。</li>
         <li><b>決める議題</b>：「決まった事」を書き、結論（決定／保留／持ち越し）を押します。</li>
-        <li><b>報告の議題</b>：「報告の要点」と「質疑・補足」を書き、報告済み／持ち越し を押します。</li>
+        <li><b>報告の議題</b>：「報告の要点」と「質疑・補足」を書き、報告済み／持ち越し を押します。事前に「報告内容の要約」を入れておくと、会議を始めたときに「報告の要点」へ写されるので、話した分だけ書き足せば済みます（いらなければ「↩ 空に戻す」。☰ メニューの「⚙ 設定」で写さないようにもできます）。</li>
         <li><b>TODO</b>：「＋ TODOを追加」で、やること・担当・<b>開始日〜期限</b>を入れます（開始日が空なら「すぐ」）。やることの欄で <b>Enter</b> を押すと次の TODO が増えます。</li>
         <li><b>🗂 WBSツール</b>：課の WBSツールへの登録を「未設定／不要／要・未登録／登録済み」から選びます。新しい TODO の初期値は ☰ メニューの「⚙ 設定」で変えられます。</li>
         <li>担当欄を押すと選択パネルが開き、チーム員・参加者を押して選べます（複数可）。「出席者を全員選ぶ」や、名簿にない人の手入力もできます。</li>
@@ -1109,6 +1114,7 @@
       <label class="pref-row">新しい TODO の WBSツール登録の初期値
         <select id="prefToolDefault"><option value="">未設定</option><option value="need">要・未登録</option><option value="none">不要</option></select>
       </label>
+      <label class="pref-check"><input type="checkbox" id="prefCopyReport"><span>会議を始めるとき、報告の議題の「報告内容の要約」を記録欄の「報告の要点」に写す<small class="note">記録欄に何も書いていない議題だけに写します（この端末に保存）</small></span></label>
       <p class="note">課の WBSツールに入力が必要な TODO が多いときは「要・未登録」にすると、毎回選ぶ手間が減ります（この端末に保存）。</p>
     </section>
     <section class="dsec">
@@ -1432,9 +1438,22 @@
   const TOOL_STATES = ['', 'none', 'need', 'done'];
   const TOOL_LABEL = { '': '要否 未設定', none: 'WBSツール不要', need: 'WBSツール要・未登録', done: 'WBSツール登録済み' };
   const PREF_KEY = 'meetingTimer.prefs';
+  const getPrefs = () => { try { return JSON.parse(localStorage.getItem(PREF_KEY)) || {}; } catch (e) { return {}; } };
+  function setPref(k, v) { try { localStorage.setItem(PREF_KEY, JSON.stringify({ ...getPrefs(), [k]: v })); } catch (e) { /* ignore */ } }
   function toolDefault() {
-    try { const v = (JSON.parse(localStorage.getItem(PREF_KEY)) || {}).toolDefault; return TOOL_STATES.includes(v) && v !== 'done' ? v : ''; } catch (e) { return ''; }
+    const v = getPrefs().toolDefault;
+    return TOOL_STATES.includes(v) && v !== 'done' ? v : '';
   }
+  // 会議を始めるとき、報告の議題の「報告内容の要約」を記録欄の「報告の要点」に写す（初期値はオン）
+  const copyReportOn = () => getPrefs().copyReport !== false;
+  // 報告の議題で、要約があり「報告の要点」がまだ空なら写す（copied=写した印）
+  function copyReportNote(item, n) {
+    if (!copyReportOn() || !isReport(item) || !(item.goal || '').trim() || n.decision.trim()) return;
+    n.decision = item.goal;
+    n.copied = true;
+  }
+  // 写したまま直していない（議事録で「■報告内容」と「■報告」を重ねて書かない・お知らせを出す）
+  const copiedAsIs = (item, n) => !!n.copied && n.decision.trim() === (item.goal || '').trim();
   const newTodo = text => ({ id: newId(), text: text || '', whos: [], start: '', due: '', done: false, tool: toolDefault() });
   function normRun(r, items, names) {
     const n = items.length;
@@ -1539,6 +1558,7 @@
     roleChair: $('roleChair'), roleScribe: $('roleScribe'), peopleNote: $('peopleNote'), peopleList: $('peopleList'),
     schedRow: $('schedRow'), schedDate: $('schedDate'), schedTime: $('schedTime'), schedClear: $('schedClear'), schedRel: $('schedRel'), nextDate: $('nextDate'), nextTime: $('nextTime'),
     presenterPick: $('presenterPick'),
+    prefCopyReport: $('prefCopyReport'),
     todoBoard: $('todoBoard'), todoSrc: $('todoSrc'), todoNew: $('btnTodoNew'), todoBulkBtn: $('btnTodoBulk'), todoEditor: $('todoEditor'), todoWho: $('todoWho'), todoShowDone: $('todoShowDone'), todoCount: $('todoCount'),
     todoPhase: $('todoPhase'), todoTool: $('todoTool'), todoToolSum: $('todoToolSum'), prefToolDefault: $('prefToolDefault'),
     copyTodos: $('btnCopyTodos'), todoMsg: $('todoMsg'),
@@ -1685,7 +1705,7 @@
       elapsed: state.items.map(() => 0),
       startedAt: now, meetingStart: now, meetingEnd: null,
       schedStart: state.schedule.time ? schedTs() : null,  // 開始予定（議事録に「予定より○分遅れて開始」）
-      notes: state.items.map(emptyNote),
+      notes: state.items.map(item => { const n = emptyNote(); copyReportNote(item, n); return n; }),
       plan: state.items.map(x => x.minutes),        // 調整後の持ち時間（分）
       skipped: state.items.map(() => false),         // 「次回へ」にした議題
       plannedEnd: now + origMinutes() * 60000,       // 開始時点の予定終了時刻
@@ -2213,7 +2233,7 @@
       items.forEach(item => {
         state.items.splice(pos, 0, item);
         r.elapsed.splice(pos, 0, 0);
-        r.notes.splice(pos, 0, emptyNote());
+        r.notes.splice(pos, 0, (() => { const n = emptyNote(); copyReportNote(item, n); return n; })());
         r.plan.splice(pos, 0, item.minutes);
         r.skipped.splice(pos, 0, false);
         r.added.splice(pos, 0, true);
@@ -3339,6 +3359,7 @@
       ${h3}${form}
       ${editingNote ? '' : `<div class="goal report"><span class="k">📢 報告内容の要約</span>${item.goal ? escapeHtml(item.goal) : '（未登録）'}</div>`}
       <label class="field-label" for="dec-${i}">📢 報告の要点</label>
+      ${copiedAsIs(item, n) && !editingNote ? `<div class="copied-note">📋 事前の報告内容を写しました。話した内容に合わせて書き足し・直してください<button type="button" class="secondary" data-act="uncopy">↩ 空に戻す</button></div>` : ''}
       <textarea id="dec-${i}" data-field="decision" rows="2" placeholder="例）10月の売上は前年比105%">${escapeHtml(n.decision)}</textarea>
       <label class="field-label" for="qa-${i}">💬 質疑・補足（任意）</label>
       <textarea id="qa-${i}" data-field="qa" rows="2" placeholder="例）Q. 新規顧客の内訳は？ → 次回資料で共有">${escapeHtml(n.qa || '')}</textarea>
@@ -3582,6 +3603,17 @@
   }
   function onNoteClick(e) {
     if (!state.run) return;
+    const uc = e.target.closest('button[data-act="uncopy"]');
+    if (uc) {
+      const i = Number(uc.closest('.note-card').dataset.i), n = state.run.notes[i];
+      n.decision = ''; n.copied = false;
+      notesPanelKey = '';
+      save(); render();
+      if (state.run.status === 'done') renderResultNotes();
+      const ta = document.querySelector(`#${state.run.status === 'done' ? 'resultNotes' : 'notesPanel'} .note-card[data-i="${i}"] textarea[data-field="decision"]`);
+      if (ta) ta.focus();
+      return;
+    }
     const eb = e.target.closest('button[data-act^="note-edit"], [data-edit] button[data-act^="edit-"], [data-edit] button[data-act^="link-"]');
     if (eb) {
       const card = eb.closest('.note-card'), i = Number(card.dataset.i);
@@ -3838,7 +3870,7 @@
       const dec = n.decision.trim();
       const tag = n.status ? `【${n.status}】` : '';
       if (isReport(item)) {
-        if (item.goal) lines.push(`   ■報告内容：${indentLines(item.goal, '     ')}`);
+        if (item.goal && !copiedAsIs(item, n)) lines.push(`   ■報告内容：${indentLines(item.goal, '     ')}`);
         lines.push(`   ■報告：${dec ? indentLines(dec, '     ') : '（記録なし）'}${tag}`);
         const qa = (n.qa || '').trim();
         if (qa) lines.push(`   ■質疑・補足：${indentLines(qa, '     ')}`);
@@ -5053,8 +5085,13 @@
   });
   [el.todoPhase, el.todoTool, el.todoSrc].forEach(x => x.addEventListener('change', () => { todoKey = ''; renderTodoBoard(); }));
   try { el.prefToolDefault.value = toolDefault(); } catch (e) { /* ignore */ }
+  el.prefCopyReport.checked = copyReportOn();
+  el.prefCopyReport.addEventListener('change', () => {
+    setPref('copyReport', el.prefCopyReport.checked);
+    showInfo(el.prefCopyReport.checked ? '✓ 会議を始めるとき、報告内容の要約を「報告の要点」に写します' : '✓ 報告内容の要約は「報告の要点」に写しません');
+  });
   el.prefToolDefault.addEventListener('change', () => {
-    try { localStorage.setItem(PREF_KEY, JSON.stringify({ toolDefault: el.prefToolDefault.value })); } catch (e) { /* ignore */ }
+    setPref('toolDefault', el.prefToolDefault.value);
     showInfo('✓ 新しい TODO の WBSツール登録の初期値を「' + el.prefToolDefault.selectedOptions[0].text + '」にしました');
   });
   el.todoWho.addEventListener('change', () => { todoKey = ''; renderTodoBoard(); });
