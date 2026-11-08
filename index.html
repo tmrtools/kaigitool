@@ -693,6 +693,60 @@
   .te-foot button { min-height: 42px; padding: 6px 14px; font-size: .92rem; }
 
   /* TODO一覧 */
+  /* TODO の付箋ボード（担当×期限。スマホ幅では担当ごとの縦並び） */
+  .sb-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 12px; }
+  .sb-tabs { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .sb-tabs button { border-radius: 0; min-height: 40px; padding: 6px 16px; background: #fff; color: var(--text); font-size: .95rem; }
+  .sb-tabs button:hover:not(:disabled) { background: #f3f1f8; }
+  .sb-tabs button[aria-pressed="true"] { background: #8a7bb0; color: #fff; font-weight: 700; }
+  .sb-top #btnBoardFull { min-height: 40px; padding: 6px 14px; }
+  .sb-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: .78rem; color: var(--muted); margin: 0 0 10px; }
+  .sb-legend i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: -2px; margin-right: 4px; border: 1px solid rgba(0, 0, 0, .12); }
+  .sb-wrap { overflow-x: auto; padding-bottom: 6px; }
+  table.sb { border-collapse: separate; border-spacing: 6px; width: 100%; min-width: 760px; table-layout: fixed; }
+  table.sb th { font-size: .85rem; font-weight: 700; text-align: left; padding: 4px 8px; }
+  table.sb th.col { background: #f3f1f8; border-radius: 8px; color: #5b4f86; }
+  table.sb th.col.over { background: #fbe5e3; color: #8f3330; }
+  table.sb th.row { width: 92px; background: #f4f8f9; border-radius: 8px; color: var(--accent-dark); font-size: .95rem; vertical-align: top; padding-top: 10px; border-left: 4px solid var(--pc); word-break: break-word; }
+  table.sb th.row small, .sb-col h4 small { display: block; font-weight: 400; font-size: .72rem; color: var(--muted); }
+  table.sb th, table.sb td { white-space: normal; border-bottom: none; }
+  table.sb thead th:first-child { width: 96px; }
+  .sbfull table.sb thead th:first-child { width: 120px; }
+  table.sb td { vertical-align: top; text-align: left; background: rgba(0, 0, 0, .025); border-radius: 8px; padding: 6px; }
+  .st {
+    position: relative; display: block; text-align: left; border-radius: 4px 4px 4px 14px; padding: 8px 10px 8px 12px; margin: 0 0 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 6px 10px -6px rgba(0, 0, 0, .18); font-size: .88rem; line-height: 1.4; cursor: pointer;
+    border-left: 5px solid var(--pc, #b8c0c4); word-break: break-word; overflow-wrap: anywhere;
+  }
+  .st:nth-child(odd) { transform: rotate(-.5deg); } .st:nth-child(even) { transform: rotate(.4deg); }
+  .st:hover, .st:focus-visible, .st.open { transform: none; box-shadow: 0 4px 12px rgba(0, 0, 0, .2); outline: none; }
+  .st:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .st .t { display: block; font-weight: 700; font-size: .95rem; color: #2b3236; }
+  .st .d { display: block; margin-top: 4px; font-size: .8rem; font-weight: 700; }
+  .st .w { display: block; font-size: .76rem; color: #55606a; margin-top: 2px; }
+  .st .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+  .st .tags span { font-size: .68rem; padding: 0 6px; border-radius: 999px; background: rgba(255, 255, 255, .8); color: #5b4f86; font-weight: 700; }
+  .st.over { background: #fde0dd; } .st.over .d { color: #a3302c; }
+  .st.soon { background: #fff1b8; } .st.soon .d { color: #7a5a0c; }
+  .st.ok { background: #dff3e3; } .st.ok .d { color: #3f6b4e; }
+  .st.later { background: #e9edf0; } .st.later .d { color: #55606a; }
+  .st.none { background: #fffdf6; border-top: 1px solid #ece6d6; border-right: 1px solid #ece6d6; border-bottom: 1px solid #ece6d6; } .st.none .d { color: #8a8f94; }
+  .st.done { background: #f1f3f2; opacity: .6; } .st.done .t { text-decoration: line-through; } .st.done .d { color: var(--muted); }
+  .st.flash { outline: 3px solid var(--warn); outline-offset: 2px; }
+  .st-pop { position: absolute; z-index: 6; left: 8px; top: calc(100% + 4px); background: #fff; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 24px rgba(0, 0, 0, .2); padding: 6px; display: flex; flex-wrap: wrap; gap: 6px; width: max-content; max-width: 280px; cursor: default; }
+  .st-pop button { min-height: 36px; padding: 4px 12px; font-size: .85rem; white-space: nowrap; }
+  .sb-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+  .sb-col { background: rgba(0, 0, 0, .03); border-radius: 10px; padding: 8px; border-top: 4px solid var(--pc); }
+  .sb-col h4 { margin: 0 0 8px; font-size: .95rem; color: var(--accent-dark); display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+  .sb-col h4 small { display: inline; }
+  .sb-empty { color: var(--muted); text-align: center; padding: 20px 0; }
+  .sbfull { position: fixed; inset: 0; z-index: 70; background: #e6eef0; padding: 16px 20px; overflow: auto; }
+  .sbfull .fh { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 10px; }
+  .sbfull .fh h2 { margin: 0; color: #1f5966; font-size: 1.4rem; flex: 1 1 auto; }
+  .sbfull .fh small { color: var(--muted); font-size: .9rem; }
+  .sbfull table.sb .st .t { font-size: 1.1rem; } .sbfull table.sb .st .d { font-size: .95rem; }
+  .sbfull table.sb th.row { font-size: 1.1rem; width: 110px; }
+  .sbfull table.sb th.col { font-size: .95rem; }
   /* 会議外の TODO：追加・まとめて貼り付け・編集 */
   .todo-add-bar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
   .todo-add-bar button { min-height: 42px; padding: 8px 16px; }
@@ -894,6 +948,11 @@
 </div>
 
 <!-- ① 前回までの TODO を確認（開始前） -->
+<!-- 付箋ボード（大きく表示） -->
+<div id="boardFull" class="sbfull hidden" role="dialog" aria-modal="true" aria-labelledby="boardFullTitle">
+  <div class="fh"><h2 id="boardFullTitle">🗒 TODO 付箋ボード</h2><small id="boardFullInfo"></small><button type="button" id="btnBoardFullClose" class="secondary">✕ 閉じる</button></div>
+  <div id="boardFullBody"></div>
+</div>
 <div id="todoRvDim" class="drawer-dim hidden"></div>
 <div id="todoRvModal" class="modal wide hidden" role="dialog" aria-modal="true" aria-labelledby="todoRvTitle">
   <h3 id="todoRvTitle">📋 前回までの TODO を確認</h3>
@@ -999,6 +1058,7 @@
         <li><b>💬 Teams 用にコピー</b>：Teams のチャットに貼り付けると、見出し・番号付きの一覧・資料のリンクがそのまま表示されます。</li>
         <li><b>➡ 次の会議を準備</b>：議題を「持ち越し・保留だけ残す／同じ議題を使う／空にする」から選んで、次の会議の準備画面に切り替えます。参加者・司会・書記・TODO・履歴はそのまま引き継ぎます。</li>
         <li><b>🅿 あとで話す</b>の行き先は、会議結果でも変えられます。「TODO」を選ぶと、その場で担当（出席者から選ぶ・手入力）と期間（開始〜期限）、WBSツール登録を決められます。「次回の議題」にしたものは次の会議の議題に追加され、「TODO」にしたものはメモした議題の TODO になります。</li>
+        <li><b>🗒 付箋ボード</b>：📝 TODO一覧の「🗒 付箋ボード」で、TODO を付箋の形で「担当（縦）× 期限（横：期限切れ／今週／来週／それ以降／期限なし）」に並べます。付箋の色は期限の状態（赤＝期限切れ、黄＝3日以内、緑＝余裕あり、灰＝開始前）、左端の線は担当者ごとの色です。付箋を押すと「✓ 完了」「✏ 編集」「📋 リストで見る」。「⛶ 大きく表示」で画面いっぱいに出せるので、会議の冒頭にモニターへ映すと便利です。スマホでは担当ごとの縦並びになります。絞り込み（担当・時期・出どころ・WBSツール）は付箋ボードにも効きます。</li>
         <li><b>🗒 会議外の TODO</b>：会議以外で決まったことは、📝 TODO一覧の「＋ TODO を追加」で登録します（やること・担当・期間・WBSツール・どこで決まったか）。メールなどから何件もあるときは「📥 まとめて貼り付け」に1行1件「やること / 担当 / 期限」で貼り付けます。一覧では「🗒 会議外」の印が付き、「✏ 編集」で直す・削除ができます（会議で決めた TODO も同じように直せます）。次の会議の「前回までの TODO を確認」にも出ます。</li>
         <li><b>📝 TODO一覧</b>：これまでの会議の TODO を期限の近い順に表示します。担当・時期（着手中／開始前）・WBSツールで絞り込み、チェックで完了にできます。「🗂 WBSツール未登録 ○件」を押すと未登録だけになり、「📋 表示中のTODOをコピー」でWBSツールへの入力に使えます。入力したら「✓ 登録済みにする」を押します。</li>
         <li><b>📊 会議の振り返り</b>：会議履歴から、時間内に終わった割合・TODO の完了率・よく延びる議題・担当者別の TODO などを計算します（直近5回／10回／すべて）。「WBSツール未登録の TODO」を押すと TODO 一覧がその条件で絞り込まれます。</li>
@@ -1306,6 +1366,13 @@
   <!-- TODO一覧 -->
   <details id="todoFold" class="card full fold-card">
     <summary><h2>📝 TODO一覧</h2><span id="todoCount" class="note"></span></summary>
+    <div class="sb-top">
+      <div class="sb-tabs" role="group" aria-label="TODO の表示のしかた">
+        <button type="button" data-view="list" aria-pressed="true">📋 リスト</button>
+        <button type="button" data-view="board" aria-pressed="false">🗒 付箋ボード</button>
+      </div>
+      <button type="button" id="btnBoardFull" class="secondary hidden" title="付箋ボードを画面いっぱいに表示（会議でモニターに映すとき）">⛶ 大きく表示</button>
+    </div>
     <div class="todo-add-bar">
       <button type="button" id="btnTodoNew" title="会議以外で決まった TODO を登録します">＋ TODO を追加</button>
       <button type="button" id="btnTodoBulk" class="secondary" title="メールなどから、1行1件でまとめて登録します">📥 まとめて貼り付け</button>
@@ -1322,6 +1389,7 @@
     </div>
     <div id="todoToolSum" class="tool-sum"></div>
     <ul id="todoBoard" class="todo-board"></ul>
+    <div id="todoSticky" class="hidden"></div>
     <p class="note">これまでの会議で記録したTODOと、「＋ TODO を追加」で登録した会議外の TODO をまとめて表示します（期限の近い順）。チェックを付けると完了になり、議事録にも反映されます。次回の会議の冒頭で確認すると便利です。</p>
   </details>
   <!-- 会議履歴 -->
@@ -1559,6 +1627,7 @@
     schedRow: $('schedRow'), schedDate: $('schedDate'), schedTime: $('schedTime'), schedClear: $('schedClear'), schedRel: $('schedRel'), nextDate: $('nextDate'), nextTime: $('nextTime'),
     presenterPick: $('presenterPick'),
     prefCopyReport: $('prefCopyReport'),
+    todoSticky: $('todoSticky'), boardFull: $('boardFull'), boardFullBody: $('boardFullBody'), boardFullInfo: $('boardFullInfo'), boardFullBtn: $('btnBoardFull'), boardFullClose: $('btnBoardFullClose'),
     todoBoard: $('todoBoard'), todoSrc: $('todoSrc'), todoNew: $('btnTodoNew'), todoBulkBtn: $('btnTodoBulk'), todoEditor: $('todoEditor'), todoWho: $('todoWho'), todoShowDone: $('todoShowDone'), todoCount: $('todoCount'),
     todoPhase: $('todoPhase'), todoTool: $('todoTool'), todoToolSum: $('todoToolSum'), prefToolDefault: $('prefToolDefault'),
     copyTodos: $('btnCopyTodos'), todoMsg: $('todoMsg'),
@@ -2891,12 +2960,155 @@
       xt.mode === 'bulk' ? bulkAddXt() : saveXt();
     }
   }
+  // ---------- TODO の付箋ボード ----------
+  // 担当×期限の表（スマホ幅では担当ごとの縦並び）。付箋の色＝期限の状態、左端の線＝担当者の色
+  let todoView = 'list', stPop = '';
+  const boardFullOpen = () => !el.boardFull.classList.contains('hidden');
+  const stNarrow = () => window.matchMedia('(max-width: 640px)').matches;
+  const PCOL = ['#2f7a8a', '#c98a2e', '#8a7bb0', '#5b8a6b', '#c0504d', '#3d6bb0', '#9a6b4b', '#6b7d2e'];
+  const daysLeft = due => Math.round((new Date(due + 'T00:00') - new Date(todayStr() + 'T00:00')) / 86400000);
+  function stBuckets() {
+    const md = n => { const d = new Date(todayStr() + 'T00:00'); d.setDate(d.getDate() + n); return `${d.getMonth() + 1}/${d.getDate()}`; };
+    return [['over', '期限切れ'], ['week', `今週（〜${md(7)}）`], ['next', `来週（〜${md(14)}）`], ['later', 'それ以降'], ['none', '期限なし']];
+  }
+  function stBucket(t) {
+    if (!t.due) return 'none';
+    const d = daysLeft(t.due);
+    return d < 0 ? 'over' : d <= 7 ? 'week' : d <= 14 ? 'next' : 'later';
+  }
+  function stTone(t) {
+    if (t.done) return 'done';
+    if (isLater(t)) return 'later';
+    if (!t.due) return 'none';
+    const d = daysLeft(t.due);
+    return d < 0 ? 'over' : d <= 3 ? 'soon' : 'ok';
+  }
+  function stickyHTML(x, who, showWho, colors) {
+    const t = x.t, tone = stTone(t), d = t.due ? daysLeft(t.due) : 0;
+    const due = !t.due ? '期限なし' : `${fmtDue(t.due)}まで・${t.done ? '完了' : d < 0 ? `${-d}日過ぎ` : d === 0 ? '今日まで' : `あと${d}日`}`;
+    const tags = [x.extra ? '🗒 会議外' : '', t.whos.length > 1 ? '👥 共同' : '', t.tool === 'need' && !t.done ? '⚠ WBS未登録' : '', isLater(t) ? `${fmtDue(t.start)}から` : ''].filter(Boolean);
+    const pid = `${t.id}|${who}`, open = stPop === pid;
+    const pop = open ? `<span class="st-pop" role="group" aria-label="この TODO の操作">
+        <button type="button" data-st-act="done">${t.done ? '↩ 未完了に戻す' : '✓ 完了'}</button>
+        <button type="button" class="secondary" data-st-act="edit">✏ 編集</button>
+        <button type="button" class="secondary" data-st-act="list">📋 リストで見る</button></span>` : '';
+    return `<div class="st ${tone}${open ? ' open' : ''}${t.id === todoFlashId ? ' flash' : ''}" role="button" tabindex="0" aria-expanded="${open}" data-st="${escapeHtml(pid)}" style="--pc:${who ? colors.get(who) : '#b8c0c4'}" title="${escapeHtml(srcText(x))}">` +
+      `<span class="t">${escapeHtml(t.text)}</span><span class="d">${tone === 'over' ? '⚠ ' : ''}${due}</span>` +
+      (showWho ? `<span class="w">👤 ${escapeHtml(t.whos.length ? whoShort(t.whos) : '担当なし')}</span>` : '') +
+      (tags.length ? `<span class="tags">${tags.map(g => `<span>${escapeHtml(g)}</span>`).join('')}</span>` : '') + pop + '</div>';
+  }
+  function stickyBoardHTML(all, list, emptyMsg, narrow) {
+    const legend = '<div class="sb-legend"><span><i style="background:#fde0dd"></i>期限切れ</span><span><i style="background:#fff1b8"></i>3日以内</span><span><i style="background:#dff3e3"></i>余裕あり</span><span><i style="background:#e9edf0"></i>開始前</span><span><i style="background:#fffdf6"></i>期限なし</span><span>付箋を押すと「✓ 完了」「✏ 編集」</span></div>';
+    if (emptyMsg) return legend + `<p class="sb-empty">${escapeHtml(emptyMsg)}</p>`;
+    // 担当者の色は、絞り込みに関係なく同じ人が同じ色になるように、全 TODO の担当者で決める
+    const everyone = orderNames([...new Set([...team.members.map(m => m.name), ...all.flatMap(x => x.t.whos)])]);
+    const colors = new Map(everyone.map((n, k) => [n, PCOL[k % PCOL.length]]));
+    const filterWho = el.todoWho.value;
+    let people = orderNames([...new Set(list.flatMap(x => x.t.whos))]);
+    if (filterWho && filterWho !== '\u0000') people = people.filter(n => n === filterWho);  // 担当で絞り込んだときは、その人の行だけ
+    const rows = people.map(n => [n, list.filter(x => x.t.whos.includes(n))]);
+    const noWho = list.filter(x => !x.t.whos.length);
+    if (noWho.length) rows.push(['', noWho]);
+    const label = n => n ? escapeHtml(n) : '（担当なし）';
+    const cnt = xs => { const o = xs.filter(x => !x.t.done).length; return `未完了 ${o}件`; };
+    if (narrow) {
+      return legend + `<div class="sb-cols">${rows.map(([n, xs]) => `<div class="sb-col" style="--pc:${n ? colors.get(n) : '#b8c0c4'}"><h4>👤 ${label(n)}<small>${cnt(xs)}</small></h4>${xs.map(x => stickyHTML(x, n, false, colors)).join('')}</div>`).join('')}</div>`;
+    }
+    const B = stBuckets();
+    return legend + `<div class="sb-wrap"><table class="sb"><thead><tr><th></th>${B.map(([k, l]) => `<th class="col${k === 'over' ? ' over' : ''}" scope="col">${l}</th>`).join('')}</tr></thead><tbody>` +
+      rows.map(([n, xs]) => `<tr><th class="row" scope="row" style="--pc:${n ? colors.get(n) : '#b8c0c4'}">${label(n)}<small>${cnt(xs)}</small></th>${B.map(([k]) => `<td>${xs.filter(x => stBucket(x.t) === k).map(x => stickyHTML(x, n, false, colors)).join('')}</td>`).join('')}</tr>`).join('') +
+      '</tbody></table></div>';
+  }
+  function renderSticky(all, list, emptyMsg) {
+    const board = todoView === 'board';
+    el.todoFold.querySelectorAll('.sb-tabs button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === todoView)));
+    el.boardFullBtn.classList.toggle('hidden', !board);
+    el.todoBoard.classList.toggle('hidden', board);
+    el.todoSticky.classList.toggle('hidden', !board);
+    el.todoSticky.innerHTML = board && !boardFullOpen() ? stickyBoardHTML(all, list, emptyMsg, stNarrow()) : '';
+    if (boardFullOpen()) {
+      const open = all.filter(x => !x.t.done), over = open.filter(x => dueClass(x.t) === 'overdue').length, d = new Date();
+      const cond = [el.todoWho.value ? (el.todoWho.value === '\u0000' ? '担当なし' : `担当：${el.todoWho.value}`) : '', el.todoPhase.value ? el.todoPhase.selectedOptions[0].text : '',
+        el.todoSrc.value ? el.todoSrc.selectedOptions[0].text.replace('🗒 ', '') : '', el.todoTool.value ? `WBSツール：${el.todoTool.selectedOptions[0].text}` : ''].filter(Boolean).join('・');
+      el.boardFullInfo.textContent = `${d.getMonth() + 1}/${d.getDate()}（${WD[d.getDay()]}）時点・未完了 ${open.length}件${over ? `・期限切れ ${over}件` : ''}${cond ? `（絞り込み：${cond}）` : ''}`;
+      el.boardFullBody.innerHTML = stickyBoardHTML(all, list, emptyMsg, stNarrow());
+    }
+  }
+  function setTodoView(v) {
+    todoView = v === 'board' ? 'board' : 'list';
+    stPop = '';
+    saveUi();
+    todoKey = ''; renderTodoBoard();
+  }
+  function openBoardFull() {
+    stPop = '';
+    el.boardFull.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    todoKey = ''; renderTodoBoard();
+    el.boardFullClose.focus();
+  }
+  function closeBoardFull() {
+    if (!boardFullOpen()) return;
+    el.boardFull.classList.add('hidden');
+    document.body.style.overflow = '';
+    stPop = '';
+    todoKey = ''; renderTodoBoard();
+    if (todoView === 'board') el.boardFullBtn.focus({ preventScroll: true });
+  }
+  function onStickyClick(e) {
+    const act = e.target.closest('[data-st-act]');
+    const st = e.target.closest('.st');
+    if (!st) return;
+    const [id] = st.dataset.st.split('|');
+    if (act) {
+      e.stopPropagation();
+      const x = collectTodos().find(x => x.t.id === id);
+      if (!x) return;
+      stPop = '';
+      todoKey = ''; renderTodoBoard();  // 操作ボタンを閉じる
+      if (act.dataset.stAct === 'done') {
+        x.t.done = !x.t.done;
+        notesPanelKey = '';
+        save(); render();
+        if (state.run && state.run.status === 'done') renderResultNotes();
+        flash(el.todoMsg, x.t.done ? `「${x.t.text}」を完了にしました` : `「${x.t.text}」を未完了に戻しました`);
+      } else if (act.dataset.stAct === 'edit') {
+        closeBoardFull();
+        openXt('edit', id);
+      } else {
+        closeBoardFull();
+        todoView = 'list'; saveUi();
+        if (!filterTodos([x]).length) { el.todoWho.value = ''; el.todoPhase.value = ''; el.todoTool.value = ''; el.todoSrc.value = ''; if (x.t.done) el.todoShowDone.checked = true; }
+        todoFlashId = id;
+        clearTimeout(todoFlashTimer);
+        todoFlashTimer = setTimeout(() => { todoFlashId = ''; renderTodoBoard(); }, 3000);
+        todoKey = ''; renderTodoBoard();
+        const li = el.todoBoard.querySelector(`li[data-tid="${CSS.escape(id)}"]`);
+        if (li) li.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+      return;
+    }
+    if (e.target.closest('.st-pop')) return;
+    stPop = stPop === st.dataset.st ? '' : st.dataset.st;
+    const key = stPop;
+    todoKey = ''; renderTodoBoard();
+    const again = document.querySelector(`${boardFullOpen() ? '#boardFullBody' : '#todoSticky'} .st[data-st="${CSS.escape(st.dataset.st)}"]`);
+    if (again) (key ? again.querySelector('[data-st-act]') || again : again).focus({ preventScroll: true });
+  }
+  function onStickyKey(e) {
+    const st = e.target.closest('.st');
+    if (!st) return;
+    if (e.key === 'Escape' && stPop) { e.preventDefault(); e.stopPropagation(); const id = stPop; stPop = ''; todoKey = ''; renderTodoBoard(); const again = document.querySelector(`.st[data-st="${CSS.escape(id)}"]`); if (again) again.focus(); return; }
+    if ((e.key === 'Enter' || e.key === ' ') && e.target === st) { e.preventDefault(); st.click(); }
+  }
+
   function renderTodoBoard() {
     const all = collectTodos();
     const who = el.todoWho.value, showDone = el.todoShowDone.checked;
     const names = [...new Set(all.flatMap(x => x.t.whos))].sort((a, b) => a.localeCompare(b, 'ja'));
     const hasNoWho = all.some(x => !x.t.whos.length);
-    const key = JSON.stringify([all.map(x => [x.t, x.item.title, x.run.meetingStart]), who, showDone, el.todoPhase.value, el.todoTool.value, el.todoSrc.value, todayStr(), runActive(), todoFlashId]);
+    const key = JSON.stringify([all.map(x => [x.t, x.item.title, x.run.meetingStart]), who, showDone, el.todoPhase.value, el.todoTool.value, el.todoSrc.value, todayStr(), runActive(), todoFlashId,
+      todoView, stPop, boardFullOpen(), stNarrow(), team.members.map(m => m.name)]);
     if (key === todoKey) return;
     todoKey = key;
     if (document.activeElement !== el.todoWho) {
@@ -2913,6 +3125,8 @@
     el.todoCount.textContent = all.length ? `未完了 ${open.length}件${over ? `（期限切れ ${over}件）` : ''}` : 'まだありません';
     el.todoCount.classList.toggle('alert', over > 0);
     const list = sortTodos(filterTodos(all));
+    renderSticky(all, list, !all.length ? 'TODOはまだありません（会議中の記録欄か、上の「＋ TODO を追加」で登録できます）'
+      : !list.length ? (showDone ? '該当するTODOはありません' : '未完了のTODOはありません 🎉') : '');
     if (!all.length) { el.todoBoard.innerHTML = '<li class="empty" style="border:none;justify-content:center">TODOはまだありません（会議中の記録欄か、上の「＋ TODO を追加」で登録できます）</li>'; return; }
     if (!list.length) { el.todoBoard.innerHTML = `<li class="empty" style="border:none;justify-content:center">${showDone ? '該当するTODOはありません' : '未完了のTODOはありません 🎉'}</li>`; return; }
     el.todoBoard.innerHTML = list.map(x => {
@@ -4984,7 +5198,8 @@
   // Esc：開いているダイアログ・メニューを閉じる（フォーカスがどこにあっても）
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    if (todoRvOpen()) { e.preventDefault(); closeTodoReview(false); }
+    if (boardFullOpen()) { e.preventDefault(); closeBoardFull(); }
+    else if (todoRvOpen()) { e.preventDefault(); closeTodoReview(false); }
     else if (reviewOpen()) { e.preventDefault(); closeReview(false); }
     else if (guideOpen()) { e.preventDefault(); closeGuide(); }
     else if (!el.nextModal.classList.contains('hidden')) { e.preventDefault(); closeNextMeeting(); }
@@ -5011,9 +5226,10 @@
     const ui = JSON.parse(localStorage.getItem(UI_KEY)) || {};
     el.todoFold.open = !!ui.todo; el.historyFold.open = !!ui.history; el.statsFold.open = !!ui.stats;
     if ([0, 5, 10].includes(ui.statsRange)) statsRange = ui.statsRange;
+    if (ui.todoView === 'board') todoView = 'board';
   } catch (e) { /* ignore */ }
   function saveUi() {
-    try { localStorage.setItem(UI_KEY, JSON.stringify({ todo: el.todoFold.open, history: el.historyFold.open, stats: el.statsFold.open, statsRange })); } catch (e) { /* ignore */ }
+    try { localStorage.setItem(UI_KEY, JSON.stringify({ todo: el.todoFold.open, history: el.historyFold.open, stats: el.statsFold.open, statsRange, todoView })); } catch (e) { /* ignore */ }
   }
   [el.todoFold, el.historyFold, el.statsFold].forEach(d => d.addEventListener('toggle', saveUi));
   el.statsFold.addEventListener('toggle', () => { statsKey = ''; renderStats(); });
@@ -5070,6 +5286,14 @@
   [el.schedDate, el.schedTime].forEach(x => x.addEventListener('change', onScheduleChange));
   el.schedClear.addEventListener('click', () => { state.schedule = normSchedule(null); save(); render(); el.schedDate.focus(); });
   document.addEventListener('change', onPresenterPick);
+  el.todoFold.querySelector('.sb-tabs').addEventListener('click', e => { const b = e.target.closest('button[data-view]'); if (b) setTodoView(b.dataset.view); });
+  el.boardFullBtn.addEventListener('click', openBoardFull);
+  el.boardFullClose.addEventListener('click', closeBoardFull);
+  [el.todoSticky, el.boardFullBody].forEach(c => { c.addEventListener('click', onStickyClick); c.addEventListener('keydown', onStickyKey); });
+  // 付箋の外を押したら、開いている操作ボタンを閉じる
+  document.addEventListener('click', e => { if (stPop && !e.target.closest('.st')) { stPop = ''; todoKey = ''; renderTodoBoard(); } });
+  // 幅が変わって「表／縦並び」が切り替わるとき
+  window.matchMedia('(max-width: 640px)').addEventListener('change', () => { todoKey = ''; renderTodoBoard(); });
   el.todoBoard.addEventListener('change', onTodoBoardChange);
   el.todoNew.addEventListener('click', () => (xt.mode === 'new' ? closeXt() : openXt('new')));
   el.todoBulkBtn.addEventListener('click', () => (xt.mode === 'bulk' ? closeXt() : openXt('bulk')));
@@ -5118,7 +5342,7 @@
 
   // キーボード操作：Space=一時停止/再開、→ / N = 次へ（入力中は無効）
   document.addEventListener('keydown', e => {
-    if (e.target.matches('input, textarea, select') || e.target.closest('[data-xt]') || menuOpen() || guideOpen() || anyModalOpen() || !el.nextModal.classList.contains('hidden')) return;
+    if (e.target.matches('input, textarea, select') || e.target.closest('[data-xt], .st') || boardFullOpen() || menuOpen() || guideOpen() || anyModalOpen() || !el.nextModal.classList.contains('hidden')) return;
     if (!state.run || state.run.status === 'done') return;
     if (e.code === 'Space') { e.preventDefault(); togglePause(); }
     else if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'n') { e.preventDefault(); next(); }
