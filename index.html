@@ -4383,7 +4383,9 @@
   // ---------- 共有ファイル（OneDrive などの同期フォルダ上の JSON） ----------
   // スマホ・タブレット（iPad も含む）。ファイルを開いて上書き保存し続ける仕組みは、パソコンの Edge・Chrome だけで使う
   const IS_MOBILE = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  const FS_SUPPORTED = !IS_MOBILE && 'showOpenFilePicker' in window && 'showSaveFilePicker' in window;
+  // ほかのページの枠の中（claude.ai のアーティファクトなど）では、ファイルを直接読み書きできない
+  const IN_FRAME = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+  const FS_SUPPORTED = !IS_MOBILE && !IN_FRAME && 'showOpenFilePicker' in window && 'showSaveFilePicker' in window;
   const HERE = IS_MOBILE ? 'この端末' : 'この PC';
   const FILE_TYPES = [{ description: '会議データ (JSON)', accept: { 'application/json': ['.json'] } }];
   const APP_ID = 'kaigi-timer';
@@ -4604,6 +4606,8 @@
       html = `☁ 共有ファイル <b>${escapeHtml(share.handle.name)}</b> に接続中　${st}`;
     } else if (IS_MOBILE) {
       html = '📱 この端末のブラウザにだけ保存しています。<div class="mobile-note">📱 <b>スマホ・タブレットでは共有ファイルは使えません。</b>OneDrive の共有ファイルへの保存は、パソコンの <b>Edge・Chrome</b> でお使いください（スマホの OneDrive は、ブラウザからの保存先に選べないため）。<br>画面の操作（タイマー・議題・記録など）はスマホでも使えます。</div>';
+    } else if (IN_FRAME) {
+      html = '💻 このブラウザにだけ保存しています。<br><span class="err">この画面はほかのページの中に表示されているため、共有ファイル（会議データ.json）は使えません。</span>チームでデータを共有するときは、会議タイマー.html を Edge で直接開いてください。';
     } else if (!FS_SUPPORTED) {
       html = '💻 この PC のブラウザにだけ保存しています。<br><span class="err">このブラウザは共有ファイルへの直接保存に対応していません（Edge か Chrome で開いてください）。</span>「書き出し／読み込み」は使えます。';
     } else {
