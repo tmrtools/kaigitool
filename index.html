@@ -4533,9 +4533,40 @@
     }
   }
   // 選んだファイルに接続する。中身があれば読み込み、空なら今の内容を書き込む
+  // 書き込みの許可を求める。だめなときは理由も返す（会社の設定で禁止・許可しないを選んだ・確認が出せない など）
+  async function requestWrite(h) {
+    try {
+      if ((await h.queryPermission({ mode: 'readwrite' })) === 'granted') return { ok: true };
+      const r = await h.requestPermission({ mode: 'readwrite' });
+      return r === 'granted' ? { ok: true }
+        : { ok: false, why: '書き込みが許可されませんでした（許可の確認で「許可しない」を選んだか、会社の設定でブラウザからのファイルへの書き込みが禁止されています）' };
+    } catch (e) {
+      return { ok: false, why: `ブラウザが書き込みの許可を確認できませんでした（${e.name}${e.message ? '：' + e.message : ''}）` };
+    }
+  }
+  const PERM_HELP = '確かめること：\n・ブラウザの許可の確認で「許可」（あれば「毎回許可する」）を選んだか\n・会社の設定で禁止されていないか（Edge のアドレス欄に edge://policy と入れて、「FileSystemWrite」を含む項目があれば、情報システムの担当に相談）\n・ファイルを置いた場所に、自分の書き込み権限があるか';
+  // 書き込めないときは、読み取りだけで開いて中身をこの PC に表示する（共有ファイルへは保存しない）
+  async function openReadOnly(h, why) {
+    let raw = null;
+    try { raw = await readSharedRaw(h); } catch (e) { alert(`${why}\n\nファイルの読み込みもできませんでした（${e.name}${e.message ? '：' + e.message : ''}）。\n\n${PERM_HELP}`); return; }
+    const d = raw && raw.data;
+    if (!d) { alert(`${why}\n\nファイルが空のため、読み取るものがありません。\n\n${PERM_HELP}`); return; }
+    if (d.app !== APP_ID) { alert('このファイルは会議データではありません。'); return; }
+    if (!confirm(`${why}\n\n共有ファイルには保存できませんが、中身を読み取ってこの PC に表示することはできます。読み取りだけで開きますか？${hasLocalData() ? '\n（この PC の今の内容は置き換わります）' : ''}\n\n${PERM_HELP}`)) return;
+    state = normalize(d);
+    persistLocal();
+    notesPanelKey = ''; historyKey = ''; todoKey = '';
+    render();
+    showInfo(`📖 「${h.name}」を読み取りだけで開きました。変更はこの PC にだけ保存され、共有ファイルには保存されません`);
+  }
   async function connect(h, { isNew = false, fromReconnect = false } = {}) {
     let repaired = false;
-    if (!(await ensurePermission(h, true))) { alert('ファイルへのアクセスが許可されませんでした。'); return; }
+    const perm = await requestWrite(h);
+    if (!perm.ok) {
+      if (isNew) alert(`${perm.why}\n\n${PERM_HELP}`);
+      else await openReadOnly(h, perm.why);
+      return;
+    }
     let d = null;
     if (!isNew) {
       let raw = null;
