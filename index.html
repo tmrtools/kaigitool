@@ -798,6 +798,7 @@
   .todo-board li.done { background: #f5f5f3; color: var(--muted); }
   .todo-board li.done .t { text-decoration: line-through; }
   .todo-board .body { flex: 1; min-width: 0; word-break: break-word; }
+  .todo-board .t, .st .t, .rv-todos .t { white-space: pre-wrap; }
   .todo-board .meta { display: block; font-size: .8rem; color: var(--muted); }
   .todo-board .who { font-weight: 600; color: var(--accent-dark); }
   .todo-board .due.overdue { color: var(--over); font-weight: 700; }
@@ -1042,7 +1043,7 @@
         <li>会議中は、タイマーの下に今の議題の記録欄が出ます。</li>
         <li><b>決める議題</b>：「決まった事」を書き、結論（決定／保留／持ち越し）を押します。</li>
         <li><b>報告の議題</b>：「報告の要点」と「質疑・補足」を書き、報告済み／持ち越し を押します。事前に「報告内容の要約」を入れておくと、会議を始めたときに「報告の要点」へ写されるので、話した分だけ書き足せば済みます（いらなければ「↩ 空に戻す」。☰ メニューの「⚙ 設定」で写さないようにもできます）。</li>
-        <li><b>TODO</b>：「＋ TODOを追加」で、やること・担当・<b>開始日〜期限</b>を入れます（開始日が空なら「すぐ」）。やることの欄で <b>Enter</b> を押すと次の TODO が増えます。</li>
+        <li><b>TODO</b>：「＋ TODOを追加」で、やること・担当・<b>開始日〜期限</b>を入れます（開始日が空なら「すぐ」）。やることの欄で <b>Enter</b> を押すと次の TODO が増えます。改行したいときは <b>Shift＋Enter</b> です。</li>
         <li><b>🗂 WBSツール</b>：課の WBSツールへの登録を「未設定／不要／要・未登録／登録済み」から選びます。新しい TODO の初期値は ☰ メニューの「⚙ 設定」で変えられます。</li>
         <li>担当欄を押すと選択パネルが開き、チーム員・参加者を押して選べます（複数可）。「出席者を全員選ぶ」や、名簿にない人の手入力もできます。</li>
         <li>書いた内容は自動で保存されます。会議の後でも議事録の画面で直せます。</li>
@@ -1059,7 +1060,7 @@
         <li><b>➡ 次の会議を準備</b>：議題を「持ち越し・保留だけ残す／同じ議題を使う／空にする」から選んで、次の会議の準備画面に切り替えます。参加者・司会・書記・TODO・履歴はそのまま引き継ぎます。</li>
         <li><b>🅿 あとで話す</b>の行き先は、会議結果でも変えられます。「TODO」を選ぶと、その場で担当（出席者から選ぶ・手入力）と期間（開始〜期限）、WBSツール登録を決められます。「次回の議題」にしたものは次の会議の議題に追加され、「TODO」にしたものはメモした議題の TODO になります。</li>
         <li><b>🗒 付箋ボード</b>：📝 TODO一覧の「🗒 付箋ボード」で、TODO を付箋の形で「担当（縦）× 期限（横：期限切れ／今週／来週／それ以降／期限なし）」に並べます。付箋の色は期限の状態（赤＝期限切れ、黄＝3日以内、緑＝余裕あり、灰＝開始前）、左端の線は担当者ごとの色です。付箋を押すと「✓ 完了」「✏ 編集」「📋 リストで見る」。「⛶ 大きく表示」で画面いっぱいに出せるので、会議の冒頭にモニターへ映すと便利です。スマホでは担当ごとの縦並びになります。絞り込み（担当・時期・出どころ・WBSツール）は付箋ボードにも効きます。</li>
-        <li><b>🗒 会議外の TODO</b>：会議以外で決まったことは、📝 TODO一覧の「＋ TODO を追加」で登録します（やること・担当・期間・WBSツール・どこで決まったか）。メールなどから何件もあるときは「📥 まとめて貼り付け」に1行1件「やること / 担当 / 期限」で貼り付けます。一覧では「🗒 会議外」の印が付き、「✏ 編集」で直す・削除ができます（会議で決めた TODO も同じように直せます）。次の会議の「前回までの TODO を確認」にも出ます。</li>
+        <li><b>🗒 会議外の TODO</b>：会議以外で決まったことは、📝 TODO一覧の「＋ TODO を追加」で登録します（やること・担当・期間・WBSツール・どこで決まったか）。メールなどから何件もあるときは「📥 まとめて貼り付け」に1行1件「やること / 担当 / 期限」で貼り付けます。一覧では「🗒 会議外」の印が付き、「✏ 編集」で直す・削除ができます（会議で決めた TODO も同じように直せます）。編集の画面では、やることの欄で Enter を押すと改行、Ctrl＋Enter で保存です。次の会議の「前回までの TODO を確認」にも出ます。</li>
         <li><b>📝 TODO一覧</b>：これまでの会議の TODO を期限の近い順に表示します。担当・時期（着手中／開始前）・WBSツールで絞り込み、チェックで完了にできます。「🗂 WBSツール未登録 ○件」を押すと未登録だけになり、「📋 表示中のTODOをコピー」でWBSツールへの入力に使えます。入力したら「✓ 登録済みにする」を押します。</li>
         <li><b>📊 会議の振り返り</b>：会議履歴から、時間内に終わった割合・TODO の完了率・よく延びる議題・担当者別の TODO などを計算します（直近5回／10回／すべて）。「WBSツール未登録の TODO」を押すと TODO 一覧がその条件で絞り込まれます。</li>
         <li><b>🗂 会議履歴</b>：過去の議事録を開いたり、言葉で検索したりできます。持ち越し・保留の議題を貼り付け欄に戻すこともできます。</li>
@@ -2813,7 +2814,7 @@
       <label>WBSツール${xtToolSel('data-xf="tool"', d.tool)}</label>
       ${xt.meeting ? `<div class="xt-lab"><span class="field-label">決まった会議</span><span class="xt-mtg">${escapeHtml(xt.meeting)}</span></div>` : `<label>どこで決まったか（任意）${xtSrcIn('data-xf="src"', d.src)}</label>`}
       ${xt.err ? `<p class="err" role="alert">${escapeHtml(xt.err)}</p>` : ''}
-      <div class="acts"><span class="note">Ctrl＋Enter で${edit ? '保存' : '追加'}・Esc で閉じる</span>${edit ? '<button type="button" class="danger" data-xt-act="del">🗑 削除</button>' : ''}<button type="button" class="secondary" data-xt-act="cancel">キャンセル</button><button type="button" data-xt-act="save">${edit ? '保存' : '追加'}</button></div>
+      <div class="acts"><span class="note">やることは Enter で改行・Ctrl＋Enter で${edit ? '保存' : '追加'}・Esc で閉じる</span>${edit ? '<button type="button" class="danger" data-xt-act="del">🗑 削除</button>' : ''}<button type="button" class="secondary" data-xt-act="cancel">キャンセル</button><button type="button" data-xt-act="save">${edit ? '保存' : '追加'}</button></div>
     </div>`;
   }
   // 「11/20」「11/20まで」「11月20日」「2026-11-20」「2026/11/20」→ yyyy-mm-dd（読めなければ null）
@@ -2875,10 +2876,12 @@
     save(); render();
     flash(el.todoMsg, msg);
   }
+  // やること：改行は残し、行の前後の空白と3行以上続く空行を整える
+  const cleanTodoText = v => String(v || '').replace(/\r\n?/g, '\n').split('\n').map(l => l.trim()).join('\n').replace(/\n{3,}/g, '\n\n').trim();
   function saveXt() {
     const d = xt.d;
     xtTakeFree();
-    d.text = d.text.replace(/\s*\n\s*/g, ' ').trim();
+    d.text = cleanTodoText(d.text);
     const fail = (msg, sel) => { xt.err = msg; renderXt(); const f = el.todoEditor.querySelector(sel); if (f) f.focus(); };
     if (!d.text) return fail('やることを入力してください', '[data-xf="text"]');
     if (d.start && d.due && d.start > d.due) return fail('開始日が期限より後になっています', '[data-xf="start"]');
@@ -2955,8 +2958,8 @@
     if (e.target.matches('[data-xt-free]')) {
       e.preventDefault();
       if (xtTakeFree()) { renderXt(); const f = el.todoEditor.querySelector('[data-xt-free]'); if (f) f.focus(); }
-    } else if (e.target.matches('[data-xf="text"], input[data-xf], input[data-xb="src"]')) {
-      e.preventDefault();  // やることは1行。Enter で追加・保存
+    } else if (e.target.matches('input[data-xf], input[data-xb="src"]')) {
+      e.preventDefault();  // 1行の欄は Enter で追加・保存（「やること」は Enter で改行、Ctrl＋Enter で保存）
       xt.mode === 'bulk' ? bulkAddXt() : saveXt();
     }
   }
@@ -3180,7 +3183,7 @@
     const lines = [`【未完了のTODO】${dateLabel(Date.now())}時点・${list.length}件` + (cond ? `（${cond}）` : '')];
     list.forEach(x => {
       const t = x.t, dc = dueClass(t);
-      lines.push(`・${todoLine(t)}${dc === 'overdue' ? '［期限切れ］' : dc === 'today' ? '［今日まで］' : ''}${isLater(t) ? '［開始前］' : ''}　← ${x.extra ? srcText(x) : `${dateLabel(x.run.meetingStart)}「${x.item.title}」`}`);
+      lines.push(`・${indentLines(todoLine(t), '　')}${dc === 'overdue' ? '［期限切れ］' : dc === 'today' ? '［今日まで］' : ''}${isLater(t) ? '［開始前］' : ''}　← ${x.extra ? srcText(x) : `${dateLabel(x.run.meetingStart)}「${x.item.title}」`}`);
     });
     return lines.join('\n');
   }
@@ -3768,8 +3771,7 @@
     if (!state.run) return;
     const f = e.target.closest('[data-tf]');
     if (f) {
-      // やることは1行の文（貼り付けた改行は空白に）
-      if (f.dataset.tf === 'text' && /[\r\n]/.test(f.value)) { const p = f.selectionStart; f.value = f.value.replace(/\r?\n/g, ' '); f.setSelectionRange(p, p); }
+      // やることは改行も入れられる（Shift＋Enter。Enter だけなら次の TODO を追加）
       const card = f.closest('.note-card'), row = f.closest('.todo-row');
       const t = state.run.notes[Number(card.dataset.i)].todos.find(x => x.id === row.dataset.tid);
       if (!t) return;
@@ -3811,7 +3813,7 @@
       return;
     }
     const f = e.target.closest('[data-tf=text]');
-    if (!f || e.key !== 'Enter' || e.isComposing || !state.run) return;
+    if (!f || e.key !== 'Enter' || e.isComposing || e.shiftKey || !state.run) return;
     e.preventDefault();
     addTodo(card, Number(card.dataset.i));
   }
@@ -4096,7 +4098,7 @@
       const todos = n.todos.filter(t => t.text.trim());
       if (todos.length) {
         lines.push('   ■TODO：');
-        todos.forEach(t => lines.push(`     ・${todoLine(t)}`));
+        todos.forEach(t => lines.push(`     ・${indentLines(todoLine(t), '       ')}`));
       }
       lines.push('');
     });
@@ -4194,7 +4196,7 @@
     out.push('</ol>');
     const todos = [];
     r.notes.forEach(n => n.todos.forEach(t => { if (t.text.trim()) todos.push(t); }));
-    if (todos.length) out.push('<p><b>■ TODO</b></p><ul>' + todos.map(t => `<li>${e(todoLine(t))}</li>`).join('') + '</ul>');
+    if (todos.length) out.push('<p><b>■ TODO</b></p><ul>' + todos.map(t => `<li>${e(todoLine(t)).replace(/\n/g, '<br>')}</li>`).join('') + '</ul>');
     if (r.parked && r.parked.length) out.push('<p><b>■ あとで話す</b></p><ul>' + r.parked.map(x => `<li>${e(x.text)}（→ ${PARK_LABEL[x.dest]}）</li>`).join('') + '</ul>');
     const carry = carryOverLines();
     if (carry.length) out.push('<p><b>■ 持ち越し・保留</b></p><ul>' + carry.map(l => `<li>${e(l.replace(/^・/, ''))}</li>`).join('') + '</ul>');
